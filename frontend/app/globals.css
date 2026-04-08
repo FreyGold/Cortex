@@ -1,0 +1,329 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+/* ── Google Font: Inter ─────────────────────── */
+
+/* ─────────────────────────────────────────────
+   CORTEX — Design Token Layer
+   Brand: Neural Purple × Warm Neutrals
+   Inspired by Notion's whisper-weight system,
+   re-skinned for an AI/academic identity.
+───────────────────────────────────────────── */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* ── Fonts ───────────────────────────────── */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-heading: "Inter", system-ui, sans-serif;
+
+  /* ── Cortex Brand Colors ─────────────────── */
+  /* Primary: Neural Indigo */
+  --color-brand:          #5b4cdb;   /* Primary CTA, active states */
+  --color-brand-dark:     #4338ca;   /* Hover/pressed */
+  --color-brand-deeper:   #3730a3;   /* Active pressed */
+  --color-brand-light:    #ede9fe;   /* Badge backgrounds, tints */
+  --color-brand-text:     #4f46e5;   /* Link color */
+
+  /* Secondary: Synapse Teal */
+  --color-synapse:        #0ea5e9;   /* Success, AI indicators */
+  --color-synapse-dark:   #0284c7;
+  --color-synapse-light:  #e0f2fe;
+
+  /* Accent: Axon Amber */
+  --color-axon:           #f59e0b;   /* Warning, highlight */
+  --color-axon-light:     #fef3c7;
+
+  /* Semantic */
+  --color-success:        #10b981;
+  --color-success-light:  #d1fae5;
+  --color-error:          #ef4444;
+  --color-error-light:    #fee2e2;
+
+  /* ── Warm Neutral Scale ──────────────────── */
+  /* Aligned with Notion's yellow-brown undertone neutral */
+  --color-warm-50:   #faf9f7;   /* Page background alt */
+  --color-warm-100:  #f5f3ef;   /* Section alt background */
+  --color-warm-200:  #e8e4dd;   /* Divider, border subtle */
+  --color-warm-300:  #d0cbc2;   /* Muted border */
+  --color-warm-400:  #a39e98;   /* Placeholder, disabled  */
+  --color-warm-500:  #78746d;   /* Secondary text */
+  --color-warm-600:  #615d59;   /* Body secondary */
+  --color-warm-700:  #403d39;   /* Body primary (alt surface) */
+  --color-warm-800:  #2a2824;   /* Dark surface text */
+  --color-warm-900:  #1a1816;   /* Near-black heading */
+
+  /* ── Semantic Aliases ────────────────────── */
+  --color-background:       var(--background);
+  --color-foreground:       var(--foreground);
+  --color-card:             var(--card);
+  --color-card-foreground:  var(--card-foreground);
+  --color-muted:            var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border:           var(--border);
+  --color-ring:             var(--ring);
+  --color-primary:          var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary:        var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent:           var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive:      var(--destructive);
+  --color-popover:          var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-input:            var(--input);
+
+  /* Sidebar */
+  --color-sidebar:                    var(--sidebar);
+  --color-sidebar-foreground:         var(--sidebar-foreground);
+  --color-sidebar-primary:            var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:             var(--sidebar-accent);
+  --color-sidebar-accent-foreground:  var(--sidebar-accent-foreground);
+  --color-sidebar-border:             var(--sidebar-border);
+  --color-sidebar-ring:               var(--sidebar-ring);
+
+  /* ── Typography Scale ────────────────────── */
+  /* Mirrors Notion's compressed headline system */
+  --text-display-hero:   4rem;        /* 64px — billboard headline */
+  --text-display-2:      3.375rem;    /* 54px — secondary hero */
+  --text-section:        3rem;        /* 48px — section titles */
+  --text-heading-lg:     2.5rem;      /* 40px — feature sub-sections */
+  --text-heading:        1.625rem;    /* 26px — content headers */
+  --text-title:          1.375rem;    /* 22px — card titles */
+  --text-body-lg:        1.25rem;     /* 20px — introductions */
+  --text-body:           1rem;        /* 16px — standard reading */
+  --text-nav:            0.9375rem;   /* 15px — navigation/buttons */
+  --text-caption:        0.875rem;    /* 14px — metadata */
+  --text-badge:          0.75rem;     /* 12px — pills/tags */
+
+  /* ── Border Radius Scale ─────────────────── */
+  --radius-xs:    0.25rem;   /* 4px  — buttons, inputs */
+  --radius-sm:    0.3125rem; /* 5px  — links, list items */
+  --radius-md:    0.5rem;    /* 8px  — small cards */
+  --radius-lg:    0.75rem;   /* 12px — standard cards */
+  --radius-xl:    1rem;      /* 16px — hero cards */
+  --radius-2xl:   1.5rem;    /* 24px */
+  --radius-pill:  9999px;    /* pill — badges, tags */
+  --radius-circle: 100%;     /* avatars */
+
+  /* ── Elevation / Shadow System ───────────── */
+  /* Notion-style: multi-layer, sub-0.05 opacity per layer */
+  --shadow-whisper: 0px 1px 2px rgba(0,0,0,0.06);
+  --shadow-card:
+    rgba(0,0,0,0.04) 0px 4px 18px,
+    rgba(0,0,0,0.027) 0px 2px 7.85px,
+    rgba(0,0,0,0.02) 0px 0.8px 2.93px,
+    rgba(0,0,0,0.01) 0px 0.175px 1.04px;
+  --shadow-modal:
+    rgba(0,0,0,0.01) 0px 1px 3px,
+    rgba(0,0,0,0.02) 0px 3px 7px,
+    rgba(0,0,0,0.02) 0px 7px 15px,
+    rgba(0,0,0,0.04) 0px 14px 28px,
+    rgba(0,0,0,0.05) 0px 23px 52px;
+  --shadow-brand:
+    0px 4px 20px rgba(91,76,219,0.25),
+    0px 1px 4px rgba(91,76,219,0.15);
+
+  /* ── Spacing ─────────────────────────────── */
+  /* Base unit: 4px, scale: 4,8,12,16,24,32,48,64,80,96,120 */
+  --space-section: 5rem;      /* 80px — between major sections */
+  --space-section-sm: 3rem;   /* 48px — mobile section gap */
+
+  /* Overrides for shadcn compatibility */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+/* ─────────────────────────────────────────────
+   LIGHT MODE — Cortex Semantic Variables
+───────────────────────────────────────────── */
+:root {
+  /* Core surfaces */
+  --background:           #ffffff;
+  --foreground:           rgba(0,0,0,0.92);
+  --card:                 #ffffff;
+  --card-foreground:      rgba(0,0,0,0.92);
+  --popover:              #ffffff;
+  --popover-foreground:   rgba(0,0,0,0.92);
+
+  /* Brand mapped to shadcn slots */
+  --primary:              #5b4cdb;
+  --primary-foreground:   #ffffff;
+  --secondary:            #f5f3ef;
+  --secondary-foreground: rgba(0,0,0,0.92);
+  --muted:                #f5f3ef;
+  --muted-foreground:     #78746d;
+  --accent:               #ede9fe;
+  --accent-foreground:    #4338ca;
+
+  /* Functional */
+  --destructive:          #ef4444;
+  --border:               rgba(0,0,0,0.1);
+  --input:                rgba(0,0,0,0.08);
+  --ring:                 #5b4cdb;
+  --radius:               0.75rem;
+
+  /* Sidebar */
+  --sidebar:                    #faf9f7;
+  --sidebar-foreground:         rgba(0,0,0,0.92);
+  --sidebar-primary:            #5b4cdb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:             #ede9fe;
+  --sidebar-accent-foreground:  #4338ca;
+  --sidebar-border:             rgba(0,0,0,0.08);
+  --sidebar-ring:               #5b4cdb;
+
+  /* Charts */
+  --chart-1: #5b4cdb;
+  --chart-2: #0ea5e9;
+  --chart-3: #10b981;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+}
+
+/* ─────────────────────────────────────────────
+   DARK MODE
+───────────────────────────────────────────── */
+.dark {
+  --background:           #0e0d12;
+  --foreground:           rgba(255,255,255,0.92);
+  --card:                 #17151f;
+  --card-foreground:      rgba(255,255,255,0.92);
+  --popover:              #17151f;
+  --popover-foreground:   rgba(255,255,255,0.92);
+  --primary:              #7c6ff0;
+  --primary-foreground:   #ffffff;
+  --secondary:            #1e1c28;
+  --secondary-foreground: rgba(255,255,255,0.88);
+  --muted:                #1e1c28;
+  --muted-foreground:     #a39e98;
+  --accent:               #231f38;
+  --accent-foreground:    #a5b4fc;
+  --destructive:          #f87171;
+  --border:               rgba(255,255,255,0.08);
+  --input:                rgba(255,255,255,0.06);
+  --ring:                 #7c6ff0;
+  --sidebar:              #17151f;
+  --sidebar-foreground:   rgba(255,255,255,0.92);
+  --sidebar-primary:      #7c6ff0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:       #231f38;
+  --sidebar-accent-foreground: #a5b4fc;
+  --sidebar-border:       rgba(255,255,255,0.06);
+  --sidebar-ring:         #7c6ff0;
+  --chart-1: #7c6ff0;
+  --chart-2: #38bdf8;
+  --chart-3: #34d399;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
+}
+
+/* ─────────────────────────────────────────────
+   BASE LAYER
+───────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground min-h-full flex flex-col;
+    line-height: 1.5;
+  }
+
+  /* Typography utility classes */
+  .text-display-hero {
+    font-size: var(--text-display-hero);
+    font-weight: 700;
+    line-height: 1.0;
+    letter-spacing: -2.125px;
+    font-feature-settings: "lnum", "locl";
+  }
+  .text-display-2 {
+    font-size: var(--text-display-2);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -1.875px;
+  }
+  .text-section-heading {
+    font-size: var(--text-section);
+    font-weight: 700;
+    line-height: 1.0;
+    letter-spacing: -1.5px;
+  }
+  .text-heading-lg {
+    font-size: var(--text-heading-lg);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.75px;
+  }
+  .text-heading {
+    font-size: var(--text-heading);
+    font-weight: 700;
+    line-height: 1.23;
+    letter-spacing: -0.625px;
+  }
+  .text-title {
+    font-size: var(--text-title);
+    font-weight: 700;
+    line-height: 1.27;
+    letter-spacing: -0.25px;
+  }
+  .text-body-lg {
+    font-size: var(--text-body-lg);
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.125px;
+  }
+
+  /* Gradient text utility */
+  .gradient-text {
+    background: linear-gradient(135deg, #5b4cdb 0%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Neural gradient bg */
+  .gradient-neural {
+    background: radial-gradient(ellipse at 20% 0%, rgba(91,76,219,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(14,165,233,0.06) 0%, transparent 50%),
+                var(--background);
+  }
+
+  /* Whisper border */
+  .border-whisper {
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .dark .border-whisper {
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Card shadow utility */
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-modal {
+    box-shadow: var(--shadow-modal);
+  }
+  .shadow-brand {
+    box-shadow: var(--shadow-brand);
+  }
+}
