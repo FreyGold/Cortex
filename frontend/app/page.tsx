@@ -184,7 +184,7 @@ export default function Home() {
               </CortexCardFooter>
             </CortexCard>
 
-            <CortexCard level="modal" className="bg-background relative transform md:-translate-y-4">
+            <CortexCard level="modal" className="bg-background relative">
               <div className="absolute top-4 right-4">
                 <Badge variant="brand">Featured</Badge>
               </div>
@@ -193,7 +193,7 @@ export default function Home() {
                 <CortexCardDescription>5-layer ambient shadow</CortexCardDescription>
               </CortexCardHeader>
               <CortexCardContent>
-                Max opacity 0.05, 52px blur. Used for modals, dialogue boxes, and Hero featured content panels.
+                Max opacity 0.04, 32px blur. Used for modals, dialogue boxes, and Hero featured content panels.
               </CortexCardContent>
               <CortexCardFooter>
                 <CortexButton variant="primary" size="sm" className="w-full">
