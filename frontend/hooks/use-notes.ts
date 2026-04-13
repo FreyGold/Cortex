@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 
-export type NoteListItem = {
+type NoteListItem = {
   id: string;
   title: string;
   content_text: string | null;
@@ -14,24 +14,24 @@ export type NoteListItem = {
   created_at: string;
 };
 
-export type FolderItem = {
+type FolderItem = {
   id: string;
   name: string;
   color: string | null;
 };
 
-export type TagItem = {
+type TagItem = {
   id: string;
   name: string;
   color: string | null;
 };
 
-export type NoteTagLink = {
+type NoteTagLink = {
   tag_id: string;
   tags: TagItem | null;
 };
 
-export type NoteShareItem = {
+type NoteShareItem = {
   id: string;
   note_id: string;
   shared_with_user_id: string | null;

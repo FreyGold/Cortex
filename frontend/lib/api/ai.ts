@@ -1,6 +1,6 @@
 import { apiRequest } from "@/lib/api/client";
 
-export type SearchMatch = {
+type SearchMatch = {
   note_id: string;
   chunk_id: string;
   title: string;
@@ -9,7 +9,7 @@ export type SearchMatch = {
   similarity: number;
 };
 
-export type AskReference = {
+type AskReference = {
   chunkId: string;
   heading: string | null;
   similarity: number;

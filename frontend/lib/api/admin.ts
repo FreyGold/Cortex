@@ -1,6 +1,6 @@
 import { apiRequest } from "@/lib/api/client";
 
-export type AdminUser = {
+type AdminUser = {
   id: string;
   name: string | null;
   role: "admin" | "user";

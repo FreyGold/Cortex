@@ -393,6 +393,45 @@ function buildQuestionAwareAnswer(
   return `I found relevant context in "${noteTitle}", but couldn't confidently extract a concise answer.`;
 }
 
+function rerankSearchMatches(query: string, matches: SearchMatch[], limit: number) {
+  const queryTokens = tokenizeQuestion(query);
+  const fallbackTokens =
+    queryTokens.length > 0
+      ? queryTokens
+      : query
+          .toLowerCase()
+          .split(/\s+/)
+          .map((token) => token.trim())
+          .filter((token) => token.length > 2);
+  const tokens = fallbackTokens.slice(0, 6);
+
+  const scored = matches
+    .map((match) => {
+      const text = normalizePlainText(`${match.title} ${match.chunk_text}`).toLowerCase();
+      const keywordHits = tokens.reduce(
+        (acc, token) => acc + (text.includes(token) ? 1 : 0),
+        0,
+      );
+      const score = match.similarity + keywordHits * 0.08;
+      return { match, keywordHits, score };
+    })
+    .filter((item) => tokens.length === 0 || item.keywordHits > 0)
+    .sort((a, b) => b.score - a.score);
+
+  // Avoid flooding results with many adjacent chunks from the same note.
+  const perNoteCount = new Map<string, number>();
+  const selected: SearchMatch[] = [];
+  for (const item of scored) {
+    const used = perNoteCount.get(item.match.note_id) ?? 0;
+    if (used >= 2) continue;
+    perNoteCount.set(item.match.note_id, used + 1);
+    selected.push(item.match);
+    if (selected.length >= limit) break;
+  }
+
+  return selected;
+}
+
 async function getOwnedNote(noteId: string, accessToken: string) {
   const supabase = getSupabaseUserClient(accessToken);
   const { data, error } = await supabase
@@ -562,18 +601,20 @@ aiRouter.post("/notes/search", authMiddleware, async (req, res) => {
   try {
     const embedding = await embedText(`query: ${query.trim()}`);
     const supabase = getSupabaseUserClient(accessToken);
+    const candidateCount = Math.min(clampedLimit * 4, 50);
     const { data, error } = await supabase.rpc("search_notes", {
       query_embedding: toVectorLiteral(embedding),
       user_id_filter: userId,
       match_threshold: clampedThreshold,
-      match_count: clampedLimit,
+      match_count: candidateCount,
     });
 
     if (error) {
       return res.status(500).json({ error: `Search RPC failed: ${error.message}` });
     }
 
-    const matches = (data as SearchMatch[] | null) ?? [];
+    const rawMatches = (data as SearchMatch[] | null) ?? [];
+    const matches = rerankSearchMatches(query.trim(), rawMatches, clampedLimit);
     return res.status(200).json({
       query: query.trim(),
       threshold: clampedThreshold,

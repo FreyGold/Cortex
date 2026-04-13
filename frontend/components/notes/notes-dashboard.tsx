@@ -9,7 +9,8 @@ import {
   useCreateTag,
   useNotesDashboard,
 } from "@/hooks/use-notes";
-import { CortexButton } from "@/components/ui/cortex-button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   CortexCard,
   CortexCardContent,
@@ -68,24 +69,22 @@ export function NotesDashboard() {
               </button>
             ))}
             <div className="mt-3 flex gap-2">
-              <input
+              <Input
                 value={newFolderName}
                 onChange={(event) => setNewFolderName(event.target.value)}
                 placeholder="New folder"
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                className="h-9 w-full px-3 text-sm"
               />
-              <CortexButton
+              <Button
                 size="sm"
-                variant="outline"
-                loading={createFolder.isPending}
                 disabled={!newFolderName.trim()}
                 onClick={async () => {
                   await createFolder.mutateAsync(newFolderName.trim());
                   setNewFolderName("");
                 }}
               >
-                Add
-              </CortexButton>
+                {createFolder.isPending ? "Adding..." : "Add"}
+              </Button>
             </div>
           </CortexCardContent>
         </CortexCard>
@@ -106,24 +105,22 @@ export function NotesDashboard() {
               ))}
             </div>
             <div className="mt-3 flex gap-2">
-              <input
+              <Input
                 value={newTagName}
                 onChange={(event) => setNewTagName(event.target.value)}
                 placeholder="New tag"
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                className="h-9 w-full px-3 text-sm"
               />
-              <CortexButton
+              <Button
                 size="sm"
-                variant="outline"
-                loading={createTag.isPending}
                 disabled={!newTagName.trim()}
                 onClick={async () => {
                   await createTag.mutateAsync(newTagName.trim());
                   setNewTagName("");
                 }}
               >
-                Add
-              </CortexButton>
+                {createTag.isPending ? "Adding..." : "Add"}
+              </Button>
             </div>
           </CortexCardContent>
         </CortexCard>
@@ -132,9 +129,9 @@ export function NotesDashboard() {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">Recent notes</h2>
-          <CortexButton onClick={onCreateNote} loading={createNote.isPending}>
-            New note
-          </CortexButton>
+          <Button onClick={onCreateNote}>
+            {createNote.isPending ? "Creating..." : "New note"}
+          </Button>
         </div>
 
         {dashboardQuery.isLoading ? (

@@ -3,10 +3,22 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { NotionEditor } from "@/components/editor";
-import { CortexButton } from "@/components/ui/cortex-button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAskNote, useEmbedNote, useGenerateSummary, useSemanticSearch, useSuggestTags } from "@/hooks/use-note-ai";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
 import {
   useCreateNoteShare,
   useDeleteNoteShare,
@@ -52,6 +64,7 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
   const [shareCanEdit, setShareCanEdit] = useState(false);
   const [expiryDays, setExpiryDays] = useState("7");
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const [shareModePickerOpen, setShareModePickerOpen] = useState(false);
 
   useEffect(() => {
     const note = detailQuery.data?.note;
@@ -165,13 +178,13 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
     <TooltipProvider delayDuration={300}>
       <div className="space-y-4">
       <div className="grid gap-3 md:grid-cols-[1fr_320px]">
-        <input
+        <Input
           value={title}
           onChange={(event) => {
             setTitle(event.target.value);
             setDirty(true);
           }}
-          className="h-11 rounded-md border border-input bg-background px-3 text-lg font-semibold"
+          className="h-11 px-3 text-lg font-semibold"
           placeholder="Untitled note"
         />
         <div className="flex gap-2">
@@ -192,9 +205,9 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
           </select>
           <Dialog open={shareOpen} onOpenChange={setShareOpen}>
             <DialogTrigger asChild>
-              <CortexButton size="sm" variant="outline" className="h-11">
+              <Button size="sm" variant="outline" className="h-11">
                 Share
-              </CortexButton>
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
@@ -205,29 +218,50 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
               </DialogHeader>
 
               <div className="space-y-3">
-                <div className="flex rounded-md border border-border p-1">
-                  <button
-                    type="button"
-                    className={`h-8 flex-1 rounded text-xs font-medium ${shareMode === "user" ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
-                    onClick={() => setShareMode("user")}
-                  >
-                    Share with user
-                  </button>
-                  <button
-                    type="button"
-                    className={`h-8 flex-1 rounded text-xs font-medium ${shareMode === "link" ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
-                    onClick={() => setShareMode("link")}
-                  >
-                    Create link token
-                  </button>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Share mode</p>
+                  <Popover open={shareModePickerOpen} onOpenChange={setShareModePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start">
+                        {shareMode === "user" ? "Share with user" : "Create link token"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0">
+                      <Command>
+                        <CommandInput placeholder="Filter modes..." />
+                        <CommandList>
+                          <CommandEmpty>No modes found.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              onSelect={() => {
+                                setShareMode("user");
+                                setShareModePickerOpen(false);
+                              }}
+                            >
+                              Share with user
+                            </CommandItem>
+                            <CommandItem
+                              onSelect={() => {
+                                setShareMode("link");
+                                setShareModePickerOpen(false);
+                              }}
+                            >
+                              Create link token
+                            </CommandItem>
+                          </CommandGroup>
+                          <CommandSeparator />
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {shareMode === "user" ? (
-                  <input
+                  <Input
                     value={recipientUserId}
                     onChange={(event) => setRecipientUserId(event.target.value)}
                     placeholder="Recipient user ID (UUID)"
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    className="h-10 w-full px-3 text-sm"
                   />
                 ) : (
                   <p className="text-xs text-muted-foreground">
@@ -265,13 +299,9 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                 </div>
 
                 <div className="flex justify-end">
-                  <CortexButton
-                    size="sm"
-                    loading={createShare.isPending}
-                    onClick={handleCreateShare}
-                  >
-                    Create share
-                  </CortexButton>
+                  <Button size="sm" onClick={handleCreateShare}>
+                    {createShare.isPending ? "Creating..." : "Create share"}
+                  </Button>
                 </div>
 
                 {shareFeedback ? (
@@ -301,24 +331,23 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                         </div>
                         <div className="flex gap-1">
                           {share.share_token ? (
-                            <CortexButton
+                            <Button
                               size="sm"
                               variant="outline"
                               onClick={() => copyShareToken(share.share_token as string)}
                             >
                               Copy token
-                            </CortexButton>
+                            </Button>
                           ) : null}
-                          <CortexButton
+                          <Button
                             size="sm"
-                            variant="danger"
-                            loading={deleteShare.isPending}
+                            variant="destructive"
                             onClick={async () => {
                               await deleteShare.mutateAsync(share.id);
                             }}
                           >
-                            Revoke
-                          </CortexButton>
+                            {deleteShare.isPending ? "Revoking..." : "Revoke"}
+                          </Button>
                         </div>
                       </div>
                     ))
@@ -355,14 +384,13 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
           })}
         </div>
         <div className="mt-3">
-          <CortexButton
+          <Button
             size="sm"
             variant="outline"
-            loading={updateTags.isPending}
             onClick={() => updateTags.mutate(selectedTagIds)}
           >
-            Save tags
-          </CortexButton>
+            {updateTags.isPending ? "Saving..." : "Save tags"}
+          </Button>
         </div>
       </div>
 
@@ -370,36 +398,33 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
         <div className="space-y-3">
           <p className="text-sm font-semibold">AI actions</p>
           <div className="flex flex-wrap gap-2">
-            <CortexButton
+            <Button
               size="sm"
               variant="outline"
-              loading={embedNoteMutation.isPending}
               onClick={() => embedNoteMutation.mutate(noteId)}
             >
-              Embed note
-            </CortexButton>
-            <CortexButton
+              {embedNoteMutation.isPending ? "Embedding..." : "Embed note"}
+            </Button>
+            <Button
               size="sm"
               variant="outline"
-              loading={summaryMutation.isPending}
               onClick={async () => {
                 const result = await summaryMutation.mutateAsync();
                 setSummaryText(result.summary);
               }}
             >
-              Generate summary
-            </CortexButton>
-            <CortexButton
+              {summaryMutation.isPending ? "Generating..." : "Generate summary"}
+            </Button>
+            <Button
               size="sm"
               variant="outline"
-              loading={suggestTagsMutation.isPending}
               onClick={async () => {
                 const result = await suggestTagsMutation.mutateAsync();
                 setSuggestedTagsText(result.tags);
               }}
             >
-              Suggest tags
-            </CortexButton>
+              {suggestTagsMutation.isPending ? "Suggesting..." : "Suggest tags"}
+            </Button>
           </div>
 
           {summaryText ? (
@@ -424,20 +449,19 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
         <div className="space-y-3">
           <p className="text-sm font-semibold">Ask this note</p>
           <div className="flex gap-2">
-            <input
+            <Textarea
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               placeholder="Ask a question about this note..."
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              className="min-h-10 w-full text-sm"
             />
-            <CortexButton
+            <Button
               size="sm"
-              loading={askMutation.isPending}
               onClick={() => askMutation.mutate(question)}
               disabled={question.trim().length < 4}
             >
-              Ask
-            </CortexButton>
+              {askMutation.isPending ? "Asking..." : "Ask"}
+            </Button>
           </div>
           {askMutation.data?.answer ? (
             <pre className="whitespace-pre-wrap rounded-md bg-muted/40 p-2 text-xs text-muted-foreground">
@@ -450,30 +474,28 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
       <div className="space-y-3 rounded-md border border-border p-3">
         <p className="text-sm font-semibold">Semantic search & related notes</p>
         <div className="flex flex-wrap gap-2">
-          <input
+          <Input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search across your notes semantically..."
-            className="h-10 flex-1 rounded-md border border-input bg-background px-3 text-sm"
+            className="h-10 flex-1 px-3 text-sm"
           />
-          <CortexButton
+          <Button
             size="sm"
             variant="outline"
-            loading={semanticSearchMutation.isPending}
             onClick={() => semanticSearchMutation.mutate({ query: searchQuery, limit: 8 })}
             disabled={searchQuery.trim().length < 2}
           >
-            Search
-          </CortexButton>
-          <CortexButton
+            {semanticSearchMutation.isPending ? "Searching..." : "Search"}
+          </Button>
+          <Button
             size="sm"
             variant="outline"
-            loading={semanticSearchMutation.isPending}
             onClick={() => semanticSearchMutation.mutate({ query: title, limit: 8 })}
             disabled={title.trim().length < 2}
           >
             Find related notes
-          </CortexButton>
+          </Button>
         </div>
 
         <div className="space-y-2">

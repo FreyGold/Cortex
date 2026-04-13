@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 
-export type Major = {
+type Major = {
   id: string;
   name_en: string;
   slug: string;
@@ -8,13 +8,13 @@ export type Major = {
   icon: string | null;
 };
 
-export type YearLevel = {
+type YearLevel = {
   id: string;
   level: number;
   name_en: string;
 };
 
-export type Course = {
+type Course = {
   id: string;
   major_id: string;
   year_level_id: string | null;

@@ -1,11 +1,11 @@
 import { apiRequest } from "@/lib/api/client";
 
-export type AuthSession = {
+type AuthSession = {
   access_token: string;
   refresh_token: string;
 } | null;
 
-export type AuthResponse = {
+type AuthResponse = {
   message?: string;
   error?: string;
   session?: AuthSession;

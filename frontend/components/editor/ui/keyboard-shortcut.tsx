@@ -15,7 +15,7 @@ interface KeyboardShortcutBadgeProps {
   className?: string;
 }
 
-export function formatShortcut(shortcut: KeyboardShortcut): string {
+function formatShortcut(shortcut: KeyboardShortcut): string {
   const parts: string[] = [];
   const isMac =
     typeof navigator !== "undefined" && navigator.platform.includes("Mac");
