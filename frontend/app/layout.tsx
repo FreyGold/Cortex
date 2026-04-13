@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
+import { Providers } from "@/app/providers";
+import { defaultLocale, getDirection, isLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({
@@ -24,18 +28,31 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const localeFromRequest = await getLocale();
+  const locale = isLocale(localeFromRequest)
+    ? localeFromRequest
+    : defaultLocale;
+  const messages = await getMessages();
+
   return (
     <html
-      lang="en"
-      className={cn("dark h-full antialiased", inter.variable)}
+      lang={locale}
+      dir={getDirection(locale)}
+      className={cn("h-full antialiased", inter.variable)}
       style={{ fontFamily: "var(--font-sans)" }}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Providers>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            {children}
+          </NextIntlClientProvider>
+        </Providers>
+      </body>
     </html>
   );
 }

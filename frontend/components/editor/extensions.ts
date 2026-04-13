@@ -38,6 +38,8 @@ export const editorExtensions = [
       levels: [1, 2, 3],
     },
     codeBlock: false, // We use CodeBlockLowlight instead
+    link: false,
+    underline: false,
   }),
   Placeholder.configure({
     placeholder: ({ node }) => {

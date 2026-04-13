@@ -12,7 +12,7 @@ import { EditorToolbar } from "./toolbar";
 import { cn } from "@/lib/utils";
 
 interface NotionEditorProps {
-  content?: string;
+  content?: string | Record<string, unknown>;
   onChange?: (html: string) => void;
   placeholder?: string;
   className?: string;
@@ -91,6 +91,38 @@ export function NotionEditor({
 
   // Use custom keyboard shortcuts
   useEditorShortcuts(editor);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    if (
+      typeof content === "object" &&
+      content !== null &&
+      "html" in content &&
+      typeof (content as { html?: unknown }).html === "string"
+    ) {
+      const htmlString = (content as { html: string }).html;
+      const current = editor.getHTML();
+      if (current !== htmlString) {
+        editor.commands.setContent(htmlString || "", { emitUpdate: false });
+      }
+      return;
+    }
+
+    if (typeof content === "string") {
+      const current = editor.getHTML();
+      if (current !== content) {
+        editor.commands.setContent(content || "", { emitUpdate: false });
+      }
+      return;
+    }
+
+    const currentJson = editor.getJSON();
+    const incomingJson = content ?? {};
+    if (JSON.stringify(currentJson) !== JSON.stringify(incomingJson)) {
+      editor.commands.setContent(incomingJson, { emitUpdate: false });
+    }
+  }, [content, editor]);
 
   // Handle right-click context menu
   const handleContextMenu = useCallback((e: React.MouseEvent) => {

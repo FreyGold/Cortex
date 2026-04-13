@@ -1,0 +1,199 @@
+{
+  "common": {
+    "search": "Search",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "loading": "Loading"
+  },
+  "nav": {
+    "notes": "Notes",
+    "data": "Data",
+    "profile": "Profile"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "signInTitle": "Welcome back",
+    "signInSubtitle": "Sign in to continue to your academic workspace.",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Join Cortex and start building your academic second brain.",
+    "signOutTitle": "Sign out",
+    "signOutSubtitle": "End your current session on this device.",
+    "continueWithGoogle": "Continue with Google",
+    "fullName": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "messages": {
+      "checkEmail": "Account created. Check your email to verify your account."
+    },
+    "errors": {
+      "passwordMismatch": "Passwords do not match.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "placeholders": {
+      "fullName": "Jane Doe",
+      "email": "you@example.com",
+      "password": "Enter your password",
+      "confirmPassword": "Re-enter your password"
+    }
+  },
+  "home": {
+    "brandSub": "Academic Intelligence Hub",
+    "nav": {
+      "notes": "Notes",
+      "data": "Resources",
+      "auth": "Account"
+    },
+    "actions": {
+      "signIn": "Sign in",
+      "getStarted": "Get started",
+      "exploreData": "Explore resources",
+      "openEditor": "Open notes editor"
+    },
+    "hero": {
+      "badge": "Built for focused students",
+      "title": "Your study flow, finally in one place.",
+      "subtitle": "Capture notes, find course material fast, and keep your semester organized without jumping between scattered tools."
+    },
+    "panel": {
+      "title": "Today at a glance",
+      "subtitle": "A calm workspace for what matters next.",
+      "cards": {
+        "today": "Your study block",
+        "todayValue": "2 courses · 3 tasks",
+        "focus": "Priority",
+        "focusValue": "Database systems midterm",
+        "next": "Next action",
+        "nextValue": "Review lecture 5 notes"
+      }
+    },
+    "features": {
+      "title": "Everything centered on learning outcomes",
+      "subtitle": "Designed to help you spend less time organizing and more time understanding.",
+      "items": {
+        "0": {
+          "title": "Structured notes that stay searchable",
+          "description": "Write fast, organize with folders and tags, and keep your ideas easy to retrieve."
+        },
+        "1": {
+          "title": "Academic resources by major and year",
+          "description": "Browse lectures, exams, and assignments with filters that match how students study."
+        },
+        "2": {
+          "title": "AI support where it saves time",
+          "description": "Use semantic tools to connect topics and reduce repetitive searching."
+        }
+      }
+    },
+    "workflow": {
+      "title": "A practical 3-step study loop",
+      "stepLabel": "Step {step}",
+      "steps": {
+        "1": {
+          "title": "Collect",
+          "description": "Save notes and course files in a single academic context."
+        },
+        "2": {
+          "title": "Connect",
+          "description": "Link related concepts and keep references close to each note."
+        },
+        "3": {
+          "title": "Perform",
+          "description": "Focus on revision and exam prep with less navigation friction."
+        }
+      }
+    }
+  },
+  "dataPage": {
+    "badge": "Data Hub",
+    "title": "Find the right course material in seconds.",
+    "subtitle": "Use focused filters to narrow by major, year, and keyword, then open a course to access lectures, exams, and assignments.",
+    "stats": {
+      "majors": "Majors",
+      "yearLevels": "Year levels",
+      "matchingCourses": "Matching courses"
+    },
+    "filters": {
+      "title": "Refine results",
+      "helper": "Start broad, then narrow down to exactly what you need.",
+      "clearAll": "Clear all",
+      "searchLabel": "Search by course name or code",
+      "searchPlaceholder": "e.g. database, cs301",
+      "apply": "Apply",
+      "majorLabel": "Major",
+      "allMajors": "All majors",
+      "yearLabel": "Year level",
+      "allYears": "All years",
+      "year": "Year {level}"
+    },
+    "results": {
+      "summary": "{count, plural, =0 {No matching courses} one {# matching course} other {# matching courses}}",
+      "majorChip": "Major: {value}",
+      "yearChip": "Year: {value}",
+      "searchChip": "Search: {value}"
+    },
+    "empty": {
+      "title": "No courses match this filter set",
+      "description": "Try removing one filter or using a broader keyword to explore more resources.",
+      "reset": "Reset filters"
+    },
+    "courses": {
+      "noCode": "No code",
+      "noDescription": "No description is available for this course yet.",
+      "unknownMajor": "Unknown major",
+      "openResources": "Open resources"
+    }
+  },
+  "shell": {
+    "nav": {
+      "notes": "Notes",
+      "data": "Data",
+      "profile": "Profile",
+      "admin": "Admin"
+    },
+    "logout": "Logout"
+  },
+  "profileSetup": {
+    "title": "Set up your academic profile",
+    "subtitle": "Choose your university path so Cortex can tailor notes and resources.",
+    "fields": {
+      "university": "University",
+      "college": "College",
+      "major": "Major",
+      "yearLevel": "Year level",
+      "preferredLanguage": "Preferred language"
+    },
+    "placeholders": {
+      "university": "Select university",
+      "college": "Select college",
+      "major": "Select major",
+      "yearLevel": "Select year level"
+    },
+    "language": {
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "yearOption": "Year {level}",
+    "save": "Save profile setup",
+    "errors": {
+      "generic": "Failed to save your profile. Please try again."
+    }
+  },
+  "notesPage": {
+    "title": "Notes workspace",
+    "subtitle": "Create, organize, and connect your notes from one place.",
+    "empty": {
+      "title": "Your notes dashboard is ready",
+      "description": "Start writing in the editor now while the full dashboard features are being wired."
+    },
+    "actions": {
+      "openEditor": "Open editor",
+      "completeProfile": "Complete profile setup"
+    }
+  }
+}
