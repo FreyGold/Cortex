@@ -86,3 +86,17 @@ export function suggestTags(accessToken: string, noteId: string) {
     },
   );
 }
+
+export function askGeneralAI(
+  accessToken: string,
+  input: { question: string },
+) {
+  return apiRequest<{ question: string; answer: string; model: string }>(
+    "/api/ai/general",
+    {
+      method: "POST",
+      headers: authHeader(accessToken),
+      body: input,
+    },
+  );
+}

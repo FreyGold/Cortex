@@ -3,8 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Sparkle } from "@phosphor-icons/react";
+import { useState } from "react";
+import { GeneralAiDrawer } from "@/components/ai/general-ai-drawer";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -21,6 +25,7 @@ const navItems = [
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const t = useTranslations("shell");
+  const [aiOpen, setAiOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,6 +60,15 @@ export function AppShell({ children }: AppShellProps) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden md:inline-flex"
+              onClick={() => setAiOpen(true)}
+            >
+              <Sparkle className="size-3.5" />
+              {t("ai.open")}
+            </Button>
             <ThemeToggle />
             <LanguageSwitcher />
             <Link
@@ -68,6 +82,7 @@ export function AppShell({ children }: AppShellProps) {
       </header>
 
       <div className="pb-20 md:pb-6">{children}</div>
+      <GeneralAiDrawer open={aiOpen} onOpenChange={setAiOpen} />
 
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 px-2 py-2 backdrop-blur md:hidden">
         <div className="grid grid-cols-4 gap-1">
@@ -91,6 +106,14 @@ export function AppShell({ children }: AppShellProps) {
           })}
         </div>
       </nav>
+      <Button
+        className="fixed right-4 bottom-20 z-50 md:hidden"
+        size="icon"
+        onClick={() => setAiOpen(true)}
+        aria-label={t("ai.open")}
+      >
+        <Sparkle className="size-4" />
+      </Button>
     </div>
   );
 }

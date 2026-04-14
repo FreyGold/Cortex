@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getSupabaseUserClient } from "../lib/supabase-admin";
 
 export async function adminMiddleware(
   req: Request,
@@ -7,18 +7,13 @@ export async function adminMiddleware(
   next: NextFunction,
 ) {
   const userId = req.user?.id;
-  if (!userId) {
+  const accessToken = req.user?.accessToken;
+  if (!userId || !accessToken) {
     return res.status(401).json({ error: "Unauthorized request." });
   }
 
-  let supabaseAdmin;
-  try {
-    supabaseAdmin = getSupabaseAdmin();
-  } catch (error) {
-    return res.status(500).json({ error: (error as Error).message });
-  }
-
-  const { data, error } = await supabaseAdmin
+  const supabase = getSupabaseUserClient(accessToken);
+  const { data, error } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", userId)

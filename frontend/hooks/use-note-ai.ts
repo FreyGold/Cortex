@@ -2,6 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import {
+  askGeneralAI,
   askNote,
   embedNote,
   generateSummary,
@@ -63,6 +64,15 @@ export function useSuggestTags(noteId: string) {
     mutationFn: async () => {
       const token = await getAccessToken();
       return suggestTags(token, noteId);
+    },
+  });
+}
+
+export function useGeneralAiAsk() {
+  return useMutation({
+    mutationFn: async (question: string) => {
+      const token = await getAccessToken();
+      return askGeneralAI(token, { question });
     },
   });
 }

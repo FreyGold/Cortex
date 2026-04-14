@@ -51,6 +51,8 @@ const MAX_CHUNK_CHARS = 1200;
 const DEFAULT_THRESHOLD = 0.5;
 const DEFAULT_MATCH_COUNT = 10;
 const DEFAULT_ASK_MATCH_COUNT = 6;
+const GENERAL_AI_SYSTEM_PROMPT =
+  "You are a helpful academic assistant. Give clean, accurate answers with no gibberish, no unfinished headings, and no filler. Provide complete answers by default (not short summaries), and make sure the response ends cleanly. Match the user's language when possible.";
 
 let featureExtractorPromise: Promise<FeatureExtractor> | null = null;
 
@@ -432,6 +434,67 @@ function rerankSearchMatches(query: string, matches: SearchMatch[], limit: numbe
   return selected;
 }
 
+async function askGeminiGeneral(question: string) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing GEMINI_API_KEY in backend environment.");
+  }
+
+  const model = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [
+            {
+              text: GENERAL_AI_SYSTEM_PROMPT,
+            },
+          ],
+        },
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: question }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.35,
+          topP: 0.9,
+        },
+      }),
+    },
+  );
+
+  const payload = (await response.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    error?: { message?: string };
+  };
+
+  if (!response.ok) {
+    throw new Error(payload.error?.message ?? "Gemini request failed.");
+  }
+
+  const answer =
+    payload.candidates?.[0]?.content?.parts
+      ?.map((part) => part.text ?? "")
+      .join("")
+      .replace(/\s+\n/g, "\n")
+      .replace(/[ \t]{2,}/g, " ")
+      .trim() ?? "";
+
+  if (!answer) {
+    throw new Error("Gemini returned an empty response.");
+  }
+
+  return { answer, model };
+}
+
 async function getOwnedNote(noteId: string, accessToken: string) {
   const supabase = getSupabaseUserClient(accessToken);
   const { data, error } = await supabase
@@ -704,6 +767,147 @@ aiRouter.post("/notes/:id/ask", authMiddleware, async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ error: toErrorMessage(error) });
+  }
+});
+
+aiRouter.post("/ai/general", authMiddleware, async (req, res) => {
+  const userId = req.user?.id;
+  const { question } = req.body as { question?: string };
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized request." });
+  }
+
+  if (!question || question.trim().length < 2) {
+    return res
+      .status(400)
+      .json({ error: "Question is required and must be at least 2 characters." });
+  }
+
+  try {
+    const result = await askGeminiGeneral(question.trim());
+    return res.status(200).json({
+      question: question.trim(),
+      answer: result.answer,
+      model: result.model,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: toErrorMessage(error) });
+  }
+});
+
+aiRouter.post("/ai/general/stream", authMiddleware, async (req, res) => {
+  const userId = req.user?.id;
+  const { question } = req.body as { question?: string };
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized request." });
+  }
+
+  if (!question || question.trim().length < 2) {
+    return res
+      .status(400)
+      .json({ error: "Question is required and must be at least 2 characters." });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: "Missing GEMINI_API_KEY in backend environment." });
+  }
+
+  const model = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
+
+  try {
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: GENERAL_AI_SYSTEM_PROMPT }],
+          },
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: question.trim() }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.35,
+            topP: 0.9,
+          },
+        }),
+      },
+    );
+
+    if (!geminiResponse.ok) {
+      const payload = (await geminiResponse.json().catch(() => null)) as
+        | { error?: { message?: string } }
+        | null;
+      return res.status(500).json({
+        error: payload?.error?.message ?? "Gemini stream request failed.",
+      });
+    }
+
+    if (!geminiResponse.body) {
+      return res.status(500).json({ error: "Gemini stream body is empty." });
+    }
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    const reader = geminiResponse.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let fullText = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("data:")) continue;
+        const jsonPayload = trimmed.slice(5).trim();
+        if (!jsonPayload || jsonPayload === "[DONE]") continue;
+
+        const parsed = JSON.parse(jsonPayload) as {
+          candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+        };
+        const textChunk =
+          parsed.candidates?.[0]?.content?.parts
+            ?.map((part) => part.text ?? "")
+            .join("") ?? "";
+        if (!textChunk) continue;
+
+        const delta = textChunk.startsWith(fullText)
+          ? textChunk.slice(fullText.length)
+          : textChunk;
+        if (!delta) continue;
+
+        fullText = textChunk.startsWith(fullText) ? textChunk : `${fullText}${delta}`;
+        res.write(`data: ${JSON.stringify({ delta })}\n\n`);
+      }
+    }
+
+    res.write(`data: ${JSON.stringify({ done: true, model })}\n\n`);
+    return res.end();
+  } catch (error) {
+    if (!res.headersSent) {
+      return res.status(500).json({ error: toErrorMessage(error) });
+    }
+    res.write(`data: ${JSON.stringify({ error: toErrorMessage(error), done: true })}\n\n`);
+    return res.end();
   }
 });
 
