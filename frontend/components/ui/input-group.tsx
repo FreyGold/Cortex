@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
@@ -16,10 +16,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function InputGroupAddon({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+function InputGroupAddon({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="input-group-addon"

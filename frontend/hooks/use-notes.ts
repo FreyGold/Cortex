@@ -18,6 +18,7 @@ type FolderItem = {
   id: string;
   name: string;
   color: string | null;
+  parent_id: string | null;
 };
 
 type TagItem = {
@@ -65,13 +66,15 @@ export function useNotesDashboard() {
       const [notesRes, foldersRes, tagsRes] = await Promise.all([
         supabase
           .from("notes")
-          .select("id,title,content_text,summary,folder_id,is_pinned,updated_at,created_at")
+          .select(
+            "id,title,content_text,summary,folder_id,is_pinned,updated_at,created_at",
+          )
           .eq("user_id", userId)
           .eq("is_archived", false)
           .order("updated_at", { ascending: false }),
         supabase
           .from("folders")
-          .select("id,name,color")
+          .select("id,name,color,parent_id")
           .eq("user_id", userId)
           .order("name", { ascending: true }),
         supabase
@@ -179,7 +182,7 @@ export function useNoteDetail(noteId: string) {
           .maybeSingle(),
         supabase
           .from("folders")
-          .select("id,name,color")
+          .select("id,name,color,parent_id")
           .eq("user_id", userId)
           .order("name", { ascending: true }),
         supabase
@@ -199,10 +202,12 @@ export function useNoteDetail(noteId: string) {
       if (tagsRes.error) throw new Error(tagsRes.error.message);
       if (noteTagsRes.error) throw new Error(noteTagsRes.error.message);
 
-      const normalizedNoteTags = ((noteTagsRes.data ?? []) as Array<{
-        tag_id: string;
-        tags: TagItem | TagItem[] | null;
-      }>).map((item) => ({
+      const normalizedNoteTags = (
+        (noteTagsRes.data ?? []) as Array<{
+          tag_id: string;
+          tags: TagItem | TagItem[] | null;
+        }>
+      ).map((item) => ({
         tag_id: item.tag_id,
         tags: Array.isArray(item.tags) ? (item.tags[0] ?? null) : item.tags,
       }));
@@ -229,7 +234,11 @@ export function useUpdateNote(noteId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: { title?: string; html?: string; folderId?: string | null }) => {
+    mutationFn: async (input: {
+      title?: string;
+      html?: string;
+      folderId?: string | null;
+    }) => {
       const supabase = createClient();
       const userId = await getCurrentUserId();
       const updatePayload: Record<string, unknown> = {
@@ -241,9 +250,13 @@ export function useUpdateNote(noteId: string) {
       }
       if (typeof input.html === "string") {
         updatePayload.content = { html: input.html };
-        updatePayload.content_text = input.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        updatePayload.content_text = input.html
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
         updatePayload.word_count = updatePayload.content_text
-          ? String(updatePayload.content_text).split(/\s+/).filter(Boolean).length
+          ? String(updatePayload.content_text).split(/\s+/).filter(Boolean)
+              .length
           : 0;
       }
       if (input.folderId !== undefined) {
@@ -278,8 +291,13 @@ export function useUpdateNoteTags(noteId: string) {
       if (deleteError) throw new Error(deleteError.message);
 
       if (tagIds.length > 0) {
-        const rows = tagIds.map((tagId) => ({ note_id: noteId, tag_id: tagId }));
-        const { error: insertError } = await supabase.from("note_tags").insert(rows);
+        const rows = tagIds.map((tagId) => ({
+          note_id: noteId,
+          tag_id: tagId,
+        }));
+        const { error: insertError } = await supabase
+          .from("note_tags")
+          .insert(rows);
         if (insertError) throw new Error(insertError.message);
       }
     },
@@ -297,7 +315,9 @@ export function useNoteShares(noteId: string) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("note_shares")
-        .select("id,note_id,shared_with_user_id,share_token,can_edit,created_at,expires_at")
+        .select(
+          "id,note_id,shared_with_user_id,share_token,can_edit,created_at,expires_at",
+        )
         .eq("note_id", noteId)
         .order("created_at", { ascending: false });
 
@@ -336,7 +356,9 @@ export function useCreateNoteShare(noteId: string) {
       const { data, error } = await supabase
         .from("note_shares")
         .insert(payload)
-        .select("id,note_id,shared_with_user_id,share_token,can_edit,created_at,expires_at")
+        .select(
+          "id,note_id,shared_with_user_id,share_token,can_edit,created_at,expires_at",
+        )
         .single();
 
       if (error) throw new Error(error.message);

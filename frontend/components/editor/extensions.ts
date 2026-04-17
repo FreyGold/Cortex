@@ -1,27 +1,36 @@
 "use client";
 
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import Highlight from "@tiptap/extension-highlight";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import { TextStyle, Color } from "@tiptap/extension-text-style";
-import NodeRange from "@tiptap/extension-node-range";
+import { DotsSixVertical } from "@phosphor-icons/react";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import {
+  Details,
+  DetailsContent,
+  DetailsSummary,
+} from "@tiptap/extension-details";
 import DragHandle from "@tiptap/extension-drag-handle";
-import { Details, DetailsSummary, DetailsContent } from "@tiptap/extension-details";
-import Typography from "@tiptap/extension-typography";
+import Highlight from "@tiptap/extension-highlight";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
+import NodeRange from "@tiptap/extension-node-range";
+import Placeholder from "@tiptap/extension-placeholder";
 import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { Table, TableRow, TableHeader, TableCell } from "@tiptap/extension-table";
+import {
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@tiptap/extension-table";
+import TaskItem from "@tiptap/extension-task-item";
+import TaskList from "@tiptap/extension-task-list";
+import TextAlign from "@tiptap/extension-text-align";
+import { Color, TextStyle } from "@tiptap/extension-text-style";
+import Typography from "@tiptap/extension-typography";
+import Underline from "@tiptap/extension-underline";
+import StarterKit from "@tiptap/starter-kit";
 import { common, createLowlight } from "lowlight";
-import { DotsSixVertical } from "@phosphor-icons/react";
-import { createRoot } from "react-dom/client";
 import { createElement } from "react";
+import { createRoot } from "react-dom/client";
 
 const lowlight = createLowlight(common);
 const nestedDragRules = [
@@ -59,7 +68,8 @@ export const editorExtensions = [
   Link.configure({
     openOnClick: false,
     HTMLAttributes: {
-      class: "text-brand-text underline underline-offset-4 hover:text-brand cursor-pointer",
+      class:
+        "text-brand-text underline underline-offset-4 hover:text-brand cursor-pointer",
     },
   }),
   Image.configure({
@@ -84,9 +94,14 @@ export const editorExtensions = [
       const dragButton = document.createElement("button");
       dragButton.classList.add("drag-handle-drag");
       dragButton.type = "button";
-      
+
       const root = createRoot(dragButton);
-      root.render(createElement(DotsSixVertical, { className: "size-4", weight: "regular" }));
+      root.render(
+        createElement(DotsSixVertical, {
+          className: "size-4",
+          weight: "regular",
+        }),
+      );
 
       element.appendChild(dragButton);
       return element;
@@ -95,7 +110,7 @@ export const editorExtensions = [
       defaultRules: false,
       rules: nestedDragRules,
       edgeDetection: "none",
-    }
+    },
   }),
   Details.configure({
     openClassName: "is-open",
@@ -104,7 +119,8 @@ export const editorExtensions = [
     },
     renderToggleButton: ({ element, isOpen, node }) => {
       element.classList.add("details-toggle");
-      element.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>';
+      element.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>';
     },
   }),
   DetailsSummary,

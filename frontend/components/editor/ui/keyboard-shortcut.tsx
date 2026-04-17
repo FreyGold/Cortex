@@ -37,10 +37,8 @@ export function KeyboardShortcutBadge({
     <kbd
       className={cn(
         "px-2 py-1 rounded text-xs font-mono transition-colors",
-        variant === "active"
-          ? "bg-primary/15 text-primary"
-          : "bg-muted",
-        className
+        variant === "active" ? "bg-primary/15 text-primary" : "bg-muted",
+        className,
       )}
     >
       {formatShortcut(shortcut)}

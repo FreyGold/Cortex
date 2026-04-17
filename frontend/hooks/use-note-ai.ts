@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import {
   askGeneralAI,
   askNote,
+  getNoteConversation,
   embedNote,
   generateSummary,
   searchNotes,
@@ -34,7 +35,11 @@ export function useEmbedNote() {
 
 export function useSemanticSearch() {
   return useMutation({
-    mutationFn: async (input: { query: string; threshold?: number; limit?: number }) => {
+    mutationFn: async (input: {
+      query: string;
+      threshold?: number;
+      limit?: number;
+    }) => {
       const token = await getAccessToken();
       return searchNotes(token, input);
     },
@@ -43,9 +48,21 @@ export function useSemanticSearch() {
 
 export function useAskNote(noteId: string) {
   return useMutation({
-    mutationFn: async (question: string) => {
+    mutationFn: async (
+      input: string | { question?: string; messages?: any[] },
+    ) => {
       const token = await getAccessToken();
-      return askNote(token, noteId, { question, topK: 6 });
+      const payload = typeof input === "string" ? { question: input } : input;
+      return askNote(token, noteId, { ...payload, topK: 10 });
+    },
+  });
+}
+
+export function useNoteConversation(noteId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getAccessToken();
+      return getNoteConversation(token, noteId);
     },
   });
 }

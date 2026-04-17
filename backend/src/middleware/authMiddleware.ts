@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getSupabaseAuth } from "../lib/supabase-auth";
 
 export async function authMiddleware(
   req: Request,
@@ -17,14 +17,14 @@ export async function authMiddleware(
     return res.status(401).json({ error: "Missing bearer token" });
   }
 
-  let supabaseAdmin;
+  let supabaseAuth;
   try {
-    supabaseAdmin = getSupabaseAdmin();
+    supabaseAuth = getSupabaseAuth();
   } catch (error) {
     return res.status(500).json({ error: (error as Error).message });
   }
 
-  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  const { data, error } = await supabaseAuth.auth.getUser(token);
   if (error || !data.user) {
     return res.status(401).json({ error: "Invalid or expired token" });
   }

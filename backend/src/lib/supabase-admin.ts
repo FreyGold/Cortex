@@ -9,10 +9,7 @@ export function getSupabaseAdmin() {
 
   const supabaseUrl =
     process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl) {
     throw new Error(
@@ -22,7 +19,7 @@ export function getSupabaseAdmin() {
 
   if (!supabaseKey) {
     throw new Error(
-      "Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY)",
+      "Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY",
     );
   }
 

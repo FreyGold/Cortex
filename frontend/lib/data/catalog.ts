@@ -1,20 +1,34 @@
 import { createClient } from "@/lib/supabase/server";
 
-type Major = {
+export type University = {
   id: string;
+  name_en: string;
+  slug: string;
+};
+
+export type College = {
+  id: string;
+  university_id: string;
+  name_en: string;
+  slug: string;
+};
+
+export type Major = {
+  id: string;
+  college_id: string;
   name_en: string;
   slug: string;
   color: string | null;
   icon: string | null;
 };
 
-type YearLevel = {
+export type YearLevel = {
   id: string;
   level: number;
   name_en: string;
 };
 
-type Course = {
+export type Course = {
   id: string;
   major_id: string;
   year_level_id: string | null;
@@ -33,6 +47,7 @@ export type Resource = {
   id: string;
   course_id: string;
   title_en: string;
+  description: string | null;
   type: "lecture" | "exam" | "assignment" | "other";
   exam_type: "midterm" | "final" | "quiz" | null;
   doctor_id: string | null;
@@ -49,28 +64,43 @@ export type Resource = {
 export async function getCatalogData() {
   const supabase = await createClient();
 
-  const [majorsRes, yearLevelsRes, coursesRes] = await Promise.all([
-    supabase
-      .from("majors")
-      .select("id,name_en,slug,color,icon")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("name_en", { ascending: true }),
-    supabase
-      .from("year_levels")
-      .select("id,level,name_en")
-      .order("level", { ascending: true }),
-    supabase
-      .from("courses")
-      .select("id,major_id,year_level_id,name_en,code,description,credits")
-      .order("name_en", { ascending: true }),
-  ]);
+  const [universitiesRes, collegesRes, majorsRes, yearLevelsRes, coursesRes] =
+    await Promise.all([
+      supabase
+        .from("universities")
+        .select("id,name_en,slug")
+        .eq("is_active", true)
+        .order("name_en", { ascending: true }),
+      supabase
+        .from("colleges")
+        .select("id,university_id,name_en,slug")
+        .eq("is_active", true)
+        .order("name_en", { ascending: true }),
+      supabase
+        .from("majors")
+        .select("id,college_id,name_en,slug,color,icon")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("name_en", { ascending: true }),
+      supabase
+        .from("year_levels")
+        .select("id,level,name_en")
+        .order("level", { ascending: true }),
+      supabase
+        .from("courses")
+        .select("id,major_id,year_level_id,name_en,code,description,credits")
+        .order("name_en", { ascending: true }),
+    ]);
 
+  if (universitiesRes.error) throw universitiesRes.error;
+  if (collegesRes.error) throw collegesRes.error;
   if (majorsRes.error) throw majorsRes.error;
   if (yearLevelsRes.error) throw yearLevelsRes.error;
   if (coursesRes.error) throw coursesRes.error;
 
   return {
+    universities: universitiesRes.data as University[],
+    colleges: collegesRes.data as College[],
     majors: majorsRes.data as Major[],
     yearLevels: yearLevelsRes.data as YearLevel[],
     courses: coursesRes.data as Course[],

@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { Sparkle } from "@phosphor-icons/react";
-import { useTranslations } from "next-intl";
+import { useMessages } from "next-intl";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { getBackendUrl } from "@/lib/api/backend-url";
+import { getMessage } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/client";
 
 type ChatItem = {
@@ -24,7 +31,7 @@ type GeneralAiDrawerProps = {
 };
 
 export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
-  const t = useTranslations("shell.ai");
+  const translationMessages = useMessages();
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<ChatItem[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -52,10 +59,13 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
     });
 
     if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as
-        | { error?: string; message?: string }
-        | null;
-      throw new Error(payload?.error ?? payload?.message ?? "Failed to stream response.");
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+        message?: string;
+      } | null;
+      throw new Error(
+        payload?.error ?? payload?.message ?? "Failed to stream response.",
+      );
     }
 
     if (!response.body) {
@@ -145,22 +155,34 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="right-0 left-auto top-0 h-screen w-[min(100vw,430px)] max-w-none translate-x-0 translate-y-0 rounded-none border-l border-border p-0"
-      >
+      <DialogContent className="right-0 left-auto top-0 h-screen w-[min(100vw,430px)] max-w-none translate-x-0 translate-y-0 rounded-none border-l border-border p-0">
         <DialogHeader className="border-b border-border px-4 py-3">
           <DialogTitle className="flex items-center gap-2">
             <Sparkle className="size-4" />
-            {t("title")}
+            {getMessage(
+              translationMessages,
+              "shell.ai.title",
+              "General AI Assistant",
+            )}
           </DialogTitle>
-          <DialogDescription>{t("subtitle")}</DialogDescription>
+          <DialogDescription>
+            {getMessage(
+              translationMessages,
+              "shell.ai.subtitle",
+              "Ask about any topic, not only your notes.",
+            )}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex h-[calc(100vh-140px)] flex-col">
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
             {messages.length === 0 ? (
               <p className="rounded-none border border-dashed border-border p-3 text-xs text-muted-foreground">
-                {t("empty")}
+                {getMessage(
+                  translationMessages,
+                  "shell.ai.empty",
+                  "Start with a question and I will respond here.",
+                )}
               </p>
             ) : (
               messages.map((message) => (
@@ -173,12 +195,24 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
                   }`}
                 >
                   <p className="mb-1 text-[11px] font-semibold text-muted-foreground">
-                    {message.role === "user" ? t("you") : t("assistant")}
+                    {message.role === "user"
+                      ? getMessage(translationMessages, "shell.ai.you", "You")
+                      : getMessage(
+                          translationMessages,
+                          "shell.ai.assistant",
+                          "Assistant",
+                        )}
                   </p>
                   {message.pending ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <span className="inline-block size-3 animate-spin rounded-full border-2 border-border border-t-primary" />
-                      <span className="text-xs">{t("sending")}</span>
+                      <span className="text-xs">
+                        {getMessage(
+                          translationMessages,
+                          "shell.ai.sending",
+                          "Sending...",
+                        )}
+                      </span>
                     </div>
                   ) : null}
                   {!message.pending && message.role === "assistant" ? (
@@ -199,13 +233,32 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
             <Textarea
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
-              placeholder={t("placeholder")}
+              placeholder={getMessage(
+                translationMessages,
+                "shell.ai.placeholder",
+                "Ask anything...",
+              )}
               className="min-h-24 resize-none"
             />
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] text-muted-foreground">{t("hint")}</p>
-              <Button onClick={send} disabled={question.trim().length < 2 || isStreaming}>
-                {isStreaming ? t("sending") : t("send")}
+              <p className="text-[11px] text-muted-foreground">
+                {getMessage(
+                  translationMessages,
+                  "shell.ai.hint",
+                  "Answers are generated by Gemini.",
+                )}
+              </p>
+              <Button
+                onClick={send}
+                disabled={question.trim().length < 2 || isStreaming}
+              >
+                {isStreaming
+                  ? getMessage(
+                      translationMessages,
+                      "shell.ai.sending",
+                      "Sending...",
+                    )
+                  : getMessage(translationMessages, "shell.ai.send", "Send")}
               </Button>
             </div>
           </div>

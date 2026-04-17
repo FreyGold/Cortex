@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getSupabaseAuth } from "../lib/supabase-auth";
 
 export const healthRouter = Router();
 
 healthRouter.get("/health", async (_req, res) => {
-  let supabaseAdmin;
+  let supabaseAuth;
   try {
-    supabaseAdmin = getSupabaseAdmin();
+    supabaseAuth = getSupabaseAuth();
   } catch (error) {
     return res.status(500).json({
       status: "error",
@@ -14,7 +14,7 @@ healthRouter.get("/health", async (_req, res) => {
     });
   }
 
-  const { error } = await supabaseAdmin
+  const { error } = await supabaseAuth
     .from("academic_years")
     .select("id")
     .limit(1);

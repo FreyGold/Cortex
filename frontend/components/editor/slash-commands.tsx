@@ -1,32 +1,32 @@
 "use client";
 
-import type { Editor } from "@tiptap/react";
 import {
-  TextB,
-  TextItalic,
-  TextUnderline,
-  TextStrikethrough,
   Code,
-  Highlighter,
-  Palette,
-  ListBullets,
-  ListNumbers,
-  Quotes,
-  TextAlignLeft,
-  TextAlignCenter,
-  TextAlignRight,
-  Link,
-  Image,
   CodeBlock,
-  Table,
+  Highlighter,
+  Image,
+  Link,
+  ListBullets,
   ListChecks,
-  TextSuperscript,
-  TextSubscript,
+  ListNumbers,
   Minus,
+  Palette,
+  Quotes,
+  Table,
+  TextAlignCenter,
+  TextAlignLeft,
+  TextAlignRight,
+  TextB,
   TextHOne,
-  TextHTwo,
   TextHThree,
+  TextHTwo,
+  TextItalic,
+  TextStrikethrough,
+  TextSubscript,
+  TextSuperscript,
+  TextUnderline,
 } from "@phosphor-icons/react";
+import type { Editor } from "@tiptap/react";
 
 export interface SlashCommand {
   id: string;
@@ -324,7 +324,7 @@ export const slashCommands: SlashCommand[] = [
 
 export function filterCommands(
   commands: SlashCommand[],
-  query: string
+  query: string,
 ): SlashCommand[] {
   if (!query) return commands;
   const lowerQuery = query.toLowerCase();
@@ -332,12 +332,12 @@ export function filterCommands(
     (cmd) =>
       cmd.title.toLowerCase().includes(lowerQuery) ||
       cmd.description.toLowerCase().includes(lowerQuery) ||
-      cmd.keywords.some((k) => k.includes(lowerQuery))
+      cmd.keywords.some((k) => k.includes(lowerQuery)),
   );
 }
 
 export function groupCommandsByCategory(
-  commands: SlashCommand[]
+  commands: SlashCommand[],
 ): Record<string, SlashCommand[]> {
   return commands.reduce(
     (acc, cmd) => {
@@ -347,6 +347,6 @@ export function groupCommandsByCategory(
       acc[cmd.category].push(cmd);
       return acc;
     },
-    {} as Record<string, SlashCommand[]>
+    {} as Record<string, SlashCommand[]>,
   );
 }

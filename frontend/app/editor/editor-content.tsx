@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NotionEditor } from "@/components/editor";
+import { EDITOR_DEMO_CONTENT } from "@/components/editor/page/editor-demo-content";
+import { EditorFooter } from "@/components/editor/page/editor-footer";
+import { EditorHeader } from "@/components/editor/page/editor-header";
+import { EDITOR_SHORTCUTS } from "@/components/editor/page/editor-shortcuts";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { EditorHeader } from "@/components/editor/page/editor-header";
-import { EditorFooter } from "@/components/editor/page/editor-footer";
-import { EDITOR_SHORTCUTS } from "@/components/editor/page/editor-shortcuts";
-import { EDITOR_DEMO_CONTENT } from "@/components/editor/page/editor-demo-content";
 
 export function EditorPageContent() {
   const [content, setContent] = useState(EDITOR_DEMO_CONTENT);
@@ -63,10 +63,12 @@ export function EditorPageContent() {
         />
 
         {/* Main Editor Area */}
-        <main 
+        <main
           className={cn(
             "flex-1 px-4 py-8 transition-all duration-300",
-            isFullWidth ? "w-full max-w-none px-8" : "container mx-auto max-w-4xl"
+            isFullWidth
+              ? "w-full max-w-none px-8"
+              : "container mx-auto max-w-4xl",
           )}
         >
           <NotionEditor

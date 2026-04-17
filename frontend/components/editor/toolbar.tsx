@@ -1,14 +1,40 @@
 "use client";
 
-import type { Editor } from "@tiptap/react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  ArrowClockwise,
+  ArrowCounterClockwise,
+  CaretDown,
+  CaretRight,
+  Code,
+  CodeBlock,
+  Highlighter,
+  Image,
+  Link,
+  LinkBreak,
+  ListBullets,
+  ListChecks,
+  ListNumbers,
+  Minus,
+  Palette,
+  Paragraph,
+  Quotes,
+  Table,
+  TextAlignCenter,
+  TextAlignJustify,
+  TextAlignLeft,
+  TextAlignRight,
+  TextB,
+  TextHOne,
+  TextHThree,
+  TextHTwo,
+  TextItalic,
+  TextStrikethrough,
+  TextSubscript,
+  TextSuperscript,
+  TextUnderline,
+} from "@phosphor-icons/react";
+import type { Editor } from "@tiptap/react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,39 +42,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import {
-  TextB,
-  TextItalic,
-  TextUnderline,
-  TextStrikethrough,
-  Code,
-  Highlighter,
-  ListBullets,
-  ListNumbers,
-  Quotes,
-  TextAlignLeft,
-  TextAlignCenter,
-  TextAlignRight,
-  TextAlignJustify,
-  Link,
-  LinkBreak,
-  Image,
-  CodeBlock,
-  Table,
-  ListChecks,
-  TextHOne,
-  TextHTwo,
-  TextHThree,
-  Paragraph,
-  CaretDown,
-  ArrowClockwise,
-  ArrowCounterClockwise,
-  Minus,
-  TextSuperscript,
-  TextSubscript,
-  Palette,
-  CaretRight,
-} from "@phosphor-icons/react";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -302,7 +302,7 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
           disabled={button.disabled}
           className={cn(
             "h-7 w-7 rounded-sm",
-            button.isActive && "bg-accent text-accent-foreground"
+            button.isActive && "bg-accent text-accent-foreground",
           )}
         >
           {button.icon}
@@ -312,7 +312,9 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
         <p>
           {button.label}
           {button.shortcut && (
-            <span className="ml-2 text-muted-foreground">{button.shortcut}</span>
+            <span className="ml-2 text-muted-foreground">
+              {button.shortcut}
+            </span>
           )}
         </p>
       </TooltipContent>
@@ -325,7 +327,7 @@ export function EditorToolbar({ editor, className }: EditorToolbarProps) {
     <div
       className={cn(
         "flex flex-wrap items-center gap-0.5 rounded-lg border border-border bg-card px-2 py-1.5",
-        className
+        className,
       )}
     >
       {/* Block type dropdown */}

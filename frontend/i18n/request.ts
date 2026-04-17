@@ -1,6 +1,6 @@
-import { defaultLocale, isLocale, localeCookieName } from "@/lib/i18n";
 import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
+import { defaultLocale, isLocale, localeCookieName } from "@/lib/i18n";
 
 export default getRequestConfig(async () => {
   const localeFromCookie = (await cookies()).get(localeCookieName)?.value;

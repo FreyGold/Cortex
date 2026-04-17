@@ -1,7 +1,22 @@
 "use client";
 
+import {
+  Code,
+  Highlighter,
+  Link,
+  LinkBreak,
+  ListBullets,
+  ListNumbers,
+  Quotes,
+  TextAlignCenter,
+  TextAlignLeft,
+  TextAlignRight,
+  TextB,
+  TextItalic,
+  TextStrikethrough,
+  TextUnderline,
+} from "@phosphor-icons/react";
 import type { Editor } from "@tiptap/react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -9,22 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  TextB,
-  TextItalic,
-  TextUnderline,
-  TextStrikethrough,
-  Code,
-  Highlighter,
-  ListBullets,
-  ListNumbers,
-  Quotes,
-  TextAlignLeft,
-  TextAlignCenter,
-  TextAlignRight,
-  Link,
-  LinkBreak,
-} from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 
 interface BubbleMenuContentProps {
   editor: Editor;
@@ -157,7 +157,7 @@ export function BubbleMenuContent({ editor }: BubbleMenuContentProps) {
           disabled={button.disabled}
           className={cn(
             "h-7 w-7 rounded-sm",
-            button.isActive && "bg-accent text-accent-foreground"
+            button.isActive && "bg-accent text-accent-foreground",
           )}
         >
           {button.icon}
@@ -167,7 +167,9 @@ export function BubbleMenuContent({ editor }: BubbleMenuContentProps) {
         <p>
           {button.label}
           {button.shortcut && (
-            <span className="ml-2 text-muted-foreground">{button.shortcut}</span>
+            <span className="ml-2 text-muted-foreground">
+              {button.shortcut}
+            </span>
           )}
         </p>
       </TooltipContent>

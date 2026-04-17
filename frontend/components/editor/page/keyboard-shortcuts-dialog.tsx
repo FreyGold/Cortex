@@ -1,6 +1,13 @@
 "use client";
 
+import { Keyboard } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import {
+  KeyboardShortcutBadge,
+  SelectedRow,
+  SelectionIndicator,
+} from "@/components/editor/ui";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,15 +16,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Keyboard } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import type { EditorShortcut } from "./editor-shortcuts";
-import {
-  KeyboardShortcutBadge,
-  SelectionIndicator,
-  SelectedRow,
-} from "@/components/editor/ui";
 
 interface KeyboardShortcutsDialogProps {
   open: boolean;
@@ -46,7 +46,9 @@ export function KeyboardShortcutsDialog({
         setSelectedIndex((prev) => (prev + 1) % shortcuts.length);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSelectedIndex((prev) => (prev - 1 + shortcuts.length) % shortcuts.length);
+        setSelectedIndex(
+          (prev) => (prev - 1 + shortcuts.length) % shortcuts.length,
+        );
       }
     };
 
@@ -82,7 +84,7 @@ export function KeyboardShortcutsDialog({
                   <span
                     className={cn(
                       "text-sm transition-colors",
-                      isSelected && "text-primary font-medium"
+                      isSelected && "text-primary font-medium",
                     )}
                   >
                     {shortcut.description}

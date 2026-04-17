@@ -53,17 +53,24 @@ export function searchNotes(
 export function askNote(
   accessToken: string,
   noteId: string,
-  input: { question: string; topK?: number },
+  input: { question?: string; messages?: any[]; topK?: number },
 ) {
   return apiRequest<{
     noteId: string;
-    question: string;
     answer: string;
     references: AskReference[];
+    model?: string;
   }>(`/api/notes/${noteId}/ask`, {
     method: "POST",
     headers: authHeader(accessToken),
     body: input,
+  });
+}
+
+export function getNoteConversation(accessToken: string, noteId: string) {
+  return apiRequest<{ messages: any[] }>(`/api/notes/${noteId}/conversation`, {
+    method: "GET",
+    headers: authHeader(accessToken),
   });
 }
 
@@ -87,10 +94,7 @@ export function suggestTags(accessToken: string, noteId: string) {
   );
 }
 
-export function askGeneralAI(
-  accessToken: string,
-  input: { question: string },
-) {
+export function askGeneralAI(accessToken: string, input: { question: string }) {
   return apiRequest<{ question: string; answer: string; model: string }>(
     "/api/ai/general",
     {

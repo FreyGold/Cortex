@@ -1,18 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
-  FloppyDisk,
   ArrowLeft,
+  ArrowsInSimple,
+  ArrowsOutSimple,
+  Clock,
   DotsThree,
   Export,
-  Clock,
-  ArrowsOutSimple,
-  ArrowsInSimple,
+  FloppyDisk,
 } from "@phosphor-icons/react";
-import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import type { EditorShortcut } from "./editor-shortcuts";
+import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog";
 
 interface EditorHeaderProps {
   lastSaved: Date | null;
@@ -48,7 +48,9 @@ export function EditorHeader({
           </Link>
           <div className="flex items-center gap-2">
             <div className="size-6 rounded-[0.25rem] bg-primary flex items-center justify-center shadow-brand">
-              <span className="text-white font-bold text-xs leading-none">C</span>
+              <span className="text-white font-bold text-xs leading-none">
+                C
+              </span>
             </div>
             <span className="text-[0.9375rem] font-bold tracking-tight">
               {title}

@@ -1,14 +1,13 @@
 "use client";
 
+import { MagnifyingGlass, UserCheck, UserMinus } from "@phosphor-icons/react";
+import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useAdminUsers, useVerifyAdminUser } from "@/hooks/use-admin";
-import { CortexButton } from "@/components/ui/cortex-button";
-import {
-  CortexCard,
-  CortexCardContent,
-  CortexCardHeader,
-  CortexCardTitle,
-} from "@/components/ui/cortex-card";
 
 export function UsersManager() {
   const [queryDraft, setQueryDraft] = useState("");
@@ -19,9 +18,9 @@ export function UsersManager() {
   const users = useMemo(() => usersQuery.data?.users ?? [], [usersQuery.data]);
 
   return (
-    <CortexCard>
-      <CortexCardHeader className="space-y-3">
-        <CortexCardTitle>User verification</CortexCardTitle>
+    <Card className="shadow-none border-border/60">
+      <CardHeader className="space-y-4">
+        <CardTitle className="text-xl font-bold">User verification</CardTitle>
         <form
           className="flex gap-2"
           onSubmit={(event) => {
@@ -29,44 +28,79 @@ export function UsersManager() {
             setQuery(queryDraft.trim());
           }}
         >
-          <input
-            value={queryDraft}
-            onChange={(event) => setQueryDraft(event.target.value)}
-            placeholder="Search by name"
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-          />
-          <CortexButton type="submit" variant="outline" size="sm">
+          <div className="relative flex-1">
+            <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              value={queryDraft}
+              onChange={(event) => setQueryDraft(event.target.value)}
+              placeholder="Search by name..."
+              className="h-10 pl-9"
+            />
+          </div>
+          <Button type="submit" variant="secondary">
             Search
-          </CortexButton>
+          </Button>
         </form>
-      </CortexCardHeader>
-      <CortexCardContent className="space-y-3">
-        {usersQuery.isLoading ? <p className="text-sm text-muted-foreground">Loading users...</p> : null}
-        {usersQuery.isError ? (
-          <p className="text-sm text-destructive">
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {usersQuery.isLoading && (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+
+        {usersQuery.isError && (
+          <p className="text-center py-4 text-sm text-destructive font-medium border border-destructive/20 bg-destructive/5 rounded-lg">
             {(usersQuery.error as Error).message}
           </p>
-        ) : null}
+        )}
 
-        {users.map((user) => (
-          <div
-            key={user.id}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3"
-          >
-            <div>
-              <p className="text-sm font-semibold">{user.name ?? "Unnamed user"}</p>
-              <p className="text-xs text-muted-foreground">
-                {user.id} · role: {user.role}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                {user.is_verified ? "Verified" : "Not verified"}
-              </span>
-              <CortexButton
+        <div className="grid gap-3">
+          {users.map((user) => (
+            <div
+              key={user.id}
+              className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border/50 p-4 transition-colors hover:bg-muted/30"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold">
+                    {user.name ?? "Unnamed user"}
+                  </p>
+                  <Badge
+                    variant={
+                      user.is_verified
+                        ? "success"
+                        : user.verification_requested_at
+                          ? "axon"
+                          : "outline"
+                    }
+                    className="h-5 px-1.5 text-[10px] uppercase font-bold"
+                  >
+                    {user.is_verified
+                      ? "Verified"
+                      : user.verification_requested_at
+                        ? "Requested"
+                        : "Pending"}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground tracking-tight">
+                  ID: {user.id} <span className="mx-1 opacity-40">/</span> Role:{" "}
+                  {user.role}
+                </p>
+                {user.verification_requested_at && !user.is_verified ? (
+                  <p className="text-[11px] text-muted-foreground">
+                    Requested{" "}
+                    {new Date(
+                      user.verification_requested_at,
+                    ).toLocaleDateString()}
+                  </p>
+                ) : null}
+              </div>
+              <Button
                 size="sm"
-                variant={user.is_verified ? "outline" : "primary"}
-                loading={verifyMutation.isPending}
+                variant={user.is_verified ? "outline" : "default"}
+                className="h-8 gap-1.5"
+                disabled={verifyMutation.isPending}
                 onClick={() =>
                   verifyMutation.mutate({
                     userId: user.id,
@@ -74,16 +108,29 @@ export function UsersManager() {
                   })
                 }
               >
-                {user.is_verified ? "Unverify" : "Verify"}
-              </CortexButton>
+                {verifyMutation.isPending ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : user.is_verified ? (
+                  <UserMinus className="size-3.5" />
+                ) : (
+                  <UserCheck className="size-3.5" />
+                )}
+                {user.is_verified ? "Unverify" : "Verify User"}
+              </Button>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
         {!usersQuery.isLoading && !usersQuery.isError && users.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No users found.</p>
+          <div className="text-center py-12 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {query
+                ? `No users matched "${query}".`
+                : "No users available yet."}
+            </p>
+          </div>
         ) : null}
-      </CortexCardContent>
-    </CortexCard>
+      </CardContent>
+    </Card>
   );
 }

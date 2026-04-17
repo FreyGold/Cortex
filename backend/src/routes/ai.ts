@@ -689,11 +689,105 @@ aiRouter.post("/notes/search", authMiddleware, async (req, res) => {
   }
 });
 
+async function chatGeminiWithContext(
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+  context: string,
+  noteTitle: string,
+) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing GEMINI_API_KEY in backend environment.");
+  }
+
+  const model = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
+  
+  // Note: Gemini API uses "user" and "model" roles
+  const contents = messages.map(m => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }]
+  }));
+
+  const systemPrompt = `You are a helpful academic assistant research expert. Below is context from a user's note titled "${noteTitle}".
+Answer the user's questions using ONLY the provided context where possible. If the answer is not in the context, you can use your general knowledge but MUST clearly state "According to general knowledge..." vs "According to your notes...".
+Keep answers conversational, clear, and professional. Use markdown for lists and emphasis. Match the user's language.
+
+CONTEXT FROM NOTES:
+${context}`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-goog-api-key": apiKey,
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: systemPrompt }],
+        },
+        contents,
+        generationConfig: {
+          temperature: 0.45,
+          topP: 0.9,
+          maxOutputTokens: 2048,
+        },
+      }),
+    },
+  );
+
+  const payload = (await response.json()) as any;
+  if (!response.ok) {
+    throw new Error(payload.error?.message ?? "Gemini Chat request failed.");
+  }
+
+  const answer =
+    payload.candidates?.[0]?.content?.parts
+      ?.map((part: any) => part.text ?? "")
+      .join("")
+      .trim() ?? "";
+
+  if (!answer) {
+    throw new Error("Gemini returned no response.");
+  }
+
+  return { answer, model };
+}
+
+aiRouter.get("/notes/:id/conversation", authMiddleware, async (req, res) => {
+  const noteId = getRouteParam(req.params.id);
+  const userId = req.user?.id;
+  const accessToken = req.user?.accessToken;
+
+  if (!userId || !accessToken || !noteId || !isValidUuid(noteId)) {
+    return res.status(400).json({ error: "Invalid request." });
+  }
+
+  try {
+    const supabase = getSupabaseUserClient(accessToken);
+    const { data, error } = await supabase
+      .from("note_conversations")
+      .select("messages")
+      .eq("note_id", noteId)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return res.status(200).json({ messages: data?.messages ?? [] });
+  } catch (error) {
+    return res.status(500).json({ error: toErrorMessage(error) });
+  }
+});
+
 aiRouter.post("/notes/:id/ask", authMiddleware, async (req, res) => {
   const noteId = getRouteParam(req.params.id);
   const userId = req.user?.id;
   const accessToken = req.user?.accessToken;
-  const { question, topK } = req.body as { question?: string; topK?: number };
+  const { question, messages, topK } = req.body as { 
+    question?: string; 
+    messages?: Array<{ role: "user" | "assistant"; content: string }>;
+    topK?: number;
+  };
 
   if (!userId || !accessToken) {
     return res.status(401).json({ error: "Unauthorized request." });
@@ -703,14 +797,18 @@ aiRouter.post("/notes/:id/ask", authMiddleware, async (req, res) => {
     return res.status(400).json({ error: "Invalid note ID." });
   }
 
-  if (!question || question.trim().length < 4) {
+  // Use the last message if 'question' isn't provided explicitly
+  const currentQuestion = question || messages?.[messages.length - 1]?.content;
+
+  if (!currentQuestion || currentQuestion.trim().length < 2) {
     return res
       .status(400)
-      .json({ error: "Question is required and must be at least 4 characters." });
+      .json({ error: "No question or message history provided." });
   }
 
+  const history = messages || [{ role: "user", content: currentQuestion }];
   const requestedTopK =
-    typeof topK === "number" ? Math.trunc(clampNumber(topK, 1, 10)) : DEFAULT_ASK_MATCH_COUNT;
+    typeof topK === "number" ? Math.trunc(clampNumber(topK, 1, 15)) : 10;
 
   try {
     const note = await getOwnedNote(noteId, accessToken);
@@ -718,51 +816,73 @@ aiRouter.post("/notes/:id/ask", authMiddleware, async (req, res) => {
       return res.status(404).json({ error: "Note not found." });
     }
 
-    const queryEmbedding = await embedText(`query: ${question.trim()}`);
+    // Vector search for context
+    const queryEmbedding = await embedText(`query: ${currentQuestion.trim()}`);
     const supabase = getSupabaseUserClient(accessToken);
-    const { data, error } = await supabase.rpc("search_notes", {
+    const { data, error: searchError } = await supabase.rpc("search_notes", {
       query_embedding: toVectorLiteral(queryEmbedding),
       user_id_filter: userId,
-      match_threshold: 0.35,
+      match_threshold: 0.2,
       match_count: requestedTopK,
     });
 
-    if (error) {
-      return res.status(500).json({ error: `Search RPC failed: ${error.message}` });
+    if (searchError) {
+      return res.status(500).json({ error: `Context search failed: ${searchError.message}` });
     }
 
     const matches = ((data as SearchMatch[] | null) ?? []).filter(
       (item) => item.note_id === noteId,
     );
 
+    let contextBlock = "";
+    const references: any[] = [];
+
     if (matches.length === 0) {
-      return res.status(200).json({
-        noteId,
-        question: question.trim(),
-        answer:
-          "No relevant embedded chunks were found for this note. Run embedding first or try a broader question.",
-        references: [],
+      const fullText = note.content_text ?? "";
+      if (fullText.length > 20) {
+        contextBlock = `[FULL NOTE TEXT]:\n${fullText.slice(0, 15000)}`;
+      } else {
+        contextBlock = "No specific text content found in this note yet.";
+      }
+    } else {
+      contextBlock = matches
+        .map((m) => `[RELEVANT PASSAGE]: ${m.chunk_text}`)
+        .join("\n\n");
+      
+      matches.slice(0, 6).forEach(m => {
+        references.push({
+          chunkId: m.chunk_id,
+          heading: m.heading,
+          similarity: m.similarity,
+          excerpt: m.chunk_text.slice(0, 300),
+        });
       });
     }
 
-    const references = matches.slice(0, 5).map((item) => ({
-      chunkId: item.chunk_id,
-      heading: item.heading,
-      similarity: item.similarity,
-      excerpt: item.chunk_text.slice(0, 240),
-    }));
-
-    const answer = buildQuestionAwareAnswer(
+    const { answer, model } = await chatGeminiWithContext(
+      history as any,
+      contextBlock,
       note.title,
-      note.content_text ?? "",
-      question.trim(),
-      references,
     );
+
+    // PERSISTENCE: Save the new state of the conversation
+    const updatedMessages = [...history, { role: "assistant", content: answer }];
+    const { error: upsertError } = await supabase
+      .from("note_conversations")
+      .upsert({
+        note_id: noteId,
+        user_id: userId,
+        messages: updatedMessages,
+      }, { onConflict: "note_id, user_id" });
+
+    if (upsertError) {
+      console.error("Upsert conversation error:", upsertError);
+    }
 
     return res.status(200).json({
       noteId,
-      question: question.trim(),
       answer,
+      model,
       references,
     });
   } catch (error) {

@@ -17,12 +17,20 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return NextResponse.json({ error: "Unauthorized request." }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized request." },
+      { status: 401 },
+    );
   }
 
   const body = (await request.json()) as ProfileSetupBody;
 
-  if (!body.universityId || !body.collegeId || !body.majorId || !body.yearLevelId) {
+  if (
+    !body.universityId ||
+    !body.collegeId ||
+    !body.majorId ||
+    !body.yearLevelId
+  ) {
     return NextResponse.json(
       { error: "University, college, major, and year level are required." },
       { status: 400 },

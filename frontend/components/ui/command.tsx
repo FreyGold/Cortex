@@ -1,14 +1,11 @@
 "use client";
 
-import * as React from "react";
-import { Command as CommandPrimitive } from "cmdk";
 import { MagnifyingGlassIcon } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
+import { Command as CommandPrimitive } from "cmdk";
+import type * as React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import {
-  InputGroup,
-  InputGroupAddon,
-} from "@/components/ui/input-group";
+import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
+import { cn } from "@/lib/utils";
 
 function Command({
   className,
@@ -48,7 +45,10 @@ function CommandInput({
         </InputGroupAddon>
         <CommandPrimitive.Input
           data-slot="command-input"
-          className={cn("h-8 w-full bg-transparent text-xs outline-none", className)}
+          className={cn(
+            "h-8 w-full bg-transparent text-xs outline-none",
+            className,
+          )}
           {...props}
         />
       </InputGroup>
@@ -125,10 +125,10 @@ function CommandSeparator({
 
 export {
   Command,
-  CommandInput,
-  CommandList,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
   CommandSeparator,
 };

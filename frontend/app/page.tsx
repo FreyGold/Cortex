@@ -1,171 +1,254 @@
+import {
+  ArrowRight,
+  Brain,
+  CheckCircle,
+  Lightning,
+  BookBookmark,
+  Notebook,
+  ShieldCheck,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { Badge } from "@/components/ui/badge";
-import { CortexButton } from "@/components/ui/cortex-button";
+import { Button } from "@/components/ui/button";
 import {
-  CortexCard,
-  CortexCardContent,
-  CortexCardDescription,
-  CortexCardHeader,
-  CortexCardTitle,
-} from "@/components/ui/cortex-card";
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { SiteHeader } from "@/components/site-header";
+import { ShellHeaderActions } from "@/components/shell-header-actions";
+import { createClient } from "@/lib/supabase/server";
 
-const featureIcons = ["🧠", "📚", "⚡"];
+const featureIcons = [Notebook, BookBookmark, Brain];
+
+export const metadata = {
+  title: "Cortex | Academic workspace",
+  description:
+    "Notes, course data, and verification in one academic workspace for students.",
+};
 
 export default async function Home() {
   const t = await getTranslations("home");
+  const shellT = await getTranslations("shell");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const signedIn = Boolean(user);
+  const profileRes = user
+    ? await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle()
+    : { data: null, error: null };
+
+  if (profileRes.error) {
+    throw new Error(`Failed to load home header profile: ${profileRes.error.message}`);
+  }
+
+  const isAdmin = profileRes.data?.role === "admin";
+
+  const primaryHref = signedIn ? "/notes" : "/auth/signup";
+  const primaryLabel = signedIn
+    ? t("actions.openNotes")
+    : t("actions.getStarted");
+  const headerLinks = [
+    {
+      href: "/notes",
+      label: shellT("nav.notes"),
+    },
+    {
+      href: "/data",
+      label: shellT("nav.data"),
+    },
+    {
+      href: "/profile/setup",
+      label: shellT("nav.profile"),
+    },
+    ...(isAdmin
+      ? [
+          {
+            href: "/admin",
+            label: shellT("nav.admin"),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              C
+      <SiteHeader
+        navItems={headerLinks.map((item) => ({
+          ...item,
+          active: false,
+        }))}
+        actions={
+          <ShellHeaderActions
+            signedIn={signedIn}
+            authLabel={signedIn ? shellT("logout") : t("actions.signIn")}
+          />
+        }
+      />
+
+      <main className="container mx-auto space-y-16 px-4 py-10 md:py-16 lg:py-20">
+        <section className="grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
+          <div className="space-y-7">
+            <Badge variant="outline" className="rounded-full px-3">
+              {signedIn ? t("hero.badgeSignedIn") : t("hero.badge")}
+            </Badge>
+
+            <div className="space-y-4">
+              <h1 className="max-w-3xl text-balance text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+                {signedIn ? t("hero.titleSignedIn") : t("hero.title")}
+              </h1>
+              <p className="max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
+                {signedIn ? t("hero.subtitleSignedIn") : t("hero.subtitle")}
+              </p>
             </div>
-            <div>
-              <p className="text-sm font-semibold leading-none">Cortex</p>
-              <p className="text-xs text-muted-foreground">{t("brandSub")}</p>
-            </div>
-          </Link>
 
-          <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-            <Link className="hover:text-foreground" href="/editor">
-              {t("nav.notes")}
-            </Link>
-            <Link className="hover:text-foreground" href="/data">
-              {t("nav.data")}
-            </Link>
-            <Link className="hover:text-foreground" href="/auth/login">
-              {t("nav.auth")}
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
-            <Link href="/auth/login">
-              <CortexButton variant="outline" size="sm">
-                {t("actions.signIn")}
-              </CortexButton>
-            </Link>
-            <Link href="/auth/signup" className="hidden sm:inline-flex">
-              <CortexButton size="sm">{t("actions.getStarted")}</CortexButton>
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto space-y-16 px-4 py-14 md:space-y-24 md:py-20">
-        <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="space-y-6">
-            <Badge variant="brand">{t("hero.badge")}</Badge>
-            <h1 className="text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
-              {t("hero.title")}
-            </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground md:text-xl">
-              {t("hero.subtitle")}
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/data">
-                <CortexButton size="lg">
-                  {t("actions.exploreData")}
-                </CortexButton>
-              </Link>
-              <Link href="/editor">
-                <CortexButton size="lg" variant="outline">
-                  {t("actions.openEditor")}
-                </CortexButton>
-              </Link>
-            </div>
-          </div>
-
-          <CortexCard
-            level="modal"
-            className="bg-gradient-to-b from-card to-secondary/35"
-          >
-            <CortexCardHeader>
-              <CortexCardTitle>{t("panel.title")}</CortexCardTitle>
-              <CortexCardDescription>
-                {t("panel.subtitle")}
-              </CortexCardDescription>
-            </CortexCardHeader>
-            <CortexCardContent className="space-y-4">
-              <div className="rounded-md border border-border bg-background/80 p-4">
+            {signedIn ? (
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
+                <CheckCircle className="size-4 text-emerald-500" />
                 <p className="text-sm text-muted-foreground">
-                  {t("panel.cards.today")}
-                </p>
-                <p className="mt-1 text-xl font-semibold">
-                  {t("panel.cards.todayValue")}
+                  {t("hero.signedInAs", {
+                    email: user?.email ?? "your account",
+                  })}
                 </p>
               </div>
-              <div className="rounded-md border border-border bg-background/80 p-4">
-                <p className="text-sm text-muted-foreground">
-                  {t("panel.cards.focus")}
-                </p>
-                <p className="mt-1 text-xl font-semibold">
-                  {t("panel.cards.focusValue")}
-                </p>
-              </div>
-              <div className="rounded-md border border-border bg-background/80 p-4">
-                <p className="text-sm text-muted-foreground">
-                  {t("panel.cards.next")}
-                </p>
-                <p className="mt-1 text-xl font-semibold">
-                  {t("panel.cards.nextValue")}
-                </p>
-              </div>
-            </CortexCardContent>
-          </CortexCard>
-        </section>
+            ) : null}
 
-        <section className="space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-semibold tracking-tight">
-              {t("features.title")}
-            </h2>
-            <p className="text-muted-foreground">{t("features.subtitle")}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button asChild size="lg">
+                <Link href={primaryHref}>
+                  {primaryLabel}
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/data">{t("actions.exploreData")}</Link>
+              </Button>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                {
+                  title: t("highlights.notes.title"),
+                  description: t("highlights.notes.description"),
+                },
+                {
+                  title: t("highlights.data.title"),
+                  description: t("highlights.data.description"),
+                },
+                {
+                  title: t("highlights.profile.title"),
+                  description: t("highlights.profile.description"),
+                },
+              ].map((item) => (
+                <Card key={item.title} className="shadow-none">
+                  <CardHeader className="space-y-2">
+                    <div className="flex items-center gap-2 text-primary">
+                      <Lightning className="size-4" weight="duotone" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                        {t("highlights.label")}
+                      </span>
+                    </div>
+                    <CardTitle className="text-sm font-semibold">
+                      {item.title}
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      {item.description}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {[0, 1, 2].map((index) => (
-              <CortexCard key={index}>
-                <CortexCardHeader>
-                  <div className="mb-2 text-2xl" aria-hidden="true">
-                    {featureIcons[index]}
+          <Card className="border-border/60 shadow-none">
+            <CardHeader className="space-y-2 border-b border-border/60 pb-5">
+              <div className="flex items-center gap-2 text-primary">
+                <ShieldCheck className="size-5" weight="duotone" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  {t("panel.kicker")}
+                </span>
+              </div>
+              <CardTitle className="text-xl font-bold">
+                {t("panel.title")}
+              </CardTitle>
+              <CardDescription>{t("panel.subtitle")}</CardDescription>
+            </CardHeader>
+            <div className="grid gap-3 p-4">
+              {[
+                {
+                  label: t("panel.items.notes.label"),
+                  value: t("panel.items.notes.value"),
+                  detail: t("panel.items.notes.detail"),
+                },
+                {
+                  label: t("panel.items.data.label"),
+                  value: t("panel.items.data.value"),
+                  detail: t("panel.items.data.detail"),
+                },
+                {
+                  label: t("panel.items.profile.label"),
+                  value: t("panel.items.profile.value"),
+                  detail: t("panel.items.profile.detail"),
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-start justify-between gap-4 rounded-lg border border-border/50 bg-background p-3"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold">{item.label}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.detail}
+                    </p>
                   </div>
-                  <CortexCardTitle>
-                    {t(`features.items.${index}.title`)}
-                  </CortexCardTitle>
-                  <CortexCardDescription>
-                    {t(`features.items.${index}.description`)}
-                  </CortexCardDescription>
-                </CortexCardHeader>
-              </CortexCard>
-            ))}
-          </div>
+                  <p className="text-right text-sm font-medium text-foreground">
+                    {item.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Card>
         </section>
 
-        <section className="space-y-6">
-          <h2 className="text-3xl font-semibold tracking-tight">
-            {t("workflow.title")}
-          </h2>
+        <section className="space-y-5">
+          <div className="max-w-2xl space-y-2">
+            <Badge variant="outline" className="rounded-full px-3">
+              {t("sections.badge")}
+            </Badge>
+            <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
+              {t("sections.title")}
+            </h2>
+            <p className="text-muted-foreground">{t("sections.subtitle")}</p>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-3">
-            {[1, 2, 3].map((step) => (
-              <CortexCard key={step} level="flat">
-                <CortexCardHeader>
-                  <Badge variant="synapse">
-                    {t("workflow.stepLabel", { step })}
-                  </Badge>
-                  <CortexCardTitle>
-                    {t(`workflow.steps.${step}.title`)}
-                  </CortexCardTitle>
-                  <CortexCardDescription>
-                    {t(`workflow.steps.${step}.description`)}
-                  </CortexCardDescription>
-                </CortexCardHeader>
-              </CortexCard>
-            ))}
+            {[
+              t("sections.items.0"),
+              t("sections.items.1"),
+              t("sections.items.2"),
+            ].map((title, index) => {
+              const Icon = featureIcons[index];
+              return (
+                <Card key={title} className="shadow-none">
+                  <CardHeader className="space-y-3">
+                    <Icon className="size-5 text-primary" weight="duotone" />
+                    <CardTitle className="text-base font-semibold">
+                      {title}
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      {t(`sections.descriptions.${index}`)}
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              );
+            })}
           </div>
         </section>
       </main>

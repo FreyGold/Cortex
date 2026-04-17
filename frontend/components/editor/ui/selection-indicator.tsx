@@ -7,13 +7,16 @@ interface SelectionIndicatorProps {
   className?: string;
 }
 
-export function SelectionIndicator({ isSelected, className }: SelectionIndicatorProps) {
+export function SelectionIndicator({
+  isSelected,
+  className,
+}: SelectionIndicatorProps) {
   return (
     <span
       className={cn(
         "size-1.5 rounded-full transition-all",
         isSelected ? "bg-primary scale-100" : "bg-transparent scale-0",
-        className
+        className,
       )}
     />
   );
@@ -40,10 +43,8 @@ export function SelectedRow({
       onMouseEnter={onMouseEnter}
       className={cn(
         "flex items-center justify-between py-2 px-3 rounded-md cursor-pointer transition-colors",
-        isSelected
-          ? "bg-primary/10 ring-1 ring-primary/20"
-          : "hover:bg-muted",
-        className
+        isSelected ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-muted",
+        className,
       )}
     >
       {children}

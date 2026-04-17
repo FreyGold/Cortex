@@ -1,7 +1,10 @@
-import { AppShell } from "@/components/app-shell";
 import { UsersManager } from "@/components/admin/users-manager";
+import { AppShell } from "@/components/app-shell";
+import { requireAdmin } from "@/lib/require-admin";
 
-export default function AdminUsersPage() {
+export default async function AdminUsersPage() {
+  await requireAdmin();
+
   return (
     <AppShell>
       <main className="container mx-auto space-y-6 px-4 py-10">

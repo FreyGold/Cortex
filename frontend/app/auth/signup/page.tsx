@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function SignupPage() {
   return (
-    <main className="container mx-auto px-4 py-12">
+    <main className="flex min-h-screen items-center justify-center px-4">
       <AuthForm mode="signup" />
     </main>
   );

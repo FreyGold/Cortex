@@ -1,21 +1,34 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { adminMiddleware } from "../middleware/adminMiddleware";
-import { getSupabaseAdmin } from "../lib/supabase-admin";
+import { getSupabaseUserClient } from "../lib/supabase-admin";
 
 export const adminRouter = Router();
 
 adminRouter.use(authMiddleware, adminMiddleware);
 
+function getAdminClient(req: { user?: { accessToken?: string } }) {
+  const accessToken = req.user?.accessToken;
+  if (!accessToken) {
+    throw new Error("Unauthorized request.");
+  }
+
+  return getSupabaseUserClient(accessToken);
+}
+
 adminRouter.get("/users", async (req, res) => {
   const query = typeof req.query.query === "string" ? req.query.query.trim() : "";
   const limitRaw = typeof req.query.limit === "string" ? Number(req.query.limit) : 25;
-  const limit = Math.min(100, Math.max(1, Number.isFinite(limitRaw) ? Math.trunc(limitRaw) : 25));
+  const limit = Math.min(
+    100,
+    Math.max(1, Number.isFinite(limitRaw) ? Math.trunc(limitRaw) : 25),
+  );
 
-  const supabaseAdmin = getSupabaseAdmin();
-  let statement = supabaseAdmin
+  let statement = getAdminClient(req)
     .from("profiles")
-    .select("id,name,role,is_verified,verified_at,preferred_language,created_at")
+    .select(
+      "id,name,role,is_verified,verified_at,verification_requested_at,preferred_language,created_at",
+    )
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -25,17 +38,19 @@ adminRouter.get("/users", async (req, res) => {
 
   const { data, error } = await statement;
   if (error) {
-    return res.status(500).json({ error: `Failed to fetch users: ${error.message}` });
+    return res
+      .status(500)
+      .json({ error: `Failed to fetch users: ${error.message}` });
   }
 
   return res.status(200).json({ users: data ?? [] });
 });
 
 adminRouter.post("/verify-user", async (req, res) => {
-  const {
-    userId,
-    isVerified,
-  } = req.body as { userId?: string; isVerified?: boolean };
+  const { userId, isVerified } = req.body as {
+    userId?: string;
+    isVerified?: boolean;
+  };
 
   if (!userId) {
     return res.status(400).json({ error: "userId is required." });
@@ -45,20 +60,22 @@ adminRouter.post("/verify-user", async (req, res) => {
   }
 
   const nowIso = new Date().toISOString();
-  const supabaseAdmin = getSupabaseAdmin();
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getAdminClient(req)
     .from("profiles")
     .update({
       is_verified: isVerified,
       verified_at: isVerified ? nowIso : null,
       verified_by: isVerified ? req.user?.id : null,
+      verification_requested_at: null,
     })
     .eq("id", userId)
-    .select("id,is_verified,verified_at,verified_by")
+    .select("id,is_verified,verified_at,verified_by,verification_requested_at")
     .maybeSingle();
 
   if (error) {
-    return res.status(500).json({ error: `Failed to update verification: ${error.message}` });
+    return res
+      .status(500)
+      .json({ error: `Failed to update verification: ${error.message}` });
   }
   if (!data) {
     return res.status(404).json({ error: "User profile not found." });
@@ -81,8 +98,7 @@ adminRouter.post("/universities", async (req, res) => {
     return res.status(400).json({ error: "name_en and slug are required." });
   }
 
-  const supabaseAdmin = getSupabaseAdmin();
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getAdminClient(req)
     .from("universities")
     .insert({
       name_en: name_en.trim(),
@@ -96,7 +112,9 @@ adminRouter.post("/universities", async (req, res) => {
     .single();
 
   if (error) {
-    return res.status(500).json({ error: `Failed to create university: ${error.message}` });
+    return res
+      .status(500)
+      .json({ error: `Failed to create university: ${error.message}` });
   }
 
   return res.status(201).json({ university: data });
@@ -116,8 +134,7 @@ adminRouter.post("/colleges", async (req, res) => {
       .json({ error: "university_id, name_en and slug are required." });
   }
 
-  const supabaseAdmin = getSupabaseAdmin();
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getAdminClient(req)
     .from("colleges")
     .insert({
       university_id,
@@ -129,7 +146,9 @@ adminRouter.post("/colleges", async (req, res) => {
     .single();
 
   if (error) {
-    return res.status(500).json({ error: `Failed to create college: ${error.message}` });
+    return res
+      .status(500)
+      .json({ error: `Failed to create college: ${error.message}` });
   }
 
   return res.status(201).json({ college: data });
@@ -147,11 +166,12 @@ adminRouter.post("/majors", async (req, res) => {
   };
 
   if (!college_id || !name_en || !slug) {
-    return res.status(400).json({ error: "college_id, name_en and slug are required." });
+    return res
+      .status(400)
+      .json({ error: "college_id, name_en and slug are required." });
   }
 
-  const supabaseAdmin = getSupabaseAdmin();
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getAdminClient(req)
     .from("majors")
     .insert({
       college_id,
@@ -166,7 +186,9 @@ adminRouter.post("/majors", async (req, res) => {
     .single();
 
   if (error) {
-    return res.status(500).json({ error: `Failed to create major: ${error.message}` });
+    return res
+      .status(500)
+      .json({ error: `Failed to create major: ${error.message}` });
   }
 
   return res.status(201).json({ major: data });
@@ -195,8 +217,7 @@ adminRouter.post("/courses", async (req, res) => {
     return res.status(400).json({ error: "major_id and name_en are required." });
   }
 
-  const supabaseAdmin = getSupabaseAdmin();
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getAdminClient(req)
     .from("courses")
     .insert({
       major_id,
@@ -211,7 +232,9 @@ adminRouter.post("/courses", async (req, res) => {
     .single();
 
   if (error) {
-    return res.status(500).json({ error: `Failed to create course: ${error.message}` });
+    return res
+      .status(500)
+      .json({ error: `Failed to create course: ${error.message}` });
   }
 
   return res.status(201).json({ course: data });
@@ -227,7 +250,6 @@ adminRouter.post("/seed", async (req, res) => {
     return res.status(403).json({ error: "Invalid seed token." });
   }
 
-  const supabaseAdmin = getSupabaseAdmin();
   const yearPayload = [
     { level: 1, name_en: "First Year", name_ar: "السنة الأولى" },
     { level: 2, name_en: "Second Year", name_ar: "السنة الثانية" },
@@ -236,7 +258,7 @@ adminRouter.post("/seed", async (req, res) => {
     { level: 5, name_en: "Fifth Year", name_ar: "السنة الخامسة" },
   ];
 
-  const { error } = await supabaseAdmin
+  const { error } = await getAdminClient(req)
     .from("year_levels")
     .upsert(yearPayload, { onConflict: "level" });
 

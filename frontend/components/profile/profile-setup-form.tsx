@@ -1,9 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Check, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CortexButton } from "@/components/ui/cortex-button";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type University = { id: string; name_en: string };
 type College = { id: string; university_id: string; name_en: string };
@@ -34,10 +45,14 @@ export function ProfileSetupForm({
   const t = useTranslations("profileSetup");
   const router = useRouter();
 
-  const [universityId, setUniversityId] = useState(initialValues.universityId ?? "");
+  const [universityId, setUniversityId] = useState(
+    initialValues.universityId ?? "",
+  );
   const [collegeId, setCollegeId] = useState(initialValues.collegeId ?? "");
   const [majorId, setMajorId] = useState(initialValues.majorId ?? "");
-  const [yearLevelId, setYearLevelId] = useState(initialValues.yearLevelId ?? "");
+  const [yearLevelId, setYearLevelId] = useState(
+    initialValues.yearLevelId ?? "",
+  );
   const [preferredLanguage, setPreferredLanguage] = useState<"en" | "ar">(
     initialValues.preferredLanguage,
   );
@@ -96,111 +111,126 @@ export function ProfileSetupForm({
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
-      <div className="grid gap-2">
-        <label className="text-sm font-semibold" htmlFor="university">
-          {t("fields.university")}
-        </label>
-        <select
-          id="university"
-          value={universityId}
-          onChange={(event) => onUniversityChange(event.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          required
-        >
-          <option value="">{t("placeholders.university")}</option>
-          {universities.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name_en}
-            </option>
-          ))}
-        </select>
-      </div>
+    <Card className="shadow-none border-border/60">
+      <CardContent className="pt-6">
+        <form onSubmit={onSubmit} className="space-y-6">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="university">{t("fields.university")}</Label>
+              <Select value={universityId} onValueChange={onUniversityChange}>
+                <SelectTrigger id="university" className="h-10">
+                  <SelectValue placeholder={t("placeholders.university")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {universities.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.name_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      <div className="grid gap-2">
-        <label className="text-sm font-semibold" htmlFor="college">
-          {t("fields.college")}
-        </label>
-        <select
-          id="college"
-          value={collegeId}
-          onChange={(event) => onCollegeChange(event.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          required
-          disabled={!universityId}
-        >
-          <option value="">{t("placeholders.college")}</option>
-          {filteredColleges.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name_en}
-            </option>
-          ))}
-        </select>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="college">{t("fields.college")}</Label>
+              <Select
+                value={collegeId}
+                onValueChange={onCollegeChange}
+                disabled={!universityId}
+              >
+                <SelectTrigger id="college" className="h-10">
+                  <SelectValue placeholder={t("placeholders.college")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredColleges.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.name_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      <div className="grid gap-2">
-        <label className="text-sm font-semibold" htmlFor="major">
-          {t("fields.major")}
-        </label>
-        <select
-          id="major"
-          value={majorId}
-          onChange={(event) => setMajorId(event.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          required
-          disabled={!collegeId}
-        >
-          <option value="">{t("placeholders.major")}</option>
-          {filteredMajors.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name_en}
-            </option>
-          ))}
-        </select>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="major">{t("fields.major")}</Label>
+              <Select
+                value={majorId}
+                onValueChange={setMajorId}
+                disabled={!collegeId}
+              >
+                <SelectTrigger id="major" className="h-10">
+                  <SelectValue placeholder={t("placeholders.major")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredMajors.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.name_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      <div className="grid gap-2">
-        <label className="text-sm font-semibold" htmlFor="year-level">
-          {t("fields.yearLevel")}
-        </label>
-        <select
-          id="year-level"
-          value={yearLevelId}
-          onChange={(event) => setYearLevelId(event.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          required
-        >
-          <option value="">{t("placeholders.yearLevel")}</option>
-          {yearLevels.map((item) => (
-            <option key={item.id} value={item.id}>
-              {t("yearOption", { level: item.level })}
-            </option>
-          ))}
-        </select>
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="year-level">{t("fields.yearLevel")}</Label>
+              <Select value={yearLevelId} onValueChange={setYearLevelId}>
+                <SelectTrigger id="year-level" className="h-10">
+                  <SelectValue placeholder={t("placeholders.yearLevel")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearLevels.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {t("yearOption", { level: item.level })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      <div className="grid gap-2">
-        <label className="text-sm font-semibold" htmlFor="preferred-language">
-          {t("fields.preferredLanguage")}
-        </label>
-        <select
-          id="preferred-language"
-          value={preferredLanguage}
-          onChange={(event) => setPreferredLanguage(event.target.value as "en" | "ar")}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="en">{t("language.en")}</option>
-          <option value="ar">{t("language.ar")}</option>
-        </select>
-      </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="preferred-language">
+                {t("fields.preferredLanguage")}
+              </Label>
+              <Select
+                value={preferredLanguage}
+                onValueChange={(val: "en" | "ar") => setPreferredLanguage(val)}
+              >
+                <SelectTrigger id="preferred-language" className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{t("language.en")}</SelectItem>
+                  <SelectItem value="ar">{t("language.ar")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <p className="text-sm font-medium text-destructive">{error}</p>
+          ) : null}
 
-      <div className="flex justify-end">
-        <CortexButton type="submit" loading={saving}>
-          {t("save")}
-        </CortexButton>
-      </div>
-    </form>
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Check className="size-3 text-primary" />
+              Your academic context is used to personalize your experience.
+              <Link
+                href="/profile"
+                className="font-medium text-primary hover:underline"
+              >
+                {t("verificationLink")}
+              </Link>
+            </p>
+            <Button
+              type="submit"
+              disabled={saving || !universityId || !majorId}
+            >
+              {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
+              {t("save")}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

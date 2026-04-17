@@ -7,6 +7,9 @@ import { authRouter } from "./routes/auth";
 import { aiRouter } from "./routes/ai";
 import { adminRouter } from "./routes/admin";
 import { healthRouter } from "./routes/health";
+import { profileRouter } from "./routes/profile";
+
+import { dataRouter } from "./routes/data";
 
 dotenv.config();
 
@@ -34,6 +37,8 @@ app.use("/api", healthRouter);
 app.use("/api", aiRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/profile", profileRouter);
+app.use("/api/data", dataRouter);
 
 const port = Number(process.env.PORT ?? 4000);
 

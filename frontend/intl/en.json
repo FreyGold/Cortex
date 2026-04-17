@@ -47,65 +47,75 @@
     "nav": {
       "notes": "Notes",
       "data": "Resources",
-      "auth": "Account"
+      "profile": "Profile",
+      "signIn": "Sign in"
     },
     "actions": {
       "signIn": "Sign in",
       "getStarted": "Get started",
       "exploreData": "Explore resources",
-      "openEditor": "Open notes editor"
+      "openNotes": "Open notes",
+      "reviewProfile": "Review profile"
     },
     "hero": {
       "badge": "Built for focused students",
-      "title": "Your study flow, finally in one place.",
-      "subtitle": "Capture notes, find course material fast, and keep your semester organized without jumping between scattered tools."
+      "badgeSignedIn": "Welcome back",
+      "title": "One place for notes, course data, and verification.",
+      "titleSignedIn": "Pick up where your semester left off.",
+      "subtitle": "Capture notes, find course material fast, and keep your academic profile in sync without bouncing between scattered tools.",
+      "subtitleSignedIn": "Your workspace is ready. Resume writing, browse resources, or finish verification in a couple of clicks.",
+      "signedInAs": "Signed in as {email}"
     },
     "panel": {
-      "title": "Today at a glance",
-      "subtitle": "A calm workspace for what matters next.",
-      "cards": {
-        "today": "Your study block",
-        "todayValue": "2 courses · 3 tasks",
-        "focus": "Priority",
-        "focusValue": "Database systems midterm",
-        "next": "Next action",
-        "nextValue": "Review lecture 5 notes"
-      }
-    },
-    "features": {
-      "title": "Everything centered on learning outcomes",
-      "subtitle": "Designed to help you spend less time organizing and more time understanding.",
+      "kicker": "Workspace",
+      "title": "Start where the app actually helps.",
+      "subtitle": "Cortex is built around the three actions students repeat most.",
       "items": {
-        "0": {
-          "title": "Structured notes that stay searchable",
-          "description": "Write fast, organize with folders and tags, and keep your ideas easy to retrieve."
+        "notes": {
+          "label": "Notes",
+          "value": "Write",
+          "detail": "Capture lectures, summaries, and revision lists."
         },
-        "1": {
-          "title": "Academic resources by major and year",
-          "description": "Browse lectures, exams, and assignments with filters that match how students study."
+        "data": {
+          "label": "Resources",
+          "value": "Browse",
+          "detail": "Find lectures, exams, and assignments by major."
         },
-        "2": {
-          "title": "AI support where it saves time",
-          "description": "Use semantic tools to connect topics and reduce repetitive searching."
+        "profile": {
+          "label": "Verification",
+          "value": "Request",
+          "detail": "Finish your academic profile and ask for review."
         }
       }
     },
-    "workflow": {
-      "title": "A practical 3-step study loop",
-      "stepLabel": "Step {step}",
-      "steps": {
-        "1": {
-          "title": "Collect",
-          "description": "Save notes and course files in a single academic context."
-        },
-        "2": {
-          "title": "Connect",
-          "description": "Link related concepts and keep references close to each note."
-        },
-        "3": {
-          "title": "Perform",
-          "description": "Focus on revision and exam prep with less navigation friction."
-        }
+    "highlights": {
+      "label": "Why it works",
+      "notes": {
+        "title": "Notes that stay close to the work",
+        "description": "Write fast, organize cleanly, and return to the exact idea you need."
+      },
+      "data": {
+        "title": "Course data that matches the semester",
+        "description": "Browse material by major and year without wandering through a generic file dump."
+      },
+      "profile": {
+        "title": "Verification with a clear path",
+        "description": "Know where to request review instead of hunting for a hidden admin queue."
+      }
+    },
+    "sections": {
+      "badge": "Why Cortex feels different",
+      "title": "It should feel like a student workspace, not a marketing site.",
+      "subtitle": "Every surface is there to help students start faster, understand faster, and keep their academic context current.",
+      "items": {
+        "0": "Capture notes",
+        "1": "Find resources",
+        "2": "Request verification"
+      },
+      "descriptions": {
+        "0": "Open the note workspace first, not an empty editor teaser.",
+        "1": "Go straight to course material instead of generic landing content.",
+        "2": "Move from profile setup to admin review without confusion."
       }
     }
   },
@@ -192,8 +202,29 @@
     },
     "yearOption": "Year {level}",
     "save": "Save profile setup",
+    "verificationHint": "Need verification? Open your profile page after saving.",
+    "verificationLink": "Go to profile",
     "errors": {
       "generic": "Failed to save your profile. Please try again."
+    }
+  },
+  "profilePage": {
+    "title": "Your profile",
+    "subtitle": "Keep your academic context updated and request verification from here.",
+    "overviewTitle": "Profile overview",
+    "verification": {
+      "title": "Verification status",
+      "hint": "Admins review verification requests after your academic details are complete.",
+      "verified": "Verified",
+      "requested": "Requested",
+      "pending": "Pending review",
+      "pendingDescription": "Your profile is ready. Request verification when you want an admin to review it.",
+      "request": "Request verification",
+      "requestedAt": "Requested {date}",
+      "verifiedAt": "Verified {date}",
+      "success": "Verification request sent.",
+      "missing": "We could not find a profile record for this account.",
+      "editSetup": "Edit academic setup"
     }
   },
   "notesPage": {

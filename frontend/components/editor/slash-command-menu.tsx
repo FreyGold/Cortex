@@ -2,13 +2,13 @@
 
 import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import {
-  slashCommands,
   filterCommands,
   groupCommandsByCategory,
   type SlashCommand,
+  slashCommands,
 } from "./slash-commands";
-import { cn } from "@/lib/utils";
 
 interface SlashCommandMenuProps {
   editor: Editor;
@@ -48,7 +48,7 @@ export function SlashCommandMenu({
       setQuery("");
       setSelectedIndex(0);
     },
-    [editor, query, onClose]
+    [editor, query, onClose],
   );
 
   const handleKeyDown = useCallback(
@@ -59,13 +59,13 @@ export function SlashCommandMenu({
         case "ArrowDown":
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev < flatCommands.length - 1 ? prev + 1 : 0
+            prev < flatCommands.length - 1 ? prev + 1 : 0,
           );
           break;
         case "ArrowUp":
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev > 0 ? prev - 1 : flatCommands.length - 1
+            prev > 0 ? prev - 1 : flatCommands.length - 1,
           );
           break;
         case "Enter":
@@ -95,7 +95,7 @@ export function SlashCommandMenu({
           }
       }
     },
-    [isOpen, flatCommands, selectedIndex, executeCommand, onClose, query]
+    [isOpen, flatCommands, selectedIndex, executeCommand, onClose, query],
   );
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export function SlashCommandMenu({
   useEffect(() => {
     if (menuRef.current && isOpen) {
       const selectedEl = menuRef.current.querySelector(
-        `[data-index="${selectedIndex}"]`
+        `[data-index="${selectedIndex}"]`,
       );
       if (selectedEl) {
         selectedEl.scrollIntoView({ block: "nearest" });
@@ -130,13 +130,14 @@ export function SlashCommandMenu({
       style={{
         top: position.top + 24,
         left: position.left,
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
       }}
     >
       {query && (
         <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
-          Searching: <span className="font-medium text-foreground">{query}</span>
+          Searching:{" "}
+          <span className="font-medium text-foreground">{query}</span>
         </div>
       )}
 
@@ -162,7 +163,7 @@ export function SlashCommandMenu({
                       "w-full flex items-center gap-3 px-3 py-2 text-left transition-colors",
                       currentIndex === selectedIndex
                         ? "bg-accent text-accent-foreground"
-                        : "hover:bg-muted"
+                        : "hover:bg-muted",
                     )}
                   >
                     <span className="flex items-center justify-center w-8 h-8 rounded-md bg-muted shrink-0">
@@ -186,15 +187,21 @@ export function SlashCommandMenu({
 
       <div className="px-3 py-2 border-t border-border text-xs text-muted-foreground flex items-center gap-4">
         <span>
-          <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">↑↓</kbd>{" "}
+          <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">
+            ↑↓
+          </kbd>{" "}
           Navigate
         </span>
         <span>
-          <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">↵</kbd>{" "}
+          <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">
+            ↵
+          </kbd>{" "}
           Select
         </span>
         <span>
-          <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">Esc</kbd>{" "}
+          <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-[10px]">
+            Esc
+          </kbd>{" "}
           Close
         </span>
       </div>

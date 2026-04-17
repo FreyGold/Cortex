@@ -180,7 +180,7 @@ export function useEditorShortcuts(editor: Editor | null) {
         description: "Horizontal rule",
       },
     ],
-    []
+    [],
   );
 
   const handleKeyDown = useCallback(
@@ -203,7 +203,7 @@ export function useEditorShortcuts(editor: Editor | null) {
         }
       }
     },
-    [editor, shortcuts]
+    [editor, shortcuts],
   );
 
   useEffect(() => {

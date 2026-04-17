@@ -1,15 +1,15 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
-import { useCallback, useState, useRef, useEffect } from "react";
-import { editorExtensions } from "./extensions";
-import { useEditorShortcuts } from "./use-editor-shortcuts";
-import { SlashCommandMenu } from "./slash-command-menu";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import { BubbleMenuContent } from "./bubble-menu-content";
 import { EditorContextMenu } from "./context-menu";
+import { editorExtensions } from "./extensions";
+import { SlashCommandMenu } from "./slash-command-menu";
 import { EditorToolbar } from "./toolbar";
-import { cn } from "@/lib/utils";
+import { useEditorShortcuts } from "./use-editor-shortcuts";
 
 interface NotionEditorProps {
   content?: string | Record<string, unknown>;
@@ -30,9 +30,15 @@ export function NotionEditor({
   autofocus = true,
 }: NotionEditorProps) {
   const [slashMenuOpen, setSlashMenuOpen] = useState(false);
-  const [slashMenuPosition, setSlashMenuPosition] = useState({ top: 0, left: 0 });
+  const [slashMenuPosition, setSlashMenuPosition] = useState({
+    top: 0,
+    left: 0,
+  });
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
-  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [contextMenuPosition, setContextMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
@@ -57,7 +63,7 @@ export function NotionEditor({
           "prose-li:marker:text-muted-foreground",
           "prose-hr:border-border prose-hr:my-8",
           "prose-img:rounded-lg prose-img:shadow-card",
-          editorClassName
+          editorClassName,
         ),
       },
       handleKeyDown: (view, event) => {
@@ -183,7 +189,7 @@ export function NotionEditor({
       const textBefore = editor.state.doc.textBetween(
         Math.max(0, from - 20),
         from,
-        " "
+        " ",
       );
 
       // Check if there's still a "/" in the recent text
@@ -215,12 +221,14 @@ export function NotionEditor({
         ref={editorContainerRef}
         onContextMenu={handleContextMenu}
         className={cn(
-          "relative min-h-[300px] rounded-lg border border-border bg-card p-6 overflow-visible",
-          "focus-within:ring-2 focus-within:ring-ring/20 focus-within:border-ring/50",
-          "transition-all duration-200"
+          "relative min-h-[300px] w-full overflow-visible",
+          "transition-all duration-200",
         )}
       >
-        <EditorContent editor={editor} className="min-h-[250px] relative overflow-visible" />
+        <EditorContent
+          editor={editor}
+          className="min-h-[250px] relative overflow-visible"
+        />
 
         {/* Bubble Menu - appears on text selection */}
         <BubbleMenu
@@ -260,7 +268,11 @@ export function NotionEditor({
       <div className="flex items-center justify-end mt-3 px-1 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <span>
-            Type <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono">/</kbd> for commands
+            Type{" "}
+            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono">
+              /
+            </kbd>{" "}
+            for commands
           </span>
           <span className="text-border">•</span>
           <span>Right-click for more options</span>

@@ -1,37 +1,37 @@
 "use client";
 
+import {
+  ArrowClockwise,
+  ArrowCounterClockwise,
+  CaretRight,
+  ClipboardText,
+  Code,
+  Copy,
+  Highlighter,
+  Link,
+  LinkBreak,
+  ListBullets,
+  ListChecks,
+  ListNumbers,
+  Palette,
+  Paragraph,
+  Quotes,
+  Scissors,
+  TextAlignCenter,
+  TextAlignLeft,
+  TextAlignRight,
+  TextB,
+  TextHOne,
+  TextHThree,
+  TextHTwo,
+  TextItalic,
+  TextStrikethrough,
+  TextUnderline,
+  Trash,
+} from "@phosphor-icons/react";
 import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import {
-  TextB,
-  TextItalic,
-  TextUnderline,
-  TextStrikethrough,
-  Code,
-  Highlighter,
-  ListBullets,
-  ListNumbers,
-  Quotes,
-  TextAlignLeft,
-  TextAlignCenter,
-  TextAlignRight,
-  Link,
-  LinkBreak,
-  Copy,
-  Scissors,
-  ClipboardText,
-  Trash,
-  ListChecks,
-  TextHOne,
-  TextHTwo,
-  TextHThree,
-  Paragraph,
-  ArrowClockwise,
-  ArrowCounterClockwise,
-  Palette,
-  CaretRight,
-} from "@phosphor-icons/react";
 
 interface ContextMenuProps {
   editor: Editor;
@@ -379,13 +379,13 @@ export function EditorContextMenu({
         case "ArrowDown":
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev < enabledItems.length - 1 ? prev + 1 : 0
+            prev < enabledItems.length - 1 ? prev + 1 : 0,
           );
           break;
         case "ArrowUp":
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev > 0 ? prev - 1 : enabledItems.length - 1
+            prev > 0 ? prev - 1 : enabledItems.length - 1,
           );
           break;
         case "Enter":
@@ -398,7 +398,7 @@ export function EditorContextMenu({
           break;
       }
     },
-    [isOpen, enabledItems, selectedIndex, onClose]
+    [isOpen, enabledItems, selectedIndex, onClose],
   );
 
   useEffect(() => {
@@ -434,7 +434,8 @@ export function EditorContextMenu({
   // Calculate position to keep menu in viewport
   const menuWidth = 220;
   const menuHeight = 500;
-  const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1000;
+  const viewportWidth =
+    typeof window !== "undefined" ? window.innerWidth : 1000;
   const viewportHeight =
     typeof window !== "undefined" ? window.innerHeight : 800;
 
@@ -456,8 +457,8 @@ export function EditorContextMenu({
       style={{
         top: adjustedY,
         left: adjustedX,
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
       }}
     >
       {items.map((item) => {
@@ -473,7 +474,7 @@ export function EditorContextMenu({
                   ? "text-muted-foreground opacity-50 cursor-not-allowed"
                   : currentIndex === selectedIndex
                     ? "bg-accent text-accent-foreground"
-                    : "hover:bg-muted"
+                    : "hover:bg-muted",
               )}
             >
               <span className="text-muted-foreground">{item.icon}</span>
@@ -484,9 +485,7 @@ export function EditorContextMenu({
                 </span>
               )}
             </button>
-            {item.divider && (
-              <div className="my-1 border-t border-border" />
-            )}
+            {item.divider && <div className="my-1 border-t border-border" />}
           </div>
         );
       })}
