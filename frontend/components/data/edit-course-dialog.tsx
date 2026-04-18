@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import type { College, Course, Major, YearLevel } from "@/lib/data/catalog";
+import { getBackendUrl } from "@/lib/api/backend-url";
+import { getAccessToken } from "@/lib/supabase/client";
 
 type Props = {
   course: Course;
@@ -81,9 +83,14 @@ export function EditCourseDialog({ course, colleges, majors, yearLevels }: Props
     };
 
     try {
-      const res = await fetch(`/api/data/courses/${course.id}`, {
+      const token = await getAccessToken();
+
+      const res = await fetch(`${getBackendUrl()}/api/data/courses/${course.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(payload),
       });
 

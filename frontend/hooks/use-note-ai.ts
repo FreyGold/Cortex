@@ -4,30 +4,28 @@ import { useMutation } from "@tanstack/react-query";
 import {
   askGeneralAI,
   askNote,
+  askAllNotes,
   getNoteConversation,
+  getGlobalConversation,
   embedNote,
   generateSummary,
   searchNotes,
   suggestTags,
 } from "@/lib/api/ai";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getAccessToken } from "@/lib/supabase/client";
 
-async function getAccessToken() {
-  const supabase = createClient();
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.getSession();
-  if (error || !session?.access_token) {
+async function getAuthToken() {
+  const token = await getAccessToken();
+  if (!token) {
     throw new Error("You must be signed in to use AI features.");
   }
-  return session.access_token;
+  return token;
 }
 
 export function useEmbedNote() {
   return useMutation({
     mutationFn: async (noteId: string) => {
-      const token = await getAccessToken();
+      const token = await getAuthToken();
       return embedNote(token, noteId);
     },
   });
@@ -40,7 +38,7 @@ export function useSemanticSearch() {
       threshold?: number;
       limit?: number;
     }) => {
-      const token = await getAccessToken();
+      const token = await getAuthToken();
       return searchNotes(token, input);
     },
   });
@@ -51,9 +49,21 @@ export function useAskNote(noteId: string) {
     mutationFn: async (
       input: string | { question?: string; messages?: any[] },
     ) => {
-      const token = await getAccessToken();
+      const token = await getAuthToken();
       const payload = typeof input === "string" ? { question: input } : input;
       return askNote(token, noteId, { ...payload, topK: 10 });
+    },
+  });
+}
+
+export function useAskAllNotes() {
+  return useMutation({
+    mutationFn: async (
+      input: string | { question?: string; messages?: any[] },
+    ) => {
+      const token = await getAuthToken();
+      const payload = typeof input === "string" ? { question: input } : input;
+      return askAllNotes(token, { ...payload, topK: 15 });
     },
   });
 }
@@ -61,8 +71,17 @@ export function useAskNote(noteId: string) {
 export function useNoteConversation(noteId: string) {
   return useMutation({
     mutationFn: async () => {
-      const token = await getAccessToken();
+      const token = await getAuthToken();
       return getNoteConversation(token, noteId);
+    },
+  });
+}
+
+export function useGlobalConversation() {
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getAuthToken();
+      return getGlobalConversation(token);
     },
   });
 }
@@ -70,16 +89,23 @@ export function useNoteConversation(noteId: string) {
 export function useGenerateSummary(noteId: string) {
   return useMutation({
     mutationFn: async () => {
-      const token = await getAccessToken();
+      const token = await getAuthToken();
       return generateSummary(token, noteId);
     },
   });
 }
 
+export function useNoteAITools(noteId: string) {
+  return {
+    summarize: useGenerateSummary(noteId),
+    suggestTags: useSuggestTags(noteId),
+  };
+}
+
 export function useSuggestTags(noteId: string) {
   return useMutation({
     mutationFn: async () => {
-      const token = await getAccessToken();
+      const token = await getAuthToken();
       return suggestTags(token, noteId);
     },
   });
@@ -88,7 +114,7 @@ export function useSuggestTags(noteId: string) {
 export function useGeneralAiAsk() {
   return useMutation({
     mutationFn: async (question: string) => {
-      const token = await getAccessToken();
+      const token = await getAuthToken();
       return askGeneralAI(token, { question });
     },
   });

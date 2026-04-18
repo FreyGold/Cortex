@@ -2,9 +2,7 @@
 
 import { Sparkle } from "@phosphor-icons/react";
 import { useMessages } from "next-intl";
-import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,10 +11,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { getBackendUrl } from "@/lib/api/backend-url";
 import { getMessage } from "@/lib/messages";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getAccessToken } from "@/lib/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputHeader,
+  PromptInputActionAddAttachments,
+  PromptInputActionMenu,
+  PromptInputActionMenuContent,
+  PromptInputActionMenuTrigger,
+  PromptInputBody,
+  PromptInputTextarea,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTools,
+} from "@/components/ai-elements/prompt-input";
+import { SpeechInput } from "@/components/ai-elements/speech-input";
+import { Loader2 } from "lucide-react";
 
 type ChatItem = {
   id: string;
@@ -32,20 +50,28 @@ type GeneralAiDrawerProps = {
 
 export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
   const translationMessages = useMessages();
-  const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<ChatItem[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [text, setText] = useState<string>("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isSubmitDisabled = useMemo(() => !(text.trim()) || isStreaming, [text, isStreaming]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isStreaming]);
+
+  const handleTranscriptionChange = (transcript: string) => {
+    setText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+  };
 
   const streamGeneralAnswer = async (
     prompt: string,
     onDelta: (delta: string) => void,
   ) => {
-    const supabase = createClient();
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-    if (error || !session?.access_token) {
+    const token = await getAccessToken();
+    if (!token) {
       throw new Error("You must be signed in to use AI features.");
     }
 
@@ -53,7 +79,7 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ question: prompt }),
     });
@@ -107,8 +133,8 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
     }
   };
 
-  const send = async () => {
-    const normalized = question.trim();
+  const onHandleSubmit = async (payload: { text: string; files: any[] }) => {
+    const normalized = payload.text.trim();
     if (normalized.length < 2 || isStreaming) {
       return;
     }
@@ -120,7 +146,6 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
       { id: userMessageId, role: "user", text: normalized },
       { id: pendingMessageId, role: "assistant", text: "", pending: true },
     ]);
-    setQuestion("");
     setIsStreaming(true);
 
     try {
@@ -155,111 +180,86 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="right-0 left-auto top-0 h-screen w-[min(100vw,430px)] max-w-none translate-x-0 translate-y-0 rounded-none border-l border-border p-0">
-        <DialogHeader className="border-b border-border px-4 py-3">
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkle className="size-4" />
+      <DialogContent className="right-0 left-auto top-0 h-screen w-[min(100vw,480px)] max-w-none translate-x-0 translate-y-0 rounded-none border-l border-border p-0 flex flex-col bg-background shadow-2xl">
+        <DialogHeader className="border-b border-border px-6 py-4">
+          <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+            <Sparkle className="size-5 text-primary" weight="fill" />
             {getMessage(
               translationMessages,
               "shell.ai.title",
-              "General AI Assistant",
+              "AI Assistant",
             )}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs">
             {getMessage(
               translationMessages,
               "shell.ai.subtitle",
-              "Ask about any topic, not only your notes.",
+              "Ask about any academic topic or for help with your studies.",
             )}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex h-[calc(100vh-140px)] flex-col">
-          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
-            {messages.length === 0 ? (
-              <p className="rounded-none border border-dashed border-border p-3 text-xs text-muted-foreground">
-                {getMessage(
-                  translationMessages,
-                  "shell.ai.empty",
-                  "Start with a question and I will respond here.",
-                )}
-              </p>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`rounded-none border p-3 text-xs leading-relaxed ${
-                    message.role === "user"
-                      ? "border-primary/30 bg-primary/10"
-                      : "border-border bg-muted/30"
-                  }`}
-                >
-                  <p className="mb-1 text-[11px] font-semibold text-muted-foreground">
-                    {message.role === "user"
-                      ? getMessage(translationMessages, "shell.ai.you", "You")
-                      : getMessage(
-                          translationMessages,
-                          "shell.ai.assistant",
-                          "Assistant",
-                        )}
+        <div className="relative flex size-full flex-col divide-y overflow-hidden bg-background">
+          <div className="flex-1">
+            <div className="p-6 space-y-6">
+              {messages.length === 0 ? (
+                <div className="py-12 text-center space-y-4">
+                  <div className="size-12 rounded-2xl bg-primary/5 mx-auto flex items-center justify-center border border-primary/10">
+                    <Sparkle className="size-6 text-primary/40" />
+                  </div>
+                  <p className="text-xs text-muted-foreground max-w-[200px] mx-auto leading-relaxed italic">
+                    {getMessage(
+                      translationMessages,
+                      "shell.ai.empty",
+                      "I'm here to help with your academic questions. Ask anything!",
+                    )}
                   </p>
-                  {message.pending ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <span className="inline-block size-3 animate-spin rounded-full border-2 border-border border-t-primary" />
-                      <span className="text-xs">
-                        {getMessage(
-                          translationMessages,
-                          "shell.ai.sending",
-                          "Sending...",
-                        )}
-                      </span>
-                    </div>
-                  ) : null}
-                  {!message.pending && message.role === "assistant" ? (
-                    <div className="prose prose-xs max-w-none text-foreground prose-p:my-2 prose-headings:my-2 prose-ul:my-2 prose-li:my-0.5">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {message.text}
-                      </ReactMarkdown>
-                    </div>
-                  ) : (
-                    <p className="whitespace-pre-wrap">{message.text}</p>
-                  )}
                 </div>
-              ))
-            )}
+              ) : (
+                messages.map((message) => (
+                  <Message key={message.id} from={message.role}>
+                    <MessageContent>
+                      {message.role === 'assistant' ? (
+                        <MessageResponse>{message.text}</MessageResponse>
+                      ) : (
+                        message.text
+                      )}
+                      {message.pending && (
+                        <div className="mt-2 flex items-center gap-2 text-primary/60">
+                          <Loader2 className="size-3 animate-spin" />
+                          <span className="text-[10px] font-medium uppercase tracking-widest">Generating...</span>
+                        </div>
+                      )}
+                    </MessageContent>
+                  </Message>
+                ))
+              )}
+              <div ref={scrollRef} />
+            </div>
           </div>
 
-          <div className="space-y-2 border-t border-border px-4 py-3">
-            <Textarea
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-              placeholder={getMessage(
-                translationMessages,
-                "shell.ai.placeholder",
-                "Ask anything...",
-              )}
-              className="min-h-24 resize-none"
-            />
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[11px] text-muted-foreground">
-                {getMessage(
-                  translationMessages,
-                  "shell.ai.hint",
-                  "Answers are generated by Gemini.",
-                )}
-              </p>
-              <Button
-                onClick={send}
-                disabled={question.trim().length < 2 || isStreaming}
-              >
-                {isStreaming
-                  ? getMessage(
-                      translationMessages,
-                      "shell.ai.sending",
-                      "Sending...",
-                    )
-                  : getMessage(translationMessages, "shell.ai.send", "Send")}
-              </Button>
+          <div className="grid shrink-0 gap-4 pt-4 bg-background">
+            <div className="w-full px-4 pb-4 max-w-4xl mx-auto">
+              <PromptInput globalDrop multiple onSubmit={onHandleSubmit}>
+                <PromptInputHeader>
+                  {/* attachments display could go here */}
+                </PromptInputHeader>
+                <PromptInputBody>
+                  <PromptInputTextarea onChange={(e) => setText(e.target.value)} value={text} placeholder={getMessage(translationMessages, "shell.ai.placeholder", "Ask me anything...")} />
+                </PromptInputBody>
+                <PromptInputFooter>
+                  <PromptInputTools>
+                    <PromptInputActionMenu>
+                      <PromptInputActionMenuTrigger />
+                      <PromptInputActionMenuContent>
+                        <PromptInputActionAddAttachments />
+                      </PromptInputActionMenuContent>
+                    </PromptInputActionMenu>
+                    <SpeechInput className="shrink-0" aria-label="Start voice input" onTranscriptionChange={handleTranscriptionChange} title="Start voice input" size="icon-sm" variant="ghost" />
+                  </PromptInputTools>
+                  <PromptInputSubmit disabled={isSubmitDisabled} status={isStreaming ? 'streaming' : undefined} />
+                </PromptInputFooter>
+              </PromptInput>
             </div>
           </div>
         </div>

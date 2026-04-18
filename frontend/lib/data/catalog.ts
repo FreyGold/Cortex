@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { apiRequest } from "@/lib/api/client";
 
 export type University = {
   id: string;
@@ -62,87 +62,28 @@ export type Resource = {
 };
 
 export async function getCatalogData() {
-  const supabase = await createClient();
-
-  const [universitiesRes, collegesRes, majorsRes, yearLevelsRes, coursesRes] =
-    await Promise.all([
-      supabase
-        .from("universities")
-        .select("id,name_en,slug")
-        .eq("is_active", true)
-        .order("name_en", { ascending: true }),
-      supabase
-        .from("colleges")
-        .select("id,university_id,name_en,slug")
-        .eq("is_active", true)
-        .order("name_en", { ascending: true }),
-      supabase
-        .from("majors")
-        .select("id,college_id,name_en,slug,color,icon")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("name_en", { ascending: true }),
-      supabase
-        .from("year_levels")
-        .select("id,level,name_en")
-        .order("level", { ascending: true }),
-      supabase
-        .from("courses")
-        .select("id,major_id,year_level_id,name_en,code,description,credits")
-        .order("name_en", { ascending: true }),
-    ]);
-
-  if (universitiesRes.error) throw universitiesRes.error;
-  if (collegesRes.error) throw collegesRes.error;
-  if (majorsRes.error) throw majorsRes.error;
-  if (yearLevelsRes.error) throw yearLevelsRes.error;
-  if (coursesRes.error) throw coursesRes.error;
-
-  return {
-    universities: universitiesRes.data as University[],
-    colleges: collegesRes.data as College[],
-    majors: majorsRes.data as Major[],
-    yearLevels: yearLevelsRes.data as YearLevel[],
-    courses: coursesRes.data as Course[],
-  };
+  return apiRequest<{
+    universities: University[];
+    colleges: College[];
+    majors: Major[];
+    yearLevels: YearLevel[];
+    courses: Course[];
+  }>("/api/data/catalog");
 }
 
 export async function getCourseData(courseId: string) {
-  const supabase = await createClient();
+  return apiRequest<{
+    course: Course | null;
+    resources: Resource[];
+    doctors: Doctor[];
+    doctorAssignments: { doctor_id: string }[];
+  }>(`/api/data/courses/${courseId}`);
+}
 
-  const [courseRes, resourcesRes, doctorsRes, assignmentsRes] =
-    await Promise.all([
-      supabase
-        .from("courses")
-        .select("id,major_id,year_level_id,name_en,code,description,credits")
-        .eq("id", courseId)
-        .maybeSingle(),
-      supabase
-        .from("resources")
-        .select(
-          "id,course_id,title_en,type,exam_type,doctor_id,google_drive_id,google_drive_url,file_type,file_size,download_count,view_count,average_rating,rating_count",
-        )
-        .eq("course_id", courseId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("doctors")
-        .select("id,name_en")
-        .order("name_en", { ascending: true }),
-      supabase
-        .from("course_doctors")
-        .select("doctor_id")
-        .eq("course_id", courseId),
-    ]);
-
-  if (courseRes.error) throw courseRes.error;
-  if (resourcesRes.error) throw resourcesRes.error;
-  if (doctorsRes.error) throw doctorsRes.error;
-  if (assignmentsRes.error) throw assignmentsRes.error;
-
-  return {
-    course: courseRes.data as Course | null,
-    resources: resourcesRes.data as Resource[],
-    doctors: doctorsRes.data as Doctor[],
-    doctorAssignments: assignmentsRes.data as { doctor_id: string }[],
-  };
+export async function createDoctor(accessToken: string, name_en: string) {
+  return apiRequest<{ doctor: Doctor }>("/api/data/doctors", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: { name_en },
+  });
 }

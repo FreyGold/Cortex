@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import {
-  ArrowSquareOut,
   DownloadSimple,
   Eye,
   FileText,
   FolderOpen,
   Ghost,
-  User,
   GridFour,
   List,
+  User,
 } from "@phosphor-icons/react/dist/ssr";
+import { useState } from "react";
+import { DriveViewerDialog } from "@/components/data/drive-viewer-dialog";
+import { EditResourceDialog } from "@/components/data/edit-resource-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +25,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Doctor, Resource } from "@/lib/data/catalog";
-import { EditResourceDialog } from "@/components/data/edit-resource-dialog";
 
 type Props = {
   resources: Resource[];
@@ -56,20 +56,15 @@ export function ResourceList({
 
   if (filtered.length === 0) {
     return (
-      <Card className="border-dashed border-2 shadow-none bg-muted/5 animate-in fade-in zoom-in-95 duration-500">
-        <CardContent className="py-16 px-6 text-center">
-          <div className="mx-auto bg-muted/30 p-4 rounded-full w-fit mb-4 group hover:bg-muted/50 transition-colors duration-500">
-            <Ghost
-              className="size-10 text-muted-foreground/50 group-hover:-translate-y-1 group-hover:rotate-12 group-hover:text-primary/50 transition-all duration-500 ease-out-quart"
-              weight="duotone"
-            />
-          </div>
-          <h3 className="text-lg font-bold tracking-tight mb-2">
-            No resources found
-          </h3>
-          <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-            We couldn't find any resources matching your current filters. Try
-            adjusting them or clearing selections.
+      <Card className="border-dashed border-2 border-border/70 shadow-none">
+        <CardContent className="py-14 text-center">
+          <Ghost
+            className="mx-auto mb-3 size-10 text-muted-foreground/60"
+            weight="duotone"
+          />
+          <h3 className="text-base font-semibold">No resources found</h3>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
+            Try changing the selected filters or clearing the current selection.
           </p>
         </CardContent>
       </Card>
@@ -79,138 +74,91 @@ export function ResourceList({
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-lg border border-border/50">
+        <div className="inline-flex items-center gap-1 rounded-lg border border-border/70 bg-muted/20 p-1">
           <Button
             variant={viewMode === "card" ? "secondary" : "ghost"}
             size="sm"
-            className="h-8 px-2.5 rounded-md"
+            className="h-8 gap-1.5"
             onClick={() => setViewMode("card")}
           >
-            <GridFour className="size-4 mr-1.5" />
-            <span className="text-xs font-medium">Cards</span>
+            <GridFour className="size-4" />
+            Cards
           </Button>
           <Button
             variant={viewMode === "table" ? "secondary" : "ghost"}
             size="sm"
-            className="h-8 px-2.5 rounded-md"
+            className="h-8 gap-1.5"
             onClick={() => setViewMode("table")}
           >
-            <List className="size-4 mr-1.5" />
-            <span className="text-xs font-medium">Table</span>
+            <List className="size-4" />
+            Table
           </Button>
         </div>
       </div>
 
       {viewMode === "card" ? (
-        <div className="grid gap-4">
-          {filtered.map((resource, index) => {
+        <div className="grid gap-3">
+          {filtered.map((resource) => {
             const doctor = resource.doctor_id
               ? doctorsById.get(resource.doctor_id)
               : undefined;
-            const driveUrl =
-              resource.google_drive_url ??
-              `https://drive.google.com/file/d/${resource.google_drive_id}/view`;
-            const isFolder = driveUrl.includes("/folders/");
-            const Icon = isFolder ? FolderOpen : FileText;
+            const isFolder =
+              resource.google_drive_url?.includes("/folders/") ?? false;
 
             return (
-              <Card
-                key={resource.id}
-                className="shadow-sm border-border/60 hover:border-primary/40 hover:shadow-md transition-all duration-400 ease-out-quart group bg-card/60 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4"
-                style={{
-                  animationDelay: `${Math.min(index * 50, 500)}ms`,
-                  animationFillMode: "both",
-                }}
-              >
-                <CardHeader className="pb-3 px-5 pt-5">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="space-y-2 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                          <Icon className="size-4" weight="duotone" />
-                        </div>
-                        <Badge
-                          variant="synapse"
-                          className="h-5 px-2 text-[10px] font-bold uppercase tracking-widest bg-primary/5 text-primary border-primary/20 group-hover:border-primary/40 transition-colors"
-                        >
-                          {resource.type}
-                        </Badge>
-                        {resource.exam_type && (
-                          <Badge
-                            variant="outline"
-                            className="h-5 px-2 text-[10px] font-semibold border-border/60 text-muted-foreground"
-                          >
-                            {resource.exam_type}
-                          </Badge>
-                        )}
-                      </div>
-
-                      <CardTitle className="text-lg font-bold leading-tight group-hover:text-primary transition-colors duration-300">
-                        {resource.title_en}
-                      </CardTitle>
-
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                        <User className="size-3.5 opacity-70" />
-                        {doctor?.name_en ?? "Unassigned instructor"}
-                      </div>
-                    </div>
-
-                    {resource.file_type && !isFolder && (
-                      <Badge
-                        variant="muted"
-                        className="h-6 px-2 text-[10px] font-bold tracking-widest bg-muted/50 uppercase"
-                      >
+              <Card key={resource.id} className="border-border/70 shadow-none">
+                <CardHeader className="space-y-3 pb-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="capitalize">
+                      {resource.type}
+                    </Badge>
+                    {resource.exam_type ? (
+                      <Badge variant="outline">{resource.exam_type}</Badge>
+                    ) : null}
+                    {resource.file_type && !isFolder ? (
+                      <Badge variant="outline" className="uppercase">
                         {resource.file_type}
                       </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="px-5 pb-5 pt-0 space-y-4">
-                  <div className="flex flex-wrap items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 border-t border-border/40 pt-4 mt-2">
-                    <div className="flex items-center gap-1.5 group/stat hover:text-foreground transition-colors cursor-default">
-                      <Eye className="size-3.5 group-hover/stat:text-primary transition-colors" />
-                      <span>{resource.view_count ?? 0} Views</span>
-                    </div>
-                    <div className="w-1 h-1 rounded-full bg-border/80"></div>
-                    <div className="flex items-center gap-1.5 group/stat hover:text-foreground transition-colors cursor-default">
-                      <DownloadSimple className="size-3.5 group-hover/stat:text-primary transition-colors" />
-                      <span>{resource.download_count ?? 0} Downloads</span>
-                    </div>
+                    ) : null}
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <Button
-                      size="sm"
-                      variant="default"
-                      asChild
-                      className="h-9 px-4 gap-2 font-medium shadow-sm hover:shadow active:scale-[0.98] transition-all rounded-full"
-                    >
-                      <a href={driveUrl} target="_blank" rel="noreferrer">
-                        {isFolder ? (
-                          <FolderOpen className="size-4" weight="bold" />
-                        ) : (
-                          <DownloadSimple className="size-4" weight="bold" />
-                        )}
-                        {isFolder ? "Open Folder" : "Download"}
-                      </a>
-                    </Button>
-                    {!isFolder && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        asChild
-                        className="h-9 px-4 gap-2 font-medium bg-background hover:bg-muted/50 active:scale-[0.98] transition-all rounded-full"
-                      >
-                        <a
-                          href={`https://drive.google.com/file/d/${resource.google_drive_id}/preview`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <ArrowSquareOut className="size-4" />
-                          Open in Drive
-                        </a>
-                      </Button>
-                    )}
+                  <CardTitle className="text-base leading-snug">
+                    {resource.title_en}
+                  </CardTitle>
+
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <User className="size-3.5" />
+                    {doctor?.name_en ?? "Unassigned instructor"}
+                  </p>
+                </CardHeader>
+
+                <CardContent className="space-y-3 pt-0">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <Eye className="size-3.5" />
+                      {resource.view_count ?? 0} views
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <DownloadSimple className="size-3.5" />
+                      {resource.download_count ?? 0} downloads
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <DriveViewerDialog
+                      driveId={resource.google_drive_id}
+                      driveUrl={resource.google_drive_url}
+                      title={resource.title_en}
+                      triggerVariant="default"
+                      triggerLabel={isFolder ? "Open folder" : "Open file"}
+                    />
+
+                    {isAdmin ? (
+                      <EditResourceDialog
+                        resource={resource}
+                        doctors={doctors}
+                      />
+                    ) : null}
                   </div>
                 </CardContent>
               </Card>
@@ -218,15 +166,15 @@ export function ResourceList({
           })}
         </div>
       ) : (
-        <div className="rounded-xl border border-border/50 bg-card/40 backdrop-blur-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="overflow-hidden rounded-xl border border-border/70 bg-card">
           <Table>
-            <TableHeader className="bg-muted/30">
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[40px]"></TableHead>
+            <TableHeader>
+              <TableRow className="bg-muted/20 hover:bg-muted/20">
+                <TableHead className="w-[42px]"></TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Instructor</TableHead>
-                <TableHead className="text-right">Metrics</TableHead>
+                <TableHead className="text-right">Stats</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -235,78 +183,44 @@ export function ResourceList({
                 const doctor = resource.doctor_id
                   ? doctorsById.get(resource.doctor_id)
                   : undefined;
-                const driveUrl =
-                  resource.google_drive_url ??
-                  `https://drive.google.com/file/d/${resource.google_drive_id}/view`;
-                const isFolder = driveUrl.includes("/folders/");
+                const isFolder =
+                  resource.google_drive_url?.includes("/folders/") ?? false;
                 const Icon = isFolder ? FolderOpen : FileText;
 
                 return (
-                  <TableRow
-                    key={resource.id}
-                    className="group hover:bg-muted/30 transition-colors"
-                  >
-                    <TableCell className="pl-5">
-                      <div className="p-1.5 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300 w-max">
-                        <Icon className="size-4" weight="duotone" />
-                      </div>
+                  <TableRow key={resource.id}>
+                    <TableCell>
+                      <Icon className="size-4 text-muted-foreground" />
                     </TableCell>
                     <TableCell className="font-medium">
                       {resource.title_en}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="synapse"
-                        className="h-5 px-2 text-[10px] font-bold uppercase tracking-widest bg-primary/5 text-primary border-primary/20"
-                      >
+                      <Badge variant="outline" className="capitalize">
                         {resource.type}
                       </Badge>
-                      {resource.exam_type && (
-                        <Badge
-                          variant="outline"
-                          className="h-5 px-2 text-[10px] font-semibold border-border/60 text-muted-foreground ml-1"
-                        >
-                          {resource.exam_type}
-                        </Badge>
-                      )}
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
+                    <TableCell className="text-sm text-muted-foreground">
                       {doctor?.name_en ?? "Unassigned"}
                     </TableCell>
-                    <TableCell className="text-right text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="flex items-center gap-1">
-                          <Eye className="size-3" /> {resource.view_count ?? 0}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <DownloadSimple className="size-3" />{" "}
-                          {resource.download_count ?? 0}
-                        </span>
-                      </div>
+                    <TableCell className="text-right text-xs text-muted-foreground">
+                      {(resource.view_count ?? 0).toLocaleString()} /{" "}
+                      {(resource.download_count ?? 0).toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-right pr-5">
+                    <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        {isAdmin && (
-                          <EditResourceDialog resource={resource} doctors={doctors} />
-                        )}
-                        <Button
-                          size="sm"
-                          variant="default"
-                          asChild
-                          className="h-8 px-3 gap-1.5 font-medium rounded-full"
-                        >
-                          <a href={driveUrl} target="_blank" rel="noreferrer">
-                            {isFolder ? (
-                              <FolderOpen className="size-3.5" weight="bold" />
-                            ) : (
-                              <DownloadSimple
-                                className="size-3.5"
-                                weight="bold"
-                              />
-                            )}
-                            {isFolder ? "Open" : "Download"}
-                          </a>
-                        </Button>
+                        {isAdmin ? (
+                          <EditResourceDialog
+                            resource={resource}
+                            doctors={doctors}
+                          />
+                        ) : null}
+                        <DriveViewerDialog
+                          driveId={resource.google_drive_id}
+                          driveUrl={resource.google_drive_url}
+                          title={resource.title_en}
+                          triggerLabel={isFolder ? "Open folder" : "Open file"}
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

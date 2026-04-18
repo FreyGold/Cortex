@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { SiteHeader } from "@/components/site-header";
 import { ShellHeaderActions } from "@/components/shell-header-actions";
-import { createClient } from "@/lib/supabase/server";
+import { getServerSession } from "@/lib/auth";
 
 const featureIcons = [Notebook, BookBookmark, Brain];
 
@@ -32,24 +32,10 @@ export const metadata = {
 export default async function Home() {
   const t = await getTranslations("home");
   const shellT = await getTranslations("shell");
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const signedIn = Boolean(user);
-  const profileRes = user
-    ? await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle()
-    : { data: null, error: null };
-
-  if (profileRes.error) {
-    throw new Error(`Failed to load home header profile: ${profileRes.error.message}`);
-  }
-
-  const isAdmin = profileRes.data?.role === "admin";
+  
+  const session = await getServerSession();
+  const signedIn = Boolean(session);
+  const isAdmin = session?.profile?.role === "admin";
 
   const primaryHref = signedIn ? "/notes" : "/auth/signup";
   const primaryLabel = signedIn
@@ -114,7 +100,7 @@ export default async function Home() {
                 <CheckCircle className="size-4 text-emerald-500" />
                 <p className="text-sm text-muted-foreground">
                   {t("hero.signedInAs", {
-                    email: user?.email ?? "your account",
+                    email: session?.user?.email ?? "your account",
                   })}
                 </p>
               </div>

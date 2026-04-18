@@ -28,7 +28,7 @@ export function embedNote(accessToken: string, noteId: string) {
     noteId: string;
     chunksCreated: number;
     embeddedAt: string;
-  }>(`/api/notes/${noteId}/embed`, {
+  }>(`/api/ai/notes/${noteId}/embed`, {
     method: "POST",
     headers: authHeader(accessToken),
   });
@@ -43,7 +43,7 @@ export function searchNotes(
     threshold: number;
     limit: number;
     matches: SearchMatch[];
-  }>("/api/notes/search", {
+  }>("/api/ai/library/search", {
     method: "POST",
     headers: authHeader(accessToken),
     body: input,
@@ -60,7 +60,22 @@ export function askNote(
     answer: string;
     references: AskReference[];
     model?: string;
-  }>(`/api/notes/${noteId}/ask`, {
+  }>(`/api/ai/notes/${noteId}/ask`, {
+    method: "POST",
+    headers: authHeader(accessToken),
+    body: input,
+  });
+}
+
+export function askAllNotes(
+  accessToken: string,
+  input: { question?: string; messages?: any[]; topK?: number },
+) {
+  return apiRequest<{
+    answer: string;
+    references: Array<AskReference & { noteId: string; noteTitle: string }>;
+    model?: string;
+  }>("/api/ai/library/ask", {
     method: "POST",
     headers: authHeader(accessToken),
     body: input,
@@ -68,7 +83,14 @@ export function askNote(
 }
 
 export function getNoteConversation(accessToken: string, noteId: string) {
-  return apiRequest<{ messages: any[] }>(`/api/notes/${noteId}/conversation`, {
+  return apiRequest<{ messages: any[] }>(`/api/ai/notes/${noteId}/conversation`, {
+    method: "GET",
+    headers: authHeader(accessToken),
+  });
+}
+
+export function getGlobalConversation(accessToken: string) {
+  return apiRequest<{ messages: any[] }>("/api/ai/library/conversation", {
     method: "GET",
     headers: authHeader(accessToken),
   });
@@ -76,7 +98,7 @@ export function getNoteConversation(accessToken: string, noteId: string) {
 
 export function generateSummary(accessToken: string, noteId: string) {
   return apiRequest<{ noteId: string; summary: string }>(
-    `/api/notes/${noteId}/summary`,
+    `/api/ai/notes/${noteId}/summary`,
     {
       method: "POST",
       headers: authHeader(accessToken),
@@ -86,7 +108,7 @@ export function generateSummary(accessToken: string, noteId: string) {
 
 export function suggestTags(accessToken: string, noteId: string) {
   return apiRequest<{ noteId: string; tags: string[] }>(
-    `/api/notes/${noteId}/suggest-tags`,
+    `/api/ai/notes/${noteId}/suggest-tags`,
     {
       method: "POST",
       headers: authHeader(accessToken),

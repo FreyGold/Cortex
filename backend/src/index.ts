@@ -8,8 +8,8 @@ import { aiRouter } from "./routes/ai";
 import { adminRouter } from "./routes/admin";
 import { healthRouter } from "./routes/health";
 import { profileRouter } from "./routes/profile";
-
 import { dataRouter } from "./routes/data";
+import { notesRouter } from "./routes/notes";
 
 dotenv.config();
 
@@ -34,11 +34,12 @@ app.use(
 
 app.use(express.json());
 app.use("/api", healthRouter);
-app.use("/api", aiRouter);
+app.use("/api/ai", aiRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/data", dataRouter);
+app.use("/api/notes", notesRouter);
 
 const port = Number(process.env.PORT ?? 4000);
 

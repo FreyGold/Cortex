@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 let cachedClient: ReturnType<typeof createClient<any>> | null = null;
+let cachedAnonClient: ReturnType<typeof createClient<any>> | null = null;
 
 export function getSupabaseAdmin() {
   if (cachedClient) {
@@ -35,6 +36,30 @@ export function getSupabaseAdmin() {
   );
 
   return cachedClient;
+}
+
+export function getSupabaseAnonClient() {
+  if (cachedAnonClient) {
+    return cachedAnonClient;
+  }
+
+  const supabaseUrl =
+    process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey =
+    process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing Supabase configuration env vars.");
+  }
+
+  cachedAnonClient = createClient<any>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+
+  return cachedAnonClient;
 }
 
 export function getSupabaseUserClient(accessToken: string) {

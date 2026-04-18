@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import type { College, Major, YearLevel } from "@/lib/data/catalog";
+import { getBackendUrl } from "@/lib/api/backend-url";
+import { getAccessToken } from "@/lib/supabase/client";
 
 type Props = {
   colleges: College[];
@@ -84,9 +86,14 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
     };
 
     try {
-      const res = await fetch("/api/data/courses", {
+      const token = await getAccessToken();
+
+      const res = await fetch(`${getBackendUrl()}/api/data/courses`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(payload),
       });
 

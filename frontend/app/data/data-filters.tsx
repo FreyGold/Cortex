@@ -2,7 +2,7 @@
 
 import { MagnifyingGlass } from "@phosphor-icons/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,44 +40,65 @@ export function DataFilters({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
+  const [searchValue, setSearchValue] = useState(q);
 
-  function updateParams(updates: Record<string, string | null>) {
-    const params = new URLSearchParams(searchParams.toString());
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
 
-    // When university changes, reset college and major
-    if (updates.university !== undefined) {
-      if (updates.university) {
-        params.set("university", updates.university);
-      } else {
-        params.delete("university");
-      }
-      params.delete("college");
-      params.delete("major");
-    }
-    // When college changes, reset major
-    else if (updates.college !== undefined) {
-      if (updates.college) {
-        params.set("college", updates.college);
-      } else {
-        params.delete("college");
-      }
-      params.delete("major");
-    }
-    // Handle other updates
-    else {
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value) {
-          params.set(key, value);
+      // When university changes, reset college and major
+      if (updates.university !== undefined) {
+        if (updates.university) {
+          params.set("university", updates.university);
         } else {
-          params.delete(key);
+          params.delete("university");
         }
+        params.delete("college");
+        params.delete("major");
+      }
+      // When college changes, reset major
+      else if (updates.college !== undefined) {
+        if (updates.college) {
+          params.set("college", updates.college);
+        } else {
+          params.delete("college");
+        }
+        params.delete("major");
+      }
+      // Handle other updates
+      else {
+        Object.entries(updates).forEach(([key, value]) => {
+          if (value) {
+            params.set(key, value);
+          } else {
+            params.delete(key);
+          }
+        });
+      }
+
+      startTransition(() => {
+        const query = params.toString();
+        router.push(query ? `/data?${query}` : "/data");
       });
+    },
+    [router, searchParams],
+  );
+
+  useEffect(() => {
+    setSearchValue(q);
+  }, [q]);
+
+  useEffect(() => {
+    if (searchValue === q) {
+      return;
     }
 
-    startTransition(() => {
-      router.push(`/data?${params.toString()}`);
-    });
-  }
+    const handler = setTimeout(() => {
+      updateParams({ q: searchValue.trim() ? searchValue : null });
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [q, searchValue, updateParams]);
 
   const filteredColleges = colleges.filter(
     (c) => !selectedUniversityId || c.university_id === selectedUniversityId,
@@ -93,23 +114,17 @@ export function DataFilters({
         <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           id="data-search"
-          defaultValue={q}
-          placeholder="Search courses..."
+          value={searchValue}
+          placeholder="Semantic search across all courses..."
           className="h-10 pl-9"
-          onChange={(e) => {
-            // Debounce search
-            const handler = setTimeout(() => {
-              updateParams({ q: e.target.value });
-            }, 300);
-            return () => clearTimeout(handler);
-          }}
+          onChange={(e) => setSearchValue(e.target.value)}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-muted-foreground">
+        <p className="text-xs font-semibold text-muted-foreground">
           University
-        </label>
+        </p>
         <Select
           value={selectedUniversityId ?? "all"}
           onValueChange={(val) =>
@@ -131,9 +146,7 @@ export function DataFilters({
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-muted-foreground">
-          College
-        </label>
+        <p className="text-xs font-semibold text-muted-foreground">College</p>
         <Select
           value={selectedCollegeId ?? "all"}
           onValueChange={(val) =>
@@ -156,9 +169,7 @@ export function DataFilters({
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-muted-foreground">
-          Major
-        </label>
+        <p className="text-xs font-semibold text-muted-foreground">Major</p>
         <Select
           value={selectedMajorId ?? "all"}
           onValueChange={(val) =>
@@ -181,9 +192,9 @@ export function DataFilters({
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-muted-foreground">
+        <p className="text-xs font-semibold text-muted-foreground">
           Year Level
-        </label>
+        </p>
         <Select
           value={selectedYearId ?? "all"}
           onValueChange={(val) =>

@@ -1,66 +1,52 @@
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { Slot } from "radix-ui"
 
-type BadgeVariant =
-  | "brand"
-  | "synapse"
-  | "axon"
-  | "success"
-  | "error"
-  | "muted"
-  | "outline";
+import { cn } from "@/lib/utils"
 
-interface BadgeProps {
-  variant?: BadgeVariant;
-  children: React.ReactNode;
-  className?: string;
-  dot?: boolean;
-}
+const badgeVariants = cva(
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-3xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+        secondary:
+          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        destructive:
+          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
+        outline:
+          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+        ghost:
+          "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
+        link: "text-primary underline-offset-4 hover:underline",
+        success: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+        muted: "bg-muted text-muted-foreground border-transparent",
+        axon: "bg-axon-500/10 text-axon-600 border-axon-500/20",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
-const variantStyles: Record<BadgeVariant, string> = {
-  brand: "bg-[#ede9fe] text-[#4f46e5] dark:bg-[#231f38] dark:text-[#a5b4fc]",
-  synapse: "bg-[#e0f2fe] text-[#0284c7] dark:bg-[#0c2a3d] dark:text-[#38bdf8]",
-  axon: "bg-[#fef3c7] text-[#b45309] dark:bg-[#2d2208] dark:text-[#fbbf24]",
-  success: "bg-[#d1fae5] text-[#059669] dark:bg-[#052e1c] dark:text-[#34d399]",
-  error: "bg-[#fee2e2] text-[#dc2626] dark:bg-[#2d0a0a] dark:text-[#f87171]",
-  muted: "bg-[#f5f3ef] text-[#78746d] dark:bg-[#1e1c28] dark:text-[#a39e98]",
-  outline: "bg-transparent border border-border text-foreground",
-};
-
-const dotColors: Record<BadgeVariant, string> = {
-  brand: "bg-[#5b4cdb]",
-  synapse: "bg-[#0ea5e9]",
-  axon: "bg-[#f59e0b]",
-  success: "bg-[#10b981]",
-  error: "bg-[#ef4444]",
-  muted: "bg-[#a39e98]",
-  outline: "bg-foreground",
-};
-
-export function Badge({
-  variant = "brand",
-  children,
+function Badge({
   className,
-  dot = false,
-}: BadgeProps) {
+  variant = "default",
+  asChild = false,
+  ...props
+}: React.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot.Root : "span"
+
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-[9999px] px-2 py-0.5",
-        "text-[0.75rem] font-semibold leading-5 tracking-[0.125px]",
-        variantStyles[variant],
-        className,
-      )}
-    >
-      {dot && (
-        <span
-          className={cn(
-            "size-1.5 rounded-full flex-shrink-0",
-            dotColors[variant],
-          )}
-          aria-hidden="true"
-        />
-      )}
-      {children}
-    </span>
-  );
+    <Comp
+      data-slot="badge"
+      data-variant={variant}
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
+  )
 }
+
+export { Badge, badgeVariants }

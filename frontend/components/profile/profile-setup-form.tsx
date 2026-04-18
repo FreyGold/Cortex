@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { setupProfile } from "@/lib/api/profile";
+import { getAccessToken } from "@/lib/supabase/client";
 
 type University = { id: string; name_en: string };
 type College = { id: string; university_id: string; name_en: string };
@@ -84,30 +86,27 @@ export function ProfileSetupForm({
     setSaving(true);
     setError(null);
 
-    const response = await fetch("/api/profile/setup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const accessToken = await getAccessToken();
+
+      if (!accessToken) {
+        throw new Error("You must be signed in to save your profile.");
+      }
+
+      await setupProfile(accessToken, {
         universityId: universityId || null,
         collegeId: collegeId || null,
         majorId: majorId || null,
         yearLevelId: yearLevelId || null,
         preferredLanguage,
-      }),
-    });
+      });
 
-    const payload = (await response.json().catch(() => ({}))) as {
-      error?: string;
-    };
-
-    if (!response.ok) {
+      router.push("/notes");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message ?? t("errors.generic"));
       setSaving(false);
-      setError(payload.error ?? t("errors.generic"));
-      return;
     }
-
-    router.push("/notes");
-    router.refresh();
   };
 
   return (

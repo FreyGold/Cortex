@@ -22,7 +22,7 @@ export function NotesLayoutClient({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="flex w-full h-[calc(100vh-4rem)] overflow-hidden relative bg-background">
+    <div className="flex w-full h-[calc(100vh-5.5rem)] overflow-hidden! relative bg-background">
       {/* Mobile overlay toggle */}
       {isMobile && !isOpen && (
         <div className="absolute top-4 left-4 z-50">

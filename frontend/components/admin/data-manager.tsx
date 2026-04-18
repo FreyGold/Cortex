@@ -7,7 +7,7 @@ import {
   GraduationCap,
 } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { getBackendUrl } from "@/lib/api/backend-url";
 import { createClient } from "@/lib/supabase/client";
+import { getCatalogData } from "@/lib/data/catalog";
 
 type University = {
   id: string;
@@ -38,11 +39,12 @@ async function getAccessToken() {
   const supabase = createClient();
   const {
     data: { session },
-    error,
   } = await supabase.auth.getSession();
-  if (error || !session?.access_token) {
+
+  if (!session?.access_token) {
     throw new Error("You must be signed in to manage data.");
   }
+
   return session.access_token;
 }
 
@@ -96,7 +98,6 @@ export function DataManager() {
   const [universitiesError, setUniversitiesError] = useState<string | null>(
     null,
   );
-  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     let active = true;
@@ -105,25 +106,20 @@ export function DataManager() {
       setUniversitiesLoading(true);
       setUniversitiesError(null);
 
-      const { data, error } = await supabase
-        .from("universities")
-        .select("id,name_en,slug")
-        .eq("is_active", true)
-        .order("name_en");
-
-      if (!active) {
-        return;
-      }
-
-      if (error) {
-        setUniversitiesError(error.message);
-        setUniversities([]);
-      } else {
-        setUniversities((data ?? []) as University[]);
-      }
-
-      if (active) {
-        setUniversitiesLoading(false);
+      try {
+        const data = await getCatalogData();
+        if (active) {
+          setUniversities(data.universities);
+        }
+      } catch (error: any) {
+        if (active) {
+          setUniversitiesError(error.message || "Failed to load universities");
+          setUniversities([]);
+        }
+      } finally {
+        if (active) {
+          setUniversitiesLoading(false);
+        }
       }
     }
 
@@ -132,7 +128,7 @@ export function DataManager() {
     return () => {
       active = false;
     };
-  }, [supabase]);
+  }, []);
 
   const submitUniversity = async () => {
     setBusy(true);

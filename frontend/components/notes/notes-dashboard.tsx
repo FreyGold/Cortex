@@ -1,23 +1,38 @@
 "use client";
 
-import { Placeholder, Plus } from "@phosphor-icons/react";
+import { Placeholder, Plus, FileText } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCreateNote, useNotesDashboard } from "@/hooks/use-notes";
 
 export function NotesDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const q = searchParams.get("q")?.toLowerCase() || "";
+  const selectedTag = searchParams.get("tag") || "";
 
   const dashboardQuery = useNotesDashboard();
   const createNote = useCreateNote();
 
   const notes = useMemo(() => {
-    return dashboardQuery.data?.notes ?? [];
-  }, [dashboardQuery.data?.notes]);
+    let data = dashboardQuery.data?.notes ?? [];
+    if (q) {
+      data = data.filter(n => 
+        n.title?.toLowerCase().includes(q) || 
+        n.summary?.toLowerCase().includes(q) || 
+        n.content_text?.toLowerCase().includes(q)
+      );
+    }
+    if (selectedTag) {
+      data = data.filter(n => 
+        (n as any).note_tags?.some((nt: any) => nt.tags?.name === selectedTag)
+      );
+    }
+    return data;
+  }, [dashboardQuery.data?.notes, q, selectedTag]);
 
   const onCreateNote = async () => {
     const created = await createNote.mutateAsync({
@@ -28,7 +43,7 @@ export function NotesDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 pt-2">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Recent notes</h2>
           <p className="text-sm text-muted-foreground">
@@ -46,54 +61,53 @@ export function NotesDashboard() {
       </div>
 
       {dashboardQuery.isLoading && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-2">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
+            <Skeleton key={i} className="h-14 w-full rounded-lg" />
           ))}
         </div>
       )}
 
       {dashboardQuery.isError && (
-        <Card className="border-destructive/20 bg-destructive/5">
-          <CardContent className="py-6 text-center text-sm text-destructive font-medium">
-            {(dashboardQuery.error as Error).message}
-          </CardContent>
-        </Card>
+        <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5 text-sm text-destructive font-medium">
+          {(dashboardQuery.error as Error).message}
+        </div>
       )}
 
       {!dashboardQuery.isLoading && !dashboardQuery.isError && (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="flex flex-col gap-1">
           {notes.map((note) => (
             <Link key={note.id} href={`/notes/${note.id}`}>
-              <Card className="h-full border-border/50 shadow-none hover:border-primary/30 hover:bg-accent/30 transition-all cursor-pointer group">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-semibold line-clamp-1 group-hover:text-primary transition-colors">
-                    {note.title || "Untitled"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="line-clamp-2 text-sm text-muted-foreground leading-relaxed">
-                    {note.summary || note.content_text || "Empty note"}
-                  </p>
-                  <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
-                    Updated {new Date(note.updated_at).toLocaleDateString()}
+              <div className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/50 transition-colors group border border-transparent hover:border-border/30">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="flex items-center justify-center size-8 rounded-md bg-accent/30 text-muted-foreground group-hover:text-primary transition-colors shrink-0">
+                    <FileText className="size-4" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                      {note.title || "Untitled"}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate">
+                      {note.summary || note.content_text || "Empty note"}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground/60 whitespace-nowrap ml-4 shrink-0">
+                  {new Date(note.updated_at).toLocaleDateString()}
+                </div>
+              </div>
             </Link>
           ))}
           {notes.length === 0 && (
-            <Card className="col-span-full border-dashed shadow-none bg-muted/20">
-              <CardContent className="py-12 flex flex-col items-center justify-center text-center space-y-3">
-                <Placeholder className="size-8 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">
-                  No notes found in this folder.
-                </p>
-                <Button variant="outline" size="sm" onClick={onCreateNote}>
-                  Create your first note
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="flex flex-col items-center justify-center py-12 text-center space-y-3 rounded-lg border border-dashed border-border/50 bg-muted/10">
+              <Placeholder className="size-8 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">
+                No notes found in this folder.
+              </p>
+              <Button variant="outline" size="sm" onClick={onCreateNote}>
+                Create your first note
+              </Button>
+            </div>
           )}
         </div>
       )}

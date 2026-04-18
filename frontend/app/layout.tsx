@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
 import { Providers } from "@/app/providers";
 import { defaultLocale, getDirection, isLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+
+const geistHeading = Geist({subsets:['latin'],variable:'--font-heading'});
+
+const geistMono = Geist_Mono({subsets:['latin'],variable:'--font-mono'});
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,15 +49,16 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir={getDirection(locale)}
-      className={cn("h-full antialiased", inter.variable)}
+      className={cn("h-full antialiased", inter.variable, geist.variable, "font-mono", geistMono.variable, geistHeading.variable)}
       style={{ fontFamily: "var(--font-sans)" }}
+      data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col">
-        <Providers>
-          <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
             {children}
-          </NextIntlClientProvider>
-        </Providers>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

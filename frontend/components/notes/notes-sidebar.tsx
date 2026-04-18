@@ -8,10 +8,13 @@ import {
   Tag as TagIcon,
   CaretRight,
   CaretDown,
+  MagnifyingGlass,
+  Sparkle,
+  House
 } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +22,8 @@ import {
   useCreateFolder,
   useCreateNote,
   useCreateTag,
+  useMoveFolder,
+  useMoveNote,
   useNotesDashboard,
 } from "@/hooks/use-notes";
 import {
@@ -30,72 +35,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-function useMoveNote() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      noteId,
-      folderId,
-    }: {
-      noteId: string;
-      folderId: string | null;
-    }) => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
-
-      const { error } = await supabase
-        .from("notes")
-        .update({ folder_id: folderId, updated_at: new Date().toISOString() })
-        .eq("id", noteId)
-        .eq("user_id", user.id);
-
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: (_, { noteId }) => {
-      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
-    },
-  });
-}
-
-function useMoveFolder() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      folderId,
-      parentId,
-    }: {
-      folderId: string;
-      parentId: string | null;
-    }) => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
-
-      if (parentId === folderId)
-        throw new Error("Cannot move a folder into itself");
-
-      const { error } = await supabase
-        .from("folders")
-        .update({ parent_id: parentId })
-        .eq("id", folderId)
-        .eq("user_id", user.id);
-
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
-    },
-  });
-}
+import { useQueryClient } from "@tanstack/react-query";
+import { GlobalAssistantModal } from "./global-assistant-modal";
 
 function FolderNode({
   folder,
@@ -241,7 +182,11 @@ function FolderNode({
       </div>
 
       {expanded && (
-        <div className="space-y-0.5">
+        <div className="space-y-0.5 relative">
+          <div 
+            className="absolute top-1 bottom-1 border-l-2 border-border/20 pointer-events-none" 
+            style={{ left: `${depth * 16 + 14}px` }} 
+          />
           {childFolders.length === 0 && folderNotes.length === 0 && (
             <div
               className="py-1 text-[10px] text-muted-foreground/50 italic whitespace-nowrap"
@@ -316,6 +261,31 @@ export function NotesSidebar() {
   >(null);
   const [isRootOver, setIsRootOver] = useState(false);
 
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const selectedTag = searchParams.get("tag") || "";
+  const initialQ = searchParams.get("q") || "";
+
+  const [globalAssistantOpen, setGlobalAssistantOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(initialQ);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery) params.set("q", searchQuery);
+      else params.delete("q");
+      router.replace(`${pathname}?${params.toString()}`);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, pathname, router]);
+
+  const handleTagClick = (tagName: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (selectedTag === tagName) params.delete("tag");
+    else params.set("tag", tagName);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
   const dashboardQuery = useNotesDashboard();
   const createNote = useCreateNote();
   const createFolder = useCreateFolder();
@@ -374,9 +344,64 @@ export function NotesSidebar() {
     setIsFolderDialogOpen(false);
   };
 
+  const filteredNotes = notes.filter((n) => 
+    n.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    n.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    n.content_text?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <aside className="space-y-6">
-      <section className="space-y-2">
+      {/* Top Navigation Hooks */}
+      <section className="space-y-2 pb-4 border-b border-border/10">
+        <div className="px-2">
+          <div className="flex items-center bg-accent/40 hover:bg-accent/60 transition-colors border border-transparent hover:border-border/30 rounded-md px-2 h-8">
+            <MagnifyingGlass className="size-3.5 text-muted-foreground mr-2 shrink-0" />
+            <Input
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="border-0 bg-transparent shadow-none focus-visible:ring-0 h-full p-0 text-xs"
+            />
+          </div>
+        </div>
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start h-8 text-xs font-semibold text-muted-foreground hover:bg-accent/50 group" 
+          onClick={() => setGlobalAssistantOpen(true)}
+        >
+          <Sparkle className="mr-2 size-4 text-primary opacity-90 group-hover:opacity-100 transition-opacity shadow-sm" weight="fill" />
+          <span className="text-primary/90 group-hover:text-primary transition-colors">Ask AI</span>
+        </Button>
+      </section>
+
+      <GlobalAssistantModal 
+        isOpen={globalAssistantOpen}
+        onOpenChange={setGlobalAssistantOpen}
+      />
+
+      {searchQuery && (
+        <section className="px-2 max-h-[30vh] overflow-y-auto">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-2">Search Results</div>
+          {filteredNotes.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">No notes found.</p>
+          ) : (
+            filteredNotes.map((note) => (
+              <Link key={note.id} href={`/notes/${note.id}`}>
+                <Button variant="ghost" className="w-full justify-start h-8 mb-1 px-2 items-center group">
+                  <FileText className="mr-2 size-3.5 shrink-0 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <span className="truncate text-xs font-medium w-full text-left">{note.title || "Untitled"}</span>
+                </Button>
+              </Link>
+            ))
+          )}
+        </section>
+      )}
+
+      {/* Main Workspace (hidden if searching) */}
+      {!searchQuery && (
+        <>
+          <section className="space-y-2">
         <div className="flex items-center justify-between px-2 mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
           <div className="flex items-center gap-2">
             <FolderSimple size={12} weight="bold" />
@@ -547,15 +572,24 @@ export function NotesSidebar() {
           Tags
         </div>
         <div className="flex flex-wrap gap-1.5 px-2">
-          {(dashboardQuery.data?.tags ?? []).map((tag) => (
-            <Badge
-              key={tag.id}
-              variant="outline"
-              className="rounded px-1.5 py-0 h-5 text-[10px] font-medium text-muted-foreground bg-accent/20 border-transparent hover:bg-accent/40 transition-colors"
-            >
-              {tag.name}
-            </Badge>
-          ))}
+          {(dashboardQuery.data?.tags ?? []).map((tag) => {
+            const isSelected = selectedTag === tag.name;
+            return (
+              <Badge
+                key={tag.id}
+                variant={isSelected ? "default" : "outline"}
+                className={cn(
+                  "cursor-pointer rounded px-1.5 py-0 h-5 text-[10px] font-medium transition-colors",
+                  isSelected 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                    : "text-muted-foreground bg-accent/20 border-transparent hover:bg-accent/40"
+                )}
+                onClick={() => handleTagClick(tag.name)}
+              >
+                {tag.name}
+              </Badge>
+            );
+          })}
           {!(dashboardQuery.data?.tags ?? []).length && (
             <p className="py-1 px-1 text-[10px] text-muted-foreground/40 italic">
               No tags indexed
@@ -563,6 +597,8 @@ export function NotesSidebar() {
           )}
         </div>
       </section>
+        </>
+      )}
     </aside>
   );
 }

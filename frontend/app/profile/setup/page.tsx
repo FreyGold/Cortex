@@ -4,65 +4,22 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { ProfileSetupForm } from "@/components/profile/profile-setup-form";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/server";
+import { getCatalogData } from "@/lib/data/catalog";
+import { getServerSession } from "@/lib/auth";
 
 export default async function ProfileSetupPage() {
   const t = await getTranslations("profileSetup");
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await getServerSession();
 
-  if (!user) {
+  if (!session) {
     redirect("/auth/login?redirectTo=/profile/setup");
   }
 
-  const [universitiesRes, collegesRes, majorsRes, yearLevelsRes, profileRes] =
-    await Promise.all([
-      supabase
-        .from("universities")
-        .select("id,name_en")
-        .eq("is_active", true)
-        .order("name_en"),
-      supabase
-        .from("colleges")
-        .select("id,university_id,name_en")
-        .eq("is_active", true)
-        .order("name_en"),
-      supabase
-        .from("majors")
-        .select("id,college_id,name_en")
-        .eq("is_active", true)
-        .order("sort_order")
-        .order("name_en"),
-      supabase.from("year_levels").select("id,level,name_en").order("level"),
-      supabase
-        .from("profiles")
-        .select(
-          "university_id,college_id,major_id,year_level_id,preferred_language",
-        )
-        .eq("id", user.id)
-        .maybeSingle(),
-    ]);
+  const [catalog] = await Promise.all([
+    getCatalogData(),
+  ]);
 
-  if (
-    universitiesRes.error ||
-    collegesRes.error ||
-    majorsRes.error ||
-    yearLevelsRes.error ||
-    profileRes.error
-  ) {
-    const message =
-      universitiesRes.error?.message ||
-      collegesRes.error?.message ||
-      majorsRes.error?.message ||
-      yearLevelsRes.error?.message ||
-      profileRes.error?.message ||
-      "Unknown data loading error";
-    throw new Error(`Failed to load profile setup data: ${message}`);
-  }
-
-  const profile = profileRes.data;
+  const profile = session.profile;
 
   return (
     <AppShell>
@@ -82,10 +39,10 @@ export default async function ProfileSetupPage() {
         </div>
 
         <ProfileSetupForm
-          universities={universitiesRes.data ?? []}
-          colleges={collegesRes.data ?? []}
-          majors={majorsRes.data ?? []}
-          yearLevels={yearLevelsRes.data ?? []}
+          universities={catalog.universities}
+          colleges={catalog.colleges}
+          majors={catalog.majors}
+          yearLevels={catalog.yearLevels}
           initialValues={{
             universityId: profile?.university_id ?? null,
             collegeId: profile?.college_id ?? null,
