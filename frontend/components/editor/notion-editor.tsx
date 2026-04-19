@@ -19,6 +19,7 @@ interface NotionEditorProps {
   editorClassName?: string;
   showToolbar?: boolean;
   autofocus?: boolean;
+  hideFooter?: boolean;
 }
 
 export function NotionEditor({
@@ -28,6 +29,7 @@ export function NotionEditor({
   editorClassName,
   showToolbar = true,
   autofocus = true,
+  hideFooter = false,
 }: NotionEditorProps) {
   const [slashMenuOpen, setSlashMenuOpen] = useState(false);
   const [slashMenuPosition, setSlashMenuPosition] = useState({
@@ -265,19 +267,21 @@ export function NotionEditor({
       </div>
 
       {/* Shortcuts hint */}
-      <div className="flex items-center justify-end pb-4 px-1 text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <span>
-            Type{" "}
-            <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono">
-              /
-            </kbd>{" "}
-            for commands
-          </span>
-          <span className="text-border">•</span>
-          <span>Right-click for more options</span>
+      {!hideFooter && (
+        <div className="flex items-center justify-end pb-4 px-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span>
+              Type{" "}
+              <kbd className="px-1 py-0.5 rounded bg-muted text-[10px] font-mono">
+                /
+              </kbd>{" "}
+              for commands
+            </span>
+            <span className="text-border">•</span>
+            <span>Right-click for more options</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

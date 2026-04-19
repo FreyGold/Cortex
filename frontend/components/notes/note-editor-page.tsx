@@ -104,6 +104,19 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [resourceOpen, setResourceOpen] = useState(false);
 
+  const [tagSearch, setTagSearch] = useState("");
+  const createTagMutation = useCreateTag();
+
+  const handleCreateTag = async (name: string) => {
+    if (!name.trim()) return;
+    try {
+      await createTagMutation.mutateAsync(name.trim());
+      setTagSearch("");
+    } catch (e: any) {
+      alert("Error creating tag: " + e.message);
+    }
+  };
+
   useEffect(() => {
     const note = detailQuery.data?.note;
     if (!note) return;
@@ -216,14 +229,30 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                 className="w-full"
                 showToolbar
                 autofocus
+                hideFooter={true}
                 editorClassName="pb-40 text-lg leading-relaxed px-0"
               />
+            </div>
+          </div>
 
-              <p className="text-[11px] font-medium text-muted-foreground/60 border-t border-border/10 pt-4">
-                {updateNote.isPending ? "Saving changes..." : lastSavedAt ? `Saved at ${lastSavedAt.toLocaleTimeString()}` : "Autosave active"}
-              </p>
-
-              
+          {/* SHARED FOOTER - PINNED TO BOTTOM */}
+          <div className="flex items-center justify-between py-3 px-4 lg:px-16 border-t border-border/5 bg-background/50 backdrop-blur-sm select-none">
+            <p className="text-[11px] font-medium text-muted-foreground/60">
+              {updateNote.isPending ? "Saving changes..." : lastSavedAt ? `Saved at ${lastSavedAt.toLocaleTimeString()}` : "Autosave active"}
+            </p>
+            
+            <div className="flex items-center gap-4 text-[10px] text-muted-foreground/50">
+              <div className="flex items-center gap-2">
+                <span>
+                  Type{" "}
+                  <kbd className="px-1 py-0.5 rounded bg-muted/50 text-[9px] font-mono border border-border/10">
+                    /
+                  </kbd>{" "}
+                  for commands
+                </span>
+                <span className="opacity-30">•</span>
+                <span>Right-click for options</span>
+              </div>
             </div>
           </div>
         </div>
@@ -266,33 +295,62 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                   <label className="text-[10px] font-semibold text-muted-foreground/70">Tags</label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-5 p-0 text-[10px] text-primary/70 hover:text-primary hover:bg-transparent">
-                        + Edit
+                      <Button variant="outline" size="sm" className="h-6 gap-1.5 px-2 text-[10px] uppercase font-bold tracking-tight bg-muted/30 border-border/40 hover:bg-primary/10 hover:text-primary hover:border-primary/50 transition-all rounded shadow-sm group">
+                        <Plus className="size-3 text-muted-foreground/60 group-hover:text-primary" />
+                        Manage
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-0" align="end">
+                    <PopoverContent className="w-[240px] p-0 shadow-2xl border-border/40" align="end">
                       <Command>
-                        <CommandInput placeholder="Search tags..." className="h-8 text-xs" />
+                        <CommandInput 
+                          placeholder="Search or create tag..." 
+                          className="h-9 text-xs" 
+                          onValueChange={setTagSearch}
+                        />
                         <CommandList>
-                          <CommandGroup>
+                          <CommandEmpty className="p-0">
+                            {tagSearch ? (
+                              <Button 
+                                variant="ghost" 
+                                className="w-full justify-start text-xs h-9 gap-2 px-3 rounded-none border-b border-border/5"
+                                onClick={() => handleCreateTag(tagSearch)}
+                              >
+                                <Plus className="size-3.5 text-primary" />
+                                <span>Create <span className="font-bold text-primary">"{tagSearch}"</span></span>
+                              </Button>
+                            ) : (
+                              <div className="py-6 text-center text-xs text-muted-foreground">Type to find or create tags</div>
+                            )}
+                          </CommandEmpty>
+                          <CommandGroup heading="Existing Tags">
                             {detailQuery.data.tags.map((tag: any) => {
                               const isSelected = selectedTagIds.includes(tag.id);
                               return (
                                 <CommandItem 
                                   key={tag.id} 
-                                  className="text-xs"
+                                  className="text-xs py-2"
                                   onSelect={() => {
                                     const next = isSelected ? selectedTagIds.filter(id => id !== tag.id) : [...selectedTagIds, tag.id];
                                     setSelectedTagIds(next);
                                     updateTags.mutate(next);
                                   }}
                                 >
-                                  <div className={cn("mr-2 size-2 rounded-full border", isSelected ? "bg-primary border-primary" : "bg-transparent border-muted-foreground/30")} />
+                                  <div className={cn("mr-2 size-2.5 rounded-full border transition-all", isSelected ? "bg-primary border-primary scale-110" : "bg-transparent border-muted-foreground/30")} />
                                   {tag.name}
+                                  {isSelected && <Badge variant="outline" className="ml-auto h-4 text-[8px] bg-primary/10 text-primary border-none font-bold">ACTIVE</Badge>}
                                 </CommandItem>
                               );
                             })}
                           </CommandGroup>
+                          
+                          {tagSearch && !detailQuery.data.tags.some(t => t.name.toLowerCase() === tagSearch.toLowerCase()) && (
+                            <CommandGroup heading="Actions">
+                              <CommandItem className="text-xs py-2" onSelect={() => handleCreateTag(tagSearch)}>
+                                <Plus className="size-3.5 mr-2 text-primary" />
+                                Create "{tagSearch}"
+                              </CommandItem>
+                            </CommandGroup>
+                          )}
                         </CommandList>
                       </Command>
                     </PopoverContent>
