@@ -1,12 +1,15 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   askGeneralAI,
   askNote,
   askAllNotes,
   getNoteConversation,
   getGlobalConversation,
+  listGlobalConversations,
+  clearGlobalConversation,
+  archiveGlobalConversation,
   embedNote,
   generateSummary,
   searchNotes,
@@ -47,7 +50,7 @@ export function useSemanticSearch() {
 export function useAskNote(noteId: string) {
   return useMutation({
     mutationFn: async (
-      input: string | { question?: string; messages?: any[] },
+      input: string | { question?: string; messages?: any[]; conversationId?: string; noteId?: string },
     ) => {
       const token = await getAuthToken();
       const payload = typeof input === "string" ? { question: input } : input;
@@ -59,7 +62,7 @@ export function useAskNote(noteId: string) {
 export function useAskAllNotes() {
   return useMutation({
     mutationFn: async (
-      input: string | { question?: string; messages?: any[] },
+      input: string | { question?: string; messages?: any[]; conversationId?: string; noteId?: string },
     ) => {
       const token = await getAuthToken();
       const payload = typeof input === "string" ? { question: input } : input;
@@ -77,11 +80,39 @@ export function useNoteConversation(noteId: string) {
   });
 }
 
+export function useListGlobalConversations(noteId?: string) {
+  return useQuery({
+    queryKey: ["global-conversations", noteId],
+    queryFn: async () => {
+      const token = await getAuthToken();
+      return listGlobalConversations(token, noteId);
+    },
+  });
+}
+
 export function useGlobalConversation() {
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (id: string) => {
       const token = await getAuthToken();
-      return getGlobalConversation(token);
+      return getGlobalConversation(token, id);
+    },
+  });
+}
+
+export function useClearGlobalConversation() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getAuthToken();
+      return clearGlobalConversation(token, id);
+    },
+  });
+}
+
+export function useArchiveGlobalConversation() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const token = await getAuthToken();
+      return archiveGlobalConversation(token, id);
     },
   });
 }

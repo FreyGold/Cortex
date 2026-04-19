@@ -9,7 +9,9 @@ export type NoteListItem = {
   is_pinned: boolean;
   updated_at: string;
   created_at: string;
+  archived_at?: string | null;
 };
+
 
 export type FolderItem = {
   id: string;
@@ -45,6 +47,12 @@ export function getDashboardNotes(accessToken: string) {
     folders: FolderItem[];
     tags: TagItem[];
   }>("/api/notes/dashboard", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function getArchivedNotes(accessToken: string) {
+  return apiRequest<NoteListItem[]>("/api/notes/archived", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 }
@@ -116,6 +124,13 @@ export function updateNote(
   });
 }
 
+export function deleteNote(accessToken: string, noteId: string) {
+  return apiRequest<{ success: boolean }>(`/api/notes/${noteId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
 export function updateNoteTags(accessToken: string, noteId: string, tagIds: string[]) {
   return apiRequest<{ success: boolean }>(`/api/notes/${noteId}/tags`, {
     method: "POST",
@@ -141,6 +156,45 @@ export function createNoteShare(
   }
 ) {
   return apiRequest<NoteShareItem>(`/api/notes/${noteId}/shares`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: payload,
+  });
+}
+
+export function getPublicNoteDetail(noteId: string, shareToken?: string) {
+  const url = shareToken 
+    ? `/api/notes/public/${noteId}?shareToken=${shareToken}`
+    : `/api/notes/public/${noteId}`;
+  return apiRequest<{
+    note: {
+      id: string;
+      title: string;
+      content: unknown;
+      content_text: string | null;
+      updated_at: string;
+    };
+    canEdit: boolean;
+  }>(url);
+}
+
+export function replicateNote(
+  accessToken: string,
+  payload: { title: string; content: any; contentText: string }
+) {
+  return apiRequest<{ id: string; title: string }>("/api/notes/replicate", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: payload,
+  });
+}
+
+export function createCourseResource(
+  accessToken: string,
+  noteId: string,
+  payload: { courseId: string; titleEn: string }
+) {
+  return apiRequest<{ id: string }> (`/api/notes/${noteId}/course-resource`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
     body: payload,

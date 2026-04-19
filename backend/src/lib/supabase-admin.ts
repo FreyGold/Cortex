@@ -2,6 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 
 let cachedClient: ReturnType<typeof createClient<any>> | null = null;
 let cachedAnonClient: ReturnType<typeof createClient<any>> | null = null;
+// Cache for user clients
+const userClientCache = new Map<string, { client: ReturnType<typeof createClient<any>>; expiry: number }>();
+const CLIENT_CACHE_TTL = 60 * 1000; // 1 minute
 
 export function getSupabaseAdmin() {
   if (cachedClient) {
@@ -63,6 +66,12 @@ export function getSupabaseAnonClient() {
 }
 
 export function getSupabaseUserClient(accessToken: string) {
+  // Check cache
+  const cached = userClientCache.get(accessToken);
+  if (cached && cached.expiry > Date.now()) {
+    return cached.client;
+  }
+
   const supabaseUrl =
     process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey =
@@ -72,7 +81,7 @@ export function getSupabaseUserClient(accessToken: string) {
     throw new Error("Missing Supabase configuration env vars.");
   }
 
-  return createClient<any>(supabaseUrl, supabaseAnonKey, {
+  const client = createClient<any>(supabaseUrl, supabaseAnonKey, {
     global: {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -82,5 +91,19 @@ export function getSupabaseUserClient(accessToken: string) {
       autoRefreshToken: false,
       persistSession: false,
     },
+    // Performance: disable realtime and other unused features in backend
+    realtime: {
+      params: {
+        eventsPerSecond: 1,
+      },
+    },
   });
+
+  // Save to cache
+  userClientCache.set(accessToken, {
+    client,
+    expiry: Date.now() + CLIENT_CACHE_TTL,
+  });
+
+  return client;
 }

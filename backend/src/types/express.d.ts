@@ -6,6 +6,7 @@ declare global {
         email: string | null;
         accessToken: string;
       };
+      authDuration?: number;
     }
   }
 }

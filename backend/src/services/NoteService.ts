@@ -71,4 +71,34 @@ export class NoteService {
   async deleteNoteShare(noteId: string, shareId: string) {
     await this.repo.deleteNoteShare(noteId, shareId);
   }
+
+  async getPublicNote(noteId: string) {
+    return this.repo.getPublicNoteDetail(noteId);
+  }
+
+  async getNoteByShareToken(shareToken: string) {
+    return this.repo.getNoteByShareToken(shareToken);
+  }
+
+  async getArchived(userId: string) {
+    return this.repo.getArchivedNotes(userId);
+  }
+
+  async archiveNote(userId: string, noteId: string) {
+    await this.repo.archiveNote(userId, noteId);
+  }
+
+  async replicateNote(userId: string, title: string, content: any, contentText: string) {
+    const note = await this.repo.createNote(userId, title, null);
+    await this.repo.updateNote(userId, note.id, {
+      content,
+      content_text: contentText,
+    });
+    return note;
+  }
+
+  async createResourceFromNote(courseId: string, userId: string, noteId: string, titleEn: string) {
+    return this.repo.createResourceFromNote(courseId, userId, noteId, titleEn);
+  }
 }
+

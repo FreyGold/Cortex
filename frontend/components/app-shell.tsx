@@ -48,7 +48,7 @@ export function AppShell({ children }: AppShellProps) {
   }));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-full flex flex-col bg-background overflow-hidden relative">
       <SiteHeader
         navItems={headerNavItems}
         actions={
@@ -59,7 +59,7 @@ export function AppShell({ children }: AppShellProps) {
         }
       />
 
-      <div className="pb-20 md:pb-6">{children}</div>
+      <div className="flex-1 min-h-0 relative overflow-hidden">{children}</div>
 
       {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 px-2 py-2 backdrop-blur md:hidden">

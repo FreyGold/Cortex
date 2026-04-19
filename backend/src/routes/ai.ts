@@ -14,7 +14,10 @@ aiRouter.post("/notes/:id/suggest-tags", authMiddleware, AIController.suggestTag
 // Library-wide AI routes
 aiRouter.post("/library/search", authMiddleware, AIController.search);
 aiRouter.post("/library/ask", authMiddleware, AIController.askAllNotes);
-aiRouter.get("/library/conversation", authMiddleware, AIController.getGlobalConversation);
+aiRouter.get("/library/conversations", authMiddleware, AIController.listGlobalConversations);
+aiRouter.get("/library/conversations/:id", authMiddleware, AIController.getGlobalConversation);
+aiRouter.delete("/library/conversations/:id", authMiddleware, AIController.clearGlobalConversation);
+aiRouter.put("/library/conversations/:id/archive", authMiddleware, AIController.archiveGlobalConversation);
 
 // General AI routes
 aiRouter.post("/general", authMiddleware, AIController.askGeneral);

@@ -22,7 +22,7 @@ export function NotesLayoutClient({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="flex w-full h-[calc(100vh-5.5rem)] overflow-hidden! relative bg-background">
+    <div className="flex w-full h-full relative bg-background">
       {/* Mobile overlay toggle */}
       {isMobile && !isOpen && (
         <div className="absolute top-4 left-4 z-50">
@@ -74,8 +74,8 @@ export function NotesLayoutClient({ children }: { children: React.ReactNode }) {
             <SidebarSimple className="size-4" />
           </Button>
         </div>
-        <div className="flex-1 overflow-auto px-3 py-4">
-          <div className="w-max min-w-full pb-10">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 custom-scrollbar">
+          <div className="w-full pb-10">
             <NotesSidebar />
           </div>
         </div>
@@ -91,11 +91,11 @@ export function NotesLayoutClient({ children }: { children: React.ReactNode }) {
       {/* Main Content */}
       <main
         className={cn(
-          "flex-1 min-w-0 h-full overflow-y-auto px-4 lg:px-12 py-6 transition-all duration-300",
+          "flex-1 min-w-0 min-h-0 h-full transition-all duration-300",
           !isOpen && !isMobile ? "pl-14 lg:pl-16" : "",
         )}
       >
-        <div className="w-full">{children}</div>
+        <div className="w-full h-full min-h-0 flex flex-col">{children}</div>
       </main>
     </div>
   );

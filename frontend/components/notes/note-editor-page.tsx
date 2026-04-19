@@ -189,8 +189,8 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
     <TooltipProvider delayDuration={300}>
       <div className="flex h-full w-full items-stretch overflow-hidden bg-background">
         {/* MAIN EDITOR AREA */}
-        <div className="flex flex-1 flex-col min-w-0 border-r border-border/10 overflow-hidden h-full">
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 py-8 lg:px-16 lg:py-12">
+        <div className="flex flex-1 flex-col min-w-0 border-r border-border/10 overflow-x-visible h-full">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-visible custom-scrollbar px-4 py-8 lg:px-16 lg:py-12">
             <div className="w-full mx-auto space-y-6">
               <div className="flex items-center justify-between group/title">
                 <Input
@@ -210,17 +210,14 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                 </Button>
               </div>
 
-              <div className="flex-1 min-h-0 
-overflow-y-auto">
-                <NotionEditor
-                  content={editorContent}
-                  onChange={(v) => { setEditorContent(v); setHtml(v); setDirty(true); }}
-                  className="flex-1 min-h-0"
-                  showToolbar
-                  autofocus
-                  editorClassName="pb-40 text-lg leading-relaxed px-0"
-                />
-              </div>
+              <NotionEditor
+                content={editorContent}
+                onChange={(v) => { setEditorContent(v); setHtml(v); setDirty(true); }}
+                className="w-full"
+                showToolbar
+                autofocus
+                editorClassName="pb-40 text-lg leading-relaxed px-0"
+              />
 
               <p className="text-[11px] font-medium text-muted-foreground/60 border-t border-border/10 pt-4">
                 {updateNote.isPending ? "Saving changes..." : lastSavedAt ? `Saved at ${lastSavedAt.toLocaleTimeString()}` : "Autosave active"}

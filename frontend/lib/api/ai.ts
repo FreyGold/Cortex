@@ -53,13 +53,14 @@ export function searchNotes(
 export function askNote(
   accessToken: string,
   noteId: string,
-  input: { question?: string; messages?: any[]; topK?: number },
+  input: { question?: string; messages?: any[]; topK?: number; conversationId?: string },
 ) {
   return apiRequest<{
     noteId: string;
     answer: string;
+    model: string;
     references: AskReference[];
-    model?: string;
+    id: string; // The conversation ID
   }>(`/api/ai/notes/${noteId}/ask`, {
     method: "POST",
     headers: authHeader(accessToken),
@@ -69,9 +70,10 @@ export function askNote(
 
 export function askAllNotes(
   accessToken: string,
-  input: { question?: string; messages?: any[]; topK?: number },
+  input: { question?: string; messages?: any[]; topK?: number; conversationId?: string; noteId?: string },
 ) {
   return apiRequest<{
+    id: string;
     answer: string;
     references: Array<AskReference & { noteId: string; noteTitle: string }>;
     model?: string;
@@ -82,6 +84,38 @@ export function askAllNotes(
   });
 }
 
+export function listGlobalConversations(accessToken: string, noteId?: string) {
+  const url = new URL("/api/ai/library/conversations", window.location.origin);
+  url.searchParams.set("t", Date.now().toString());
+  if (noteId) url.searchParams.set("noteId", noteId);
+
+  return apiRequest<any[]>(url.pathname + url.search, {
+    method: "GET",
+    headers: authHeader(accessToken),
+  });
+}
+
+export function getGlobalConversation(accessToken: string, id: string) {
+  return apiRequest<{ messages: any[] }>(`/api/ai/library/conversations/${id}`, {
+    method: "GET",
+    headers: authHeader(accessToken),
+  });
+}
+
+export function archiveGlobalConversation(accessToken: string, id: string) {
+  return apiRequest<{ success: boolean }>(`/api/ai/library/conversations/${id}/archive`, {
+    method: "PUT",
+    headers: authHeader(accessToken),
+  });
+}
+
+export function clearGlobalConversation(accessToken: string, id: string) {
+  return apiRequest<{ success: boolean }>(`/api/ai/library/conversations/${id}`, {
+    method: "DELETE",
+    headers: authHeader(accessToken),
+  });
+}
+
 export function getNoteConversation(accessToken: string, noteId: string) {
   return apiRequest<{ messages: any[] }>(`/api/ai/notes/${noteId}/conversation`, {
     method: "GET",
@@ -89,12 +123,7 @@ export function getNoteConversation(accessToken: string, noteId: string) {
   });
 }
 
-export function getGlobalConversation(accessToken: string) {
-  return apiRequest<{ messages: any[] }>("/api/ai/library/conversation", {
-    method: "GET",
-    headers: authHeader(accessToken),
-  });
-}
+
 
 export function generateSummary(accessToken: string, noteId: string) {
   return apiRequest<{ noteId: string; summary: string }>(

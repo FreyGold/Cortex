@@ -14,6 +14,11 @@ import {
   createNoteShare,
   deleteNoteShare,
   updateFolder,
+  deleteNote,
+  getArchivedNotes,
+  getPublicNoteDetail,
+  replicateNote,
+  createCourseResource,
   type NoteListItem,
   type FolderItem,
   type TagItem,
@@ -40,6 +45,16 @@ export function useNotesDashboard() {
     queryFn: async () => {
       const accessToken = await getAccessToken();
       return getDashboardNotes(accessToken);
+    },
+  });
+}
+
+export function useArchivedNotes() {
+  return useQuery({
+    queryKey: ["archived-notes"],
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      return getArchivedNotes(accessToken);
     },
   });
 }
@@ -112,6 +127,22 @@ export function useUpdateNote(noteId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+    },
+  });
+}
+
+export function useArchiveNote() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (noteId: string) => {
+      const accessToken = await getAccessToken();
+      await deleteNote(accessToken, noteId);
+    },
+    onSuccess: (_, noteId) => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
+      queryClient.invalidateQueries({ queryKey: ["archived-notes"] });
     },
   });
 }
@@ -210,5 +241,38 @@ export function useMoveFolder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
     },
+  });
+}
+
+export function useReplicateNote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { title: string; content: any; contentText: string }) => {
+      const accessToken = await getAccessToken();
+      return replicateNote(accessToken, payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+    },
+  });
+}
+
+export function useCreateCourseResource(noteId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { courseId: string; titleEn: string }) => {
+      const accessToken = await getAccessToken();
+      return createCourseResource(accessToken, noteId, payload);
+    },
+    onSuccess: () => {
+    },
+  });
+}
+
+export function usePublicNote(noteId: string, shareToken?: string) {
+  return useQuery({
+    queryKey: ["public-note", noteId, shareToken],
+    queryFn: () => getPublicNoteDetail(noteId, shareToken),
+    enabled: !!noteId,
   });
 }

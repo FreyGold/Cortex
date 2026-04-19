@@ -6,7 +6,7 @@ export class NoteRepository {
   async getDashboardNotes(userId: string) {
     const { data, error } = await this.supabase
       .from("notes")
-      .select("id,title,content_text,summary,folder_id,is_pinned,updated_at,created_at,note_tags(tags(id,name,color))")
+      .select("id,title,folder_id,is_pinned,updated_at,created_at,note_tags(tags(id,name,color))")
       .eq("user_id", userId)
       .eq("is_archived", false)
       .order("updated_at", { ascending: false });
@@ -144,4 +144,76 @@ export class NoteRepository {
       .eq("note_id", noteId);
     if (error) throw error;
   }
+
+  async getArchivedNotes(userId: string) {
+    const { data, error } = await this.supabase
+      .from("notes")
+      .select("id,title,archived_at,updated_at")
+      .eq("user_id", userId)
+      .eq("status", "archived")
+      .order("archived_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  }
+
+  async getNoteByShareToken(shareToken: string) {
+    const { data: share, error: shareError } = await this.supabase
+      .from("note_shares")
+      .select("note_id,can_edit,expires_at")
+      .eq("share_token", shareToken)
+      .maybeSingle();
+    if (shareError) throw shareError;
+    if (!share) return null;
+
+    if (share.expires_at && new Date(share.expires_at) < new Date()) {
+      return null;
+    }
+
+    const { data: note, error: noteError } = await this.supabase
+      .from("notes")
+      .select("id,title,content,content_text,updated_at,user_id")
+      .eq("id", share.note_id)
+      .maybeSingle();
+    if (noteError) throw noteError;
+    return { note, canEdit: share.can_edit };
+  }
+
+  async getPublicNoteDetail(noteId: string) {
+    const { data, error } = await this.supabase
+      .from("notes")
+      .select("id,title,content,content_text,updated_at,user_id")
+      .eq("id", noteId)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
+
+  async archiveNote(userId: string, noteId: string) {
+    const { error } = await this.supabase
+      .from("notes")
+      .update({
+        status: "archived",
+        archived_at: new Date().toISOString(),
+      })
+      .eq("id", noteId)
+      .eq("user_id", userId);
+    if (error) throw error;
+  }
+
+  async createResourceFromNote(courseId: string, userId: string, noteId: string, titleEn: string) {
+    const { data, error } = await this.supabase
+      .from("resources")
+      .insert({
+        course_id: courseId,
+        uploaded_by: userId,
+        note_id: noteId,
+        title_en: titleEn,
+        type: "note",
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
 }
+

@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import fs from "node:fs";
+import path from "node:path";
 import { authRouter } from "./routes/auth";
 import { aiRouter } from "./routes/ai";
 import { adminRouter } from "./routes/admin";
@@ -19,7 +21,7 @@ app.use(helmet());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 2000, // Increase limit for development/testing
   message: { error: "Too many requests from this IP, please try again later." }
 });
 app.use(limiter);
@@ -33,6 +35,23 @@ app.use(
 );
 
 app.use(express.json());
+
+// Request logger
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    const authDuration = req.authDuration ? ` (auth: ${req.authDuration}ms)` : "";
+    const logEntry = `[${new Date().toISOString().split("T")[1].split(".")[0]}] ${req.method} ${req.url} ${res.statusCode} - ${duration}ms${authDuration}\n`;
+    console.log(logEntry.trim());
+    try {
+      fs.appendFileSync("/tmp/backend.log", logEntry);
+    } catch (e) {
+      // ignore
+    }
+  });
+  next();
+});
 app.use("/api", healthRouter);
 app.use("/api/ai", aiRouter);
 app.use("/api/auth", authRouter);

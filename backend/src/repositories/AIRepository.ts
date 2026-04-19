@@ -64,12 +64,13 @@ export class AIRepository {
     if (error) throw error;
   }
 
-  async searchNotes(queryEmbedding: string, userId: string, threshold: number, count: number) {
+  async searchNotes(queryEmbedding: string, userId: string, threshold: number, count: number, noteId?: string) {
     const { data, error } = await this.supabase.rpc("search_notes", {
       query_embedding: queryEmbedding,
       user_id_filter: userId,
       match_threshold: threshold,
       match_count: count,
+      note_id_filter: noteId || null,
     });
     if (error) throw error;
     return data;
@@ -93,20 +94,76 @@ export class AIRepository {
     if (error) throw error;
   }
 
-  async getGlobalConversation(userId: string) {
+  async getGlobalConversation(id: string) {
     try {
       const { data, error } = await this.supabase
         .from("global_conversations")
-        .select("messages")
-        .eq("user_id", userId)
+        .select("id, messages, title, note_id")
+        .eq("id", id)
         .maybeSingle();
-      if (error && error.code === "PGRST116") return null; // Handle not found
-      if (error && this.isMissingRelationError(error)) return null; // Table missing
+      if (error && error.code === "PGRST116") return null;
+      if (error && this.isMissingRelationError(error)) return null;
       if (error) throw error;
       return data;
     } catch (e) {
-      console.warn("Table global_conversations might be missing:", e);
+      console.warn("Failed to get global conversation:", e);
       return null;
+    }
+  }
+
+  async listGlobalConversations(userId: string, noteId?: string) {
+    try {
+      let query = this.supabase
+        .from("global_conversations")
+        .select(`
+          *,
+          notes:note_id (title)
+        `)
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
+
+      if (noteId) {
+        query = query.eq("note_id", noteId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("[AIRepository] List error:", error);
+        return [];
+      }
+
+      return (data || []).map((item: any) => ({
+        ...item,
+        note_title: item.notes?.title || (item.note_id ? "Linked Note" : "All Notes")
+      }));
+    } catch (e) {
+      console.error("[AIRepository] Critical failure:", e);
+      return [];
+    }
+  }
+
+  async archiveGlobalConversation(id: string) {
+    try {
+      const { error } = await this.supabase
+        .from("global_conversations")
+        .update({ status: "archived", archived_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    } catch (e) {
+      console.error("Failed to archive conversation:", e);
+    }
+  }
+
+  async clearGlobalConversation(id: string) {
+    try {
+      const { error } = await this.supabase
+        .from("global_conversations")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    } catch (e) {
+      console.error("Failed to delete conversation:", e);
     }
   }
 
@@ -114,9 +171,9 @@ export class AIRepository {
     try {
       const { error } = await this.supabase
         .from("global_conversations")
-        .upsert(payload, { onConflict: "user_id" });
+        .upsert(payload);
       if (error && this.isMissingRelationError(error)) {
-        console.error("CRITICAL: global_conversations table missing. Migration 013 must be applied.");
+        console.error("CRITICAL: global_conversations table missing.");
         return;
       }
       if (error) throw error;

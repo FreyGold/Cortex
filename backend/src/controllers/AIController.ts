@@ -47,11 +47,45 @@ export class AIController {
     }
   }
 
-  static async getGlobalConversation(req: Request, res: Response) {
+  static async listGlobalConversations(req: Request, res: Response) {
     try {
       const service = getService(req);
-      const messages = await service.getGlobalConversation(req.user!.id);
-      return res.status(200).json({ messages });
+      const noteId = req.query.noteId as string | undefined;
+      const result = await service.listGlobalConversations(req.user!.id, noteId);
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async clearGlobalConversation(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string;
+      const service = getService(req);
+      await service.clearGlobalConversation(id);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async archiveGlobalConversation(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string;
+      const service = getService(req);
+      await service.archiveGlobalConversation(id);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getGlobalConversation(req: Request, res: Response) {
+    try {
+      const id = req.params.id as string;
+      const service = getService(req);
+      const data = await service.getSpecificGlobalConversation(id);
+      return res.status(200).json(data);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
     }
@@ -60,13 +94,12 @@ export class AIController {
   static async askNote(req: Request, res: Response) {
     try {
       const noteId = req.params.id as string;
-      if (!isValidUuid(noteId)) return res.status(400).json({ error: "Invalid note ID." });
-      const { question, messages, topK = 10 } = req.body;
+      const { question, messages, topK = 10, conversationId } = req.body;
       const currentQuestion = question || messages?.[messages.length - 1]?.content;
       if (!currentQuestion) return res.status(400).json({ error: "No question provided." });
 
       const service = getService(req);
-      const result = await service.askNote(noteId, req.user!.id, currentQuestion, messages || [], topK);
+      const result = await service.askNote(noteId, req.user!.id, currentQuestion, messages || [], topK, conversationId);
       return res.status(200).json(result);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -75,12 +108,12 @@ export class AIController {
 
   static async askAllNotes(req: Request, res: Response) {
     try {
-      const { question, messages, topK = 15 } = req.body;
+      const { question, messages, topK = 15, conversationId } = req.body;
       const currentQuestion = question || messages?.[messages.length - 1]?.content;
       if (!currentQuestion) return res.status(400).json({ error: "No question provided." });
 
       const service = getService(req);
-      const result = await service.askAllNotes(req.user!.id, currentQuestion, messages || [], topK);
+      const result = await service.askAllNotes(req.user!.id, currentQuestion, messages || [], topK, conversationId, req.body.noteId);
       return res.status(200).json(result);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

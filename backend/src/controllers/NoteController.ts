@@ -1,11 +1,18 @@
 import type { Request, Response } from "express";
 import { NoteService } from "../services/NoteService";
 import { NoteRepository } from "../repositories/NoteRepository";
-import { getSupabaseUserClient } from "../lib/supabase-admin";
+import { getSupabaseUserClient, getSupabaseAnonClient } from "../lib/supabase-admin";
+import crypto from "node:crypto";
 
 function getService(req: Request) {
   const accessToken = req.user!.accessToken!;
   const supabase = getSupabaseUserClient(accessToken);
+  const repo = new NoteRepository(supabase);
+  return new NoteService(repo);
+}
+
+function getServiceAnon() {
+  const supabase = getSupabaseAnonClient();
   const repo = new NoteRepository(supabase);
   return new NoteService(repo);
 }
@@ -15,6 +22,17 @@ export class NoteController {
     try {
       const service = getService(req);
       const data = await service.getDashboard(req.user!.id);
+      res.setHeader("Cache-Control", "private, max-age=10");
+      return res.status(200).json(data);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getArchived(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const data = await service.getArchived(req.user!.id);
       return res.status(200).json(data);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -68,6 +86,16 @@ export class NoteController {
       }
 
       await service.updateNote(req.user!.id, req.params.id as string, updatePayload);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async archiveNote(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      await service.archiveNote(req.user!.id, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -172,4 +200,47 @@ export class NoteController {
       return res.status(500).json({ error: error.message });
     }
   }
+
+  static async getPublicNote(req: Request, res: Response) {
+    try {
+      const service = getServiceAnon();
+      const { shareToken } = req.query;
+      
+      if (shareToken) {
+        const data = await service.getNoteByShareToken(shareToken as string);
+        if (!data) return res.status(404).json({ error: "Note not found or link expired" });
+        return res.status(200).json(data);
+      }
+
+      const data = await service.getPublicNote(req.params.id as string);
+      if (!data) return res.status(404).json({ error: "Note not found" });
+      return res.status(200).json({ note: data, canEdit: false });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async replicateNote(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const { title, content, contentText } = req.body;
+      const note = await service.replicateNote(req.user!.id, title, content, contentText);
+      return res.status(201).json(note);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async createCourseResource(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const { courseId, titleEn } = req.body;
+      const noteId = req.params.id as string;
+      const resource = await service.createResourceFromNote(courseId as string, req.user!.id, noteId, titleEn as string);
+      return res.status(201).json(resource);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 }
+

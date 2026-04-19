@@ -49,11 +49,11 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir={getDirection(locale)}
-      className={cn("h-full antialiased", inter.variable, geist.variable, "font-mono", geistMono.variable, geistHeading.variable)}
+      className={cn("h-full antialiased overflow-hidden", inter.variable, geist.variable, "font-mono", geistMono.variable, geistHeading.variable)}
       style={{ fontFamily: "var(--font-sans)" }}
       data-scroll-behavior="smooth"
     >
-      <body className="min-h-full flex flex-col">
+      <body className="h-full flex flex-col overflow-hidden bg-background">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             {children}

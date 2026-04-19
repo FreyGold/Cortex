@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { AIRepository } from "../repositories/AIRepository";
 import { 
   splitTextIntoChunks, 
@@ -113,55 +114,19 @@ export class AIService {
     return data?.messages ?? [];
   }
 
-  async askNote(noteId: string, userId: string, currentQuestion: string, messages: any[], requestedTopK: number) {
-    const note = await this.repo.getNote(noteId);
-    if (!note) throw new Error("Note not found.");
-
-    const queryEmbedding = await embedText(`query: ${currentQuestion.trim()}`);
-    const data = await this.repo.searchNotes(toVectorLiteral(queryEmbedding), userId, 0.2, requestedTopK);
-    const matches = (data ?? []).filter((item: any) => item.note_id === noteId);
-
-    let contextBlock = "";
-    const references: any[] = [];
-
-    if (matches.length === 0) {
-      const fullText = note.content_text ?? "";
-      contextBlock = fullText.length > 20 ? `[FULL NOTE TEXT]:\n${fullText.slice(0, 15000)}` : "No context.";
-    } else {
-      contextBlock = matches.map((m: any) => `[RELEVANT PASSAGE]: ${m.chunk_text}`).join("\n\n");
-      matches.slice(0, 6).forEach((m: any) => {
-        references.push({
-          chunkId: m.chunk_id,
-          heading: m.heading,
-          similarity: m.similarity,
-          excerpt: m.chunk_text.slice(0, 300),
-        });
-      });
-    }
-
-    const { answer, model } = await this.chatGeminiWithContext(messages, contextBlock, note.title);
-
-    const updatedMessages = [...messages, { role: "assistant", content: answer }];
-    await this.repo.upsertConversation({
-      note_id: noteId,
-      user_id: userId,
-      messages: updatedMessages,
-    });
-
-    return { noteId, answer, model, references };
+  async askNote(noteId: string, userId: string, currentQuestion: string, messages: any[], requestedTopK: number, conversationId?: string) {
+    // We strictly use the askAllNotes logic but force the noteId scoping
+    return this.askAllNotes(userId, currentQuestion, messages, requestedTopK, conversationId, noteId);
   }
 
-  async askAllNotes(userId: string, currentQuestion: string, messages: any[], requestedTopK: number) {
+  async askAllNotes(userId: string, currentQuestion: string, messages: any[], requestedTopK: number, conversationId?: string, noteId?: string) {
     const queryEmbedding = await embedText(`query: ${currentQuestion.trim()}`);
-    const data = await this.repo.searchNotes(toVectorLiteral(queryEmbedding), userId, 0.15, requestedTopK);
-    const matches = data ?? [];
+    const matches = await this.repo.searchNotes(toVectorLiteral(queryEmbedding), userId, 0.15, requestedTopK, noteId);
 
     let contextBlock = "";
     const references: any[] = [];
 
-    if (matches.length === 0) {
-      contextBlock = "No relevant context found in your notes.";
-    } else {
+    if (matches && matches.length > 0) {
       contextBlock = matches.map((m: any) => `[FROM NOTE: ${m.title}]: ${m.chunk_text}`).join("\n\n");
       const seenNoteIds = new Set<string>();
       for (const m of matches.slice(0, 10)) {
@@ -178,20 +143,81 @@ export class AIService {
       }
     }
 
+    // FALLBACK: If noteId is provided and context is thin, pull the whole note
+    if (noteId && (!matches || matches.length < 5)) {
+      try {
+        const note = await this.repo.getNote(noteId);
+        if (note && note.content_text) {
+          const rawContent = note.content_text.slice(0, 40000); // Respect LLM limits
+          const fallbackLabel = matches && matches.length > 0 ? "\n\n[ADDITIONAL FULL NOTE CONTEXT]:" : "[FULL NOTE CONTEXT]:";
+          contextBlock += `${fallbackLabel}\n${rawContent}`;
+          
+          // Ensure we have a reference to the note if none were found via vector
+          if (references.length === 0) {
+            references.push({
+              noteId: note.id,
+              noteTitle: note.title,
+              excerpt: (note.content_text || "").slice(0, 300),
+              similarity: 1.0,
+              isFallback: true
+            });
+          }
+        }
+      } catch (e) {
+        console.error("[AIService] Fallback context error:", e);
+      }
+    }
+
+    if (!contextBlock) {
+      contextBlock = "No relevant context found in your notes.";
+    }
+
     const { answer, model } = await this.chatGeminiWithContext(messages, contextBlock, "Your Knowledge Base");
 
-    const updatedMessages = [...messages, { role: "assistant", content: answer }];
+    const updatedMessages = [...messages, { role: "assistant", content: answer, references }];
+    const id = conversationId || randomUUID();
+    
+    // Generate a title from the first user message if this is a new conversation
+    let title: string | undefined = undefined;
+    if (!conversationId) {
+      const firstUserMsg = messages.find(m => m.role === "user");
+      if (firstUserMsg) {
+        title = firstUserMsg.content.slice(0, 60).trim();
+      }
+    }
+    
     await this.repo.upsertGlobalConversation({
+      id,
       user_id: userId,
+      note_id: noteId || undefined,
       messages: updatedMessages,
+      title: title || undefined,
+      status: "active",
+      updated_at: new Date().toISOString(),
     });
 
-    return { answer, model, references };
+    return { id, answer, model, references };
   }
 
-  async getGlobalConversation(userId: string) {
-    const data = await this.repo.getGlobalConversation(userId);
+  async archiveGlobalConversation(id: string) {
+    await this.repo.archiveGlobalConversation(id);
+  }
+
+  async clearGlobalConversation(id: string) {
+    await this.repo.clearGlobalConversation(id);
+  }
+
+  async listGlobalConversations(userId: string, noteId?: string) {
+    return this.repo.listGlobalConversations(userId, noteId);
+  }
+
+  async getGlobalConversation(id: string) {
+    const data = await this.repo.getGlobalConversation(id);
     return data?.messages ?? [];
+  }
+
+  async getSpecificGlobalConversation(id: string) {
+    return this.repo.getGlobalConversation(id);
   }
 
   private async chatGeminiWithContext(messages: any[], context: string, noteTitle: string) {
