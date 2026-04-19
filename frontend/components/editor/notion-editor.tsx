@@ -221,13 +221,13 @@ export function NotionEditor({
         ref={editorContainerRef}
         onContextMenu={handleContextMenu}
         className={cn(
-          "relative w-full overflow-visible flex-1 min-h-0",
+          "relative w-full flex-1 min-h-0 overflow-visible",
           "transition-all duration-200",
         )}
       >
         <EditorContent
           editor={editor}
-          className="min-h-0 h-auto relative overflow-visible"
+          className="h-full min-h-0 overflow-y-auto relative"
         />
 
         {/* Bubble Menu - appears on text selection */}

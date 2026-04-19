@@ -210,11 +210,12 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                 </Button>
               </div>
 
-              <div className="h-[66.5vh] flex flex-col">
+              <div className="flex-1 min-h-0 
+overflow-y-auto">
                 <NotionEditor
                   content={editorContent}
                   onChange={(v) => { setEditorContent(v); setHtml(v); setDirty(true); }}
-                  className="flex-1 min-h-0 overflow-y-auto"
+                  className="flex-1 min-h-0"
                   showToolbar
                   autofocus
                   editorClassName="pb-40 text-lg leading-relaxed px-0"
