@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Copy, Plus, FileText, Share2, Sparkles } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { NotionEditor } from "@/components/editor";
+import { PlateEditor } from "@/components/editor";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
@@ -94,10 +94,10 @@ export function PublicNoteView({ noteId }: { noteId: string }) {
         </header>
 
         <div className="prose prose-invert max-w-none">
-          <NotionEditor 
+          <PlateEditor 
             content={data.note.content as any} 
             onChange={() => {}} 
-            showToolbar={false}
+            readOnly={true}
             editorClassName="min-h-[60vh] pb-32"
           />
 

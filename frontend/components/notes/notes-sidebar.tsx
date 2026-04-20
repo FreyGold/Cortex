@@ -1,133 +1,188 @@
 "use client";
 
 import {
-  FolderOpen,
   Folder,
   Plus,
   FileText,
   Tag,
   ChevronRight,
-  ChevronDown,
   Search,
   Sparkles,
-  Home
+  Trash2,
+  Clock,
+  MoreVertical,
+  Globe,
+  Users,
+  Archive,
+  Star,
+  Settings,
+  UserCircle
 } from "lucide-react";
-import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   useCreateFolder,
   useCreateNote,
-  useCreateTag,
   useMoveFolder,
   useMoveNote,
   useNotesDashboard,
   useArchivedNotes,
+  useArchiveNote,
 } from "@/hooks/use-notes";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
 import { GlobalAssistantModal } from "./global-assistant-modal";
 
-function FolderNode({
-  folder,
-  allFolders,
-  notes,
-  depth = 0,
-  activeNoteId,
-  draggedItemId,
-  setDraggedItemId,
-  draggedItemType,
-  setDraggedItemType,
-  onDropItem,
-  onCreateNoteInFolder,
-}: any) {
+// --- SKELETON ---
+
+function SidebarNavSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Skeleton className="h-7 w-full rounded-md" />
+        <Skeleton className="h-7 w-[90%] rounded-md" />
+        <Skeleton className="h-7 w-full rounded-md" />
+      </div>
+    </div>
+  );
+}
+
+// --- ITEM COMPONENTS ---
+
+interface NoteItemProps {
+  note: any;
+  active: boolean;
+  depth: number;
+  onDragStart: (e: React.DragEvent) => void;
+}
+
+function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
+  const archiveNote = useArchiveNote();
+
+  return (
+    <Link 
+      href={`/notes/${note.id}`} 
+      className={cn(
+        "group flex items-center gap-2 py-1 px-2 rounded-md transition-all relative select-none",
+        active ? "bg-accent/80 text-foreground" : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+      )}
+      style={{ paddingLeft: `${depth * 16 + 12}px` }}
+      draggable
+      onDragStart={onDragStart}
+    >
+      <FileText className={cn("size-3.5 shrink-0", active ? "text-primary" : "opacity-40")} />
+      <span className={cn("truncate flex-1 text-sm font-medium", active && "font-semibold tracking-tight")}>
+        {note.title || "Untitled"}
+      </span>
+      
+      {note.is_published && <Globe className="size-3 text-emerald-500/60" />}
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-muted-foreground/10 rounded transition-opacity" onClick={(e) => e.preventDefault()}>
+            <MoreVertical className="size-3" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-40 rounded-xl">
+          <DropdownMenuItem className="text-xs gap-2" onClick={() => archiveNote.mutate(note.id)}>
+            <Archive className="size-3" /> Archive
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </Link>
+  );
+}
+
+interface FolderNodeProps {
+  folder: any;
+  allFolders: any[];
+  notes: any[];
+  depth: number;
+  activeNoteId?: string;
+  onDrop: (type: string, id: string, targetId: string | null) => void;
+  onCreateNote: (fid: string) => void;
+}
+
+function FolderNode({ folder, allFolders, notes, depth, activeNoteId, onDrop, onCreateNote }: FolderNodeProps) {
   const [expanded, setExpanded] = useState(false);
   const [isOver, setIsOver] = useState(false);
 
-  const childFolders = allFolders.filter((f: any) => f.parent_id === folder.id);
-  const folderNotes = notes.filter((n: any) => n.folder_id === folder.id);
-
-  const handleDragStart = (e: React.DragEvent, id: string, type: "note" | "folder") => {
-    e.stopPropagation();
-    setDraggedItemId(id);
-    setDraggedItemType(type);
-    e.dataTransfer.setData("type", type);
-    e.dataTransfer.setData("id", id);
-  };
-
-  const hasActiveNote = useMemo(() => {
-    if (activeNoteId && folderNotes.some((n: any) => n.id === activeNoteId)) return true;
-    return false;
-  }, [activeNoteId, folderNotes]);
+  const childFolders = useMemo(() => allFolders.filter(f => f.parent_id === folder.id), [allFolders, folder.id]);
+  const folderNotes = useMemo(() => notes.filter(n => n.folder_id === folder.id), [notes, folder.id]);
 
   useEffect(() => {
-    if (hasActiveNote) setExpanded(true);
-  }, [hasActiveNote]);
-
+    if (activeNoteId && folderNotes.some(n => n.id === activeNoteId)) setExpanded(true);
+  }, [activeNoteId, folderNotes]);
 
   return (
-    <div
-      className={cn("space-y-0.5", isOver && "bg-accent/40 rounded-md border border-border/50")}
+    <div 
+      className="space-y-0.5"
       onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsOver(true); }}
       onDragLeave={() => setIsOver(false)}
       onDrop={(e) => {
         e.preventDefault(); e.stopPropagation(); setIsOver(false);
         const type = e.dataTransfer.getData("type");
         const id = e.dataTransfer.getData("id");
-        if (type && id) onDropItem(type, id, folder.id);
+        if (type && id) onDrop(type, id, folder.id);
       }}
     >
-      <div
+      <div 
         className={cn(
-          "flex items-center rounded-md pr-2 py-1 text-sm font-medium cursor-pointer group transition-all",
-          activeNoteId === folder.id ? "bg-accent text-primary" : "text-muted-foreground hover:bg-accent/50",
-          draggedItemId === folder.id && "opacity-30"
+          "group flex items-center gap-1.5 py-1 px-2 rounded-md cursor-pointer transition-all select-none",
+          isOver ? "bg-primary/5 ring-1 ring-primary/20" : "hover:bg-accent/40 text-muted-foreground hover:text-foreground"
         )}
         style={{ paddingLeft: `${depth * 16 + 4}px` }}
         draggable
-        onDragStart={(e) => handleDragStart(e, folder.id, "folder")}
+        onDragStart={(e) => {
+          e.dataTransfer.setData("type", "folder");
+          e.dataTransfer.setData("id", folder.id);
+        }}
       >
-        <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }} className="mr-1 p-0.5 rounded hover:bg-muted-foreground/20 text-muted-foreground transition-transform">
-          <ChevronRight className={cn("size-3", expanded && "rotate-90", (childFolders.length === 0 && folderNotes.length === 0) && "opacity-20")} />
+        <button 
+          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+          className="p-0.5 rounded hover:bg-muted-foreground/10 transition-transform"
+        >
+          <ChevronRight className={cn("size-3.5 transition-transform", expanded && "rotate-90", (childFolders.length === 0 && folderNotes.length === 0) && "opacity-20")} />
         </button>
-        <Folder className={cn("mr-2 size-4 text-muted-foreground group-hover:text-foreground", isOver && "text-primary")} />
-        <span className="truncate flex-1 font-semibold" onClick={() => setExpanded(!expanded)}>{folder.name}</span>
-        <Button size="sm" variant="ghost" className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 ml-1" onClick={(e) => { e.stopPropagation(); onCreateNoteInFolder(folder.id); setExpanded(true); }}>
+        <Folder className={cn("size-3.5 shrink-0", isOver ? "text-primary" : "opacity-40")} />
+        <span className="truncate flex-1 text-sm font-semibold tracking-tight" onClick={() => setExpanded(!expanded)}>
+          {folder.name}
+        </span>
+        <button 
+          onClick={(e) => { e.stopPropagation(); onCreateNote(folder.id); setExpanded(true); }}
+          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-muted-foreground/10 rounded transition-opacity"
+        >
           <Plus className="size-3" />
-        </Button>
+        </button>
       </div>
 
       {expanded && (
         <div className="space-y-0.5 relative">
-          {childFolders.map((child: any) => (
-            <FolderNode key={child.id} folder={child} allFolders={allFolders} notes={notes} depth={depth + 1} activeNoteId={activeNoteId} onDropItem={onDropItem} onCreateNoteInFolder={onCreateNoteInFolder} setDraggedItemId={setDraggedItemId} setDraggedItemType={setDraggedItemType} draggedItemId={draggedItemId} />
+          {childFolders.map(child => (
+            <FolderNode key={child.id} folder={child} allFolders={allFolders} notes={notes} depth={depth + 1} activeNoteId={activeNoteId} onDrop={onDrop} onCreateNote={onCreateNote} />
           ))}
-          {folderNotes.map((note: any) => (
-            <Link key={note.id} href={`/notes/${note.id}`} className="block">
-              <Button
-                variant={activeNoteId === note.id ? "secondary" : "ghost"}
-                size="sm"
-                className={cn("w-full justify-start h-8 text-xs font-normal border border-transparent transition-all", activeNoteId === note.id ? "bg-accent/80 font-medium text-primary shadow-sm" : "hover:bg-accent/50")}
-                style={{ paddingLeft: `${(depth + 1) * 16 + 20}px` }}
-                draggable
-                onDragStart={(e) => handleDragStart(e, note.id, "note")}
-              >
-                <FileText className={cn("mr-2 size-3.5", activeNoteId === note.id ? "text-primary" : "text-muted-foreground")} />
-                <span className="truncate">{note.title || "Untitled"}</span>
-              </Button>
-            </Link>
+          {folderNotes.map(note => (
+            <NoteItem 
+              key={note.id} 
+              note={note} 
+              active={activeNoteId === note.id} 
+              depth={depth + 1} 
+              onDragStart={(e) => {
+                e.dataTransfer.setData("type", "note");
+                e.dataTransfer.setData("id", note.id);
+              }}
+            />
           ))}
         </div>
       )}
@@ -135,34 +190,18 @@ function FolderNode({
   );
 }
 
+// --- MAIN SIDEBAR ---
+
 export function NotesSidebar() {
   const router = useRouter();
   const params = useParams();
   const activeNoteId = params.id as string | undefined;
-
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const selectedTag = searchParams.get("tag") || "";
-  const initialQ = searchParams.get("q") || "";
 
-  const [searchQuery, setSearchQuery] = useState(initialQ);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [globalAssistantOpen, setGlobalAssistantOpen] = useState(false);
-  const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
-  const [folderName, setFolderName] = useState("");
-  const [showTrash, setShowTrash] = useState(false);
-
-  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
-  const [draggedItemType, setDraggedItemType] = useState<"note" | "folder" | null>(null);
   const [isRootOver, setIsRootOver] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const p = new URLSearchParams(searchParams.toString());
-      if (searchQuery) p.set("q", searchQuery); else p.delete("q");
-      router.replace(`${pathname}?${p.toString()}`);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery, pathname, router]);
 
   const dashboardQuery = useNotesDashboard();
   const archivedQuery = useArchivedNotes();
@@ -171,114 +210,132 @@ export function NotesSidebar() {
   const moveNote = useMoveNote();
   const moveFolder = useMoveFolder();
 
-  const handleDropItem = async (type: string, id: string, folderId: string | null) => {
-    if (type === "note") await moveNote.mutateAsync({ noteId: id, folderId });
-    else if (type === "folder" && id !== folderId) await moveFolder.mutateAsync({ folderId: id, parentId: folderId });
-    setDraggedItemId(null); setDraggedItemType(null);
+  // DEBOUNCED SEARCH
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const p = new URLSearchParams(searchParams.toString());
+      if (searchQuery) p.set("q", searchQuery); else p.delete("q");
+      router.replace(`${pathname}?${p.toString()}`);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleDrop = async (type: string, id: string, targetId: string | null) => {
+    if (type === "note") await moveNote.mutateAsync({ noteId: id, folderId: targetId });
+    else if (type === "folder" && id !== targetId) await moveFolder.mutateAsync({ folderId: id, parentId: targetId });
   };
 
   const notes = dashboardQuery.data?.notes ?? [];
   const folders = dashboardQuery.data?.folders ?? [];
-
-  const rootFolders = folders.filter((f) => !f.parent_id);
-  const unorganizedNotes = notes.filter((n) => !n.folder_id);
-
-  const filteredNotes = notes.filter(n => n.title?.toLowerCase().includes(searchQuery.toLowerCase()));
+  const rootFolders = folders.filter(f => !f.parent_id);
+  const rootNotes = notes.filter(n => !n.folder_id);
 
   return (
-    <aside className="space-y-6 flex flex-col h-full bg-background/50 backdrop-blur-xl">
-      {/* SEARCH & AI */}
-      <section className="space-y-2 px-2 pt-2">
-        <div className="flex items-center bg-muted/20 hover:bg-muted/40 transition-all border border-border/40 rounded-xl px-3 h-10 shadow-inner group">
-          <Search className="size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-          <Input
-            placeholder="Search library..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="border-0 bg-transparent shadow-none focus-visible:ring-0 h-full p-2 text-xs font-medium"
-          />
+    <div className="flex flex-col h-full bg-[#fbfbfa] dark:bg-[#191919] select-none">
+      {/* QUICK SEARCH & NAV */}
+      <div className="flex-1 overflow-y-auto px-2 space-y-6 custom-scrollbar pt-2 pb-10">
+        <div className="space-y-0.5">
+           <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full justify-start h-8 text-xs font-medium gap-2 text-muted-foreground hover:bg-accent/40 hover:text-foreground rounded-md px-2"
+            onClick={() => setGlobalAssistantOpen(true)}
+          >
+            <Sparkles className="size-3.5 text-primary" /> Assistant
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full justify-start h-8 text-xs font-medium gap-2 text-muted-foreground hover:bg-accent/40 hover:text-foreground rounded-md px-2">
+            <Clock className="size-3.5" /> Recent
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full justify-start h-8 text-xs font-medium gap-2 text-muted-foreground hover:bg-accent/40 hover:text-foreground rounded-md px-2">
+            <Settings className="size-3.5" /> Settings
+          </Button>
         </div>
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start h-10 text-xs font-bold text-primary hover:bg-primary/5 rounded-xl group relative overflow-hidden" 
-          onClick={() => setGlobalAssistantOpen(true)}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <Sparkles className="mr-2 size-4 group-hover:scale-110 transition-transform" />
-          Neural Research Assistant
-        </Button>
-      </section>
 
-      {/* WORKSPACE */}
-      <section className="flex-1 overflow-y-auto px-2 space-y-4 custom-scrollbar">
-        {!searchQuery && (
-          <>
-            <div className="flex items-center justify-between px-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/40">
-              <span className="flex items-center gap-1.5"><FolderOpen size={12} /> Workspace</span>
-              <Button variant="ghost" size="icon" onClick={() => setIsFolderDialogOpen(true)} className="size-6 rounded-full hover:bg-primary/10 hover:text-primary transition-all">
-                <Plus size={12} />
-              </Button>
+        {/* WORKSPACE HIERARCHY */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between px-2 mb-1 group/section">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Private Workspace</span>
+            <div className="flex items-center gap-1 opacity-0 group-hover/section:opacity-100 transition-opacity">
+              <button onClick={() => createFolder.mutate("New Folder")} className="p-1 hover:bg-muted-foreground/10 rounded"><Plus className="size-3" /></button>
             </div>
-
-            <div className="space-y-0.5 min-h-[100px]" onDragOver={(e) => { e.preventDefault(); setIsRootOver(true); }} onDragLeave={() => setIsRootOver(false)} onDrop={(e) => { e.preventDefault(); setIsRootOver(false); const t = e.dataTransfer.getData("type"); const id = e.dataTransfer.getData("id"); if (t && id) handleDropItem(t, id, null); }}>
-              {rootFolders.map((f) => (
-               <FolderNode key={f.id} folder={f} allFolders={folders} notes={notes} activeNoteId={activeNoteId} onDropItem={handleDropItem} onCreateNoteInFolder={async (fid: string) => { const c = await createNote.mutateAsync({ title: "Untitled note", folderId: fid }); router.push(`/notes/${c.id}`); }} setDraggedItemId={setDraggedItemId} setDraggedItemType={setDraggedItemType} draggedItemId={draggedItemId} />
-              ))}
-              {unorganizedNotes.map((n) => (
-                <Link key={n.id} href={`/notes/${n.id}`}>
-                  <Button variant={activeNoteId === n.id ? "secondary" : "ghost"} size="sm" className={cn("w-full justify-start h-8 text-xs font-normal transition-all", activeNoteId === n.id ? "bg-accent font-semibold text-primary" : "hover:bg-accent/40")} style={{ paddingLeft: "20px" }} draggable onDragStart={(e) => { setDraggedItemId(n.id); e.dataTransfer.setData("id", n.id); e.dataTransfer.setData("type", "note"); }}>
-                    <FileText className={cn("mr-2 size-3.5", activeNoteId === n.id ? "text-primary" : "text-muted-foreground/60")} />
-                    <span className="truncate">{n.title || "Untitled"}</span>
-                  </Button>
-                </Link>
-              ))}
-            </div>
-          </>
-        )}
-      </section>
-
-      {/* FOOTER ACTIONS (TRASH, TAGS) */}
-      <section className="mt-auto border-t border-border/10 p-2 space-y-2 pb-6">
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start h-9 text-[11px] font-semibold text-muted-foreground/60 hover:text-foreground hover:bg-accent/40 rounded-lg group"
-          onClick={() => setShowTrash(!showTrash)}
-        >
-          <Trash2 className={cn("mr-2 size-3.5 transition-colors", showTrash && "text-destructive")} />
-          {showTrash ? "Hide Trash" : "View Trash"}
-          {archivedQuery.data && archivedQuery.data.length > 0 && <Badge className="ml-auto text-[8px] h-4 min-w-4 px-1 bg-muted-foreground/20 text-muted-foreground border-none">{archivedQuery.data.length}</Badge>}
-        </Button>
-
-        {showTrash && (
-          <div className="space-y-0.5 mb-2 max-h-[200px] overflow-y-auto p-1 bg-muted/10 rounded-lg border border-border/20 custom-scrollbar">
-            {archivedQuery.data?.length ? archivedQuery.data.map(n => (
-              <div key={n.id} className="text-[10px] py-1.5 px-2 flex items-center justify-between group/trash rounded hover:bg-destructive/5 transition-colors">
-                <span className="truncate flex-1 font-medium opacity-60 group-hover/trash:opacity-90">{n.title || "Untitled note"}</span>
-                <span className="text-[8px] opacity-30 ml-2 whitespace-nowrap">{new Date(n.archived_at!).toLocaleDateString()}</span>
-              </div>
-            )) : <p className="text-[10px] text-center py-6 opacity-30 italic">Trash is empty</p>}
           </div>
-        )}
+
+          {dashboardQuery.isLoading ? <SidebarNavSkeleton /> : (
+            <div 
+              className="space-y-0.5 min-h-[40px]" 
+              onDragOver={(e) => { e.preventDefault(); setIsRootOver(true); }} 
+              onDragLeave={() => setIsRootOver(false)} 
+              onDrop={(e) => { e.preventDefault(); setIsRootOver(false); const t = e.dataTransfer.getData("type"); const id = e.dataTransfer.getData("id"); if (t && id) handleDrop(t, id, null); }}
+            >
+              {rootFolders.map(f => (
+                <FolderNode 
+                  key={f.id} 
+                  folder={f} 
+                  allFolders={folders} 
+                  notes={notes} 
+                  depth={0} 
+                  activeNoteId={activeNoteId} 
+                  onDrop={handleDrop} 
+                  onCreateNote={async (fid) => {
+                    const c = await createNote.mutateAsync({ title: "Untitled note", folderId: fid });
+                    router.push(`/notes/${c.id}`);
+                  }} 
+                />
+              ))}
+              {rootNotes.map(n => (
+                <NoteItem 
+                  key={n.id} 
+                  note={n} 
+                  active={activeNoteId === n.id} 
+                  depth={0} 
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData("type", "note");
+                    e.dataTransfer.setData("id", n.id);
+                  }} 
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* FOOTER ACTIONS */}
+      <div className="p-2 mt-auto border-t border-border/10 space-y-1 bg-muted/5">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-full justify-start h-8 text-[11px] font-medium gap-2 text-muted-foreground/60 hover:bg-accent/40 rounded-md px-2">
+              <Trash2 className="size-3.5" /> Trash
+              {archivedQuery.data && archivedQuery.data.length > 0 && (
+                <span className="ml-auto text-[9px] bg-muted-foreground/10 px-1.5 rounded-full">{archivedQuery.data.length}</span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" className="w-56 rounded-xl p-1" align="end">
+             <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Deleted Notes</div>
+             <DropdownMenuSeparator />
+             <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                {archivedQuery.data?.length ? archivedQuery.data.map(n => (
+                  <DropdownMenuItem key={n.id} className="text-xs flex flex-col items-start gap-0.5 px-3 py-2 cursor-pointer">
+                    <span className="font-medium truncate w-full">{n.title || "Untitled note"}</span>
+                    <span className="text-[9px] opacity-40">{new Date(n.archived_at!).toLocaleDateString()}</span>
+                  </DropdownMenuItem>
+                )) : <div className="p-6 text-center text-[10px] text-muted-foreground/30 italic">Empty</div>}
+             </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Button 
-          className="w-full justify-start h-10 text-xs font-bold bg-primary/10 text-primary rounded-xl hover:bg-primary/15 transition-all shadow-sm group" 
-          onClick={async () => { const c = await createNote.mutateAsync({ title: "Untitled note" }); router.push(`/notes/${c.id}`); }}
+          className="w-full justify-start h-9 text-xs font-bold bg-primary text-primary-foreground rounded-lg shadow-sm hover:opacity-90 transition-all gap-2 px-3 mt-2" 
+          onClick={async () => {
+            const c = await createNote.mutateAsync({ title: "" });
+            router.push(`/notes/${c.id}`);
+          }}
         >
-          <Plus className="mr-2 size-4 group-hover:scale-110 transition-transform" /> 
-          New Document
+          <Plus className="size-4" /> New Page
         </Button>
-      </section>
+      </div>
 
-      <Dialog open={isFolderDialogOpen} onOpenChange={setIsFolderDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Create Folder</DialogTitle></DialogHeader>
-          <Input placeholder="Engineering Designs..." value={folderName} onChange={(e) => setFolderName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createFolder.mutate(folderName)} />
-          <DialogFooter><Button onClick={() => { createFolder.mutate(folderName); setIsFolderDialogOpen(false); }}>Initialize Container</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
       <GlobalAssistantModal isOpen={globalAssistantOpen} onOpenChange={setGlobalAssistantOpen} />
-
-    </aside>
+    </div>
   );
 }

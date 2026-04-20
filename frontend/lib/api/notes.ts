@@ -115,7 +115,7 @@ export function getNoteDetail(accessToken: string, noteId: string) {
 export function updateNote(
   accessToken: string,
   noteId: string,
-  payload: { title?: string; html?: string; folderId?: string | null }
+  payload: { title?: string; html?: string; content?: any; contentText?: string; folderId?: string | null }
 ) {
   return apiRequest<{ success: boolean }>(`/api/notes/${noteId}`, {
     method: "PUT",

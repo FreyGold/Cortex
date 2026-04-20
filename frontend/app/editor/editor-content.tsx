@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { NotionEditor } from "@/components/editor";
-import { EDITOR_DEMO_CONTENT } from "@/components/editor/page/editor-demo-content";
+import { PlateEditor } from "@/components/editor";
 import { EditorFooter } from "@/components/editor/page/editor-footer";
 import { EditorHeader } from "@/components/editor/page/editor-header";
 import { EDITOR_SHORTCUTS } from "@/components/editor/page/editor-shortcuts";
@@ -10,7 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 export function EditorPageContent() {
-  const [content, setContent] = useState(EDITOR_DEMO_CONTENT);
+  const [content, setContent] = useState<any[]>([]);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isFullWidth, setIsFullWidth] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -35,11 +34,11 @@ export function EditorPageContent() {
   }, [content]);
 
   const handleExport = useCallback(() => {
-    const blob = new Blob([content], { type: "text/html" });
+    const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "note.html";
+    a.download = "note.json";
     a.click();
     URL.revokeObjectURL(url);
   }, [content]);
@@ -71,11 +70,9 @@ export function EditorPageContent() {
               : "container mx-auto max-w-4xl",
           )}
         >
-          <NotionEditor
+          <PlateEditor
             content={content}
             onChange={setContent}
-            showToolbar={true}
-            autofocus={true}
             editorClassName="min-h-[60vh]"
           />
         </main>

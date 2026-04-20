@@ -1,10 +1,13 @@
-import { EditorPageContent } from "./editor-content";
+import { Toaster } from 'sonner';
 
-export const metadata = {
-  title: "Editor | Cortex",
-  description: "Write and edit your notes with the Cortex editor",
-};
+import { PlateEditor } from '@/components/editor/plate-editor';
 
-export default function EditorPage() {
-  return <EditorPageContent />;
+export default function Page() {
+  return (
+    <div className="h-screen w-full">
+      <PlateEditor />
+
+      <Toaster />
+    </div>
+  );
 }

@@ -119,6 +119,8 @@ export function useUpdateNote(noteId: string) {
     mutationFn: async (input: {
       title?: string;
       html?: string;
+      content?: any;
+      contentText?: string;
       folderId?: string | null;
     }) => {
       const accessToken = await getAccessToken();

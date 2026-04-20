@@ -71,7 +71,15 @@ export class NoteController {
       if (typeof input.title === "string") {
         updatePayload.title = input.title;
       }
-      if (typeof input.html === "string") {
+      if (input.content !== undefined) {
+        updatePayload.content = input.content;
+      }
+      if (typeof input.contentText === "string") {
+        updatePayload.content_text = input.contentText;
+        updatePayload.word_count = updatePayload.content_text
+          ? String(updatePayload.content_text).split(/\s+/).filter(Boolean).length
+          : 0;
+      } else if (typeof input.html === "string") {
         updatePayload.content = { html: input.html };
         updatePayload.content_text = input.html
           .replace(/<[^>]+>/g, " ")
