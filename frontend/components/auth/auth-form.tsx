@@ -1,7 +1,6 @@
 "use client";
 
-import { GoogleLogo } from "@phosphor-icons/react";
-import { Loader2 } from "lucide-react";
+import { Globe as GoogleLogo, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

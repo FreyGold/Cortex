@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Check, CaretUpDown } from "@phosphor-icons/react/dist/ssr";
+import { Plus, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -152,7 +152,7 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
                         ? colleges.find((c) => c.id === selectedCollegeId)?.name_en
                         : "Select college..."}
                     </span>
-                    <CaretUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[375px] p-0" align="start">
@@ -206,7 +206,7 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
                         ? filteredMajors.find((m) => m.id === selectedMajorId)?.name_en
                         : "Select major..."}
                     </span>
-                    <CaretUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[375px] p-0" align="start">

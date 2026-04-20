@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PencilSimple, Trash } from "@phosphor-icons/react/dist/ssr";
+import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -119,7 +119,7 @@ export function EditResourceDialog({ resource, doctors: initialDoctors }: Props)
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-          <PencilSimple className="size-4 text-muted-foreground hover:text-primary transition-colors" />
+          <Pencil className="size-4 text-muted-foreground hover:text-primary transition-colors" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -195,7 +195,7 @@ export function EditResourceDialog({ resource, doctors: initialDoctors }: Props)
           </div>
           <DialogFooter className="flex justify-between items-center sm:justify-between">
             <Button type="button" variant="destructive" onClick={onDelete} disabled={isDeleting}>
-              <Trash className="size-4 mr-2" />
+              <Trash2 className="size-4 mr-2" />
               Delete
             </Button>
             <Button type="submit" disabled={isLoading}>

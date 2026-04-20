@@ -1,34 +1,34 @@
 "use client";
 
 import {
-  ArrowClockwise,
-  ArrowCounterClockwise,
-  CaretRight,
-  ClipboardText,
+  Undo as ArrowCounterClockwise,
+  Redo as ArrowClockwise,
+  ChevronRight as CaretRight,
+  Clipboard as ClipboardText,
   Code,
   Copy,
   Highlighter,
   Link,
-  LinkBreak,
-  ListBullets,
-  ListChecks,
-  ListNumbers,
+  Unlink as LinkBreak,
+  List as ListBullets,
+  ListTodo as ListChecks,
+  ListOrdered as ListNumbers,
   Palette,
-  Paragraph,
-  Quotes,
+  Type as Paragraph,
+  Quote as Quotes,
   Scissors,
-  TextAlignCenter,
-  TextAlignLeft,
-  TextAlignRight,
-  TextB,
-  TextHOne,
-  TextHThree,
-  TextHTwo,
-  TextItalic,
-  TextStrikethrough,
-  TextUnderline,
-  Trash,
-} from "@phosphor-icons/react";
+  AlignCenter as TextAlignCenter,
+  AlignLeft as TextAlignLeft,
+  AlignRight as TextAlignRight,
+  Bold as TextB,
+  Heading1 as TextHOne,
+  Heading3 as TextHThree,
+  Heading2 as TextHTwo,
+  Italic as TextItalic,
+  Strikethrough as TextStrikethrough,
+  Underline as TextUnderline,
+  Trash2 as Trash,
+} from "lucide-react";
 import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -136,7 +136,7 @@ export function EditorContextMenu({
     {
       id: "bold",
       label: "Bold",
-      icon: <TextB className="size-4" weight="bold" />,
+      icon: <TextB className="size-4" />,
       shortcut: "⌘B",
       action: () => {
         editor.chain().focus().toggleBold().run();

@@ -1,6 +1,6 @@
 "use client";
 
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { Search as MagnifyingGlass } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";

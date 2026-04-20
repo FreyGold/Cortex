@@ -1,4 +1,4 @@
-import { ArrowRight, Database, Users } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Database, Users } from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import {
@@ -34,7 +34,6 @@ export default async function AdminPage() {
                   <div className="rounded-lg bg-orange-500/10 p-2.5">
                     <Users
                       className="size-6 text-orange-600 dark:text-orange-400"
-                      weight="duotone"
                     />
                   </div>
                   <CardTitle className="text-xl">User management</CardTitle>
@@ -58,7 +57,6 @@ export default async function AdminPage() {
                   <div className="rounded-lg bg-blue-500/10 p-2.5">
                     <Database
                       className="size-6 text-blue-600 dark:text-blue-400"
-                      weight="duotone"
                     />
                   </div>
                   <CardTitle className="text-xl">Data management</CardTitle>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PencilSimple, Check, CaretUpDown } from "@phosphor-icons/react/dist/ssr";
+import { Pencil, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -112,7 +112,7 @@ export function EditCourseDialog({ course, colleges, majors, yearLevels }: Props
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={(e) => e.stopPropagation()}>
-          <PencilSimple className="size-4 text-muted-foreground hover:text-primary transition-colors" />
+          <Pencil className="size-4 text-muted-foreground hover:text-primary transition-colors" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]" onClick={(e) => e.stopPropagation()}>
@@ -148,7 +148,7 @@ export function EditCourseDialog({ course, colleges, majors, yearLevels }: Props
                         ? colleges.find((c) => c.id === selectedCollegeId)?.name_en
                         : "Select college..."}
                     </span>
-                    <CaretUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[375px] p-0" align="start">
@@ -202,7 +202,7 @@ export function EditCourseDialog({ course, colleges, majors, yearLevels }: Props
                         ? filteredMajors.find((m) => m.id === selectedMajorId)?.name_en
                         : "Select major..."}
                     </span>
-                    <CaretUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[375px] p-0" align="start">

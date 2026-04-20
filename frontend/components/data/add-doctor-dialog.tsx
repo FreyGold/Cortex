@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "@phosphor-icons/react/dist/ssr";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

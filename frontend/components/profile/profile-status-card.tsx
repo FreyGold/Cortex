@@ -2,10 +2,10 @@
 
 import {
   ArrowRight,
-  CheckCircle,
-  HourglassLow,
-  SealCheck,
-} from "@phosphor-icons/react";
+  CheckCircle2 as CheckCircle,
+  Hourglass,
+  BadgeCheck as SealCheck,
+} from "lucide-react";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useMessages } from "next-intl";
@@ -110,7 +110,7 @@ export function ProfileStatusCard() {
     <Card className="shadow-none border-border/60">
       <CardHeader className="space-y-2">
         <div className="flex items-center gap-2 text-primary">
-          <SealCheck className="size-5" weight="duotone" />
+          <SealCheck className="size-5" />
           <span className="text-[10px] font-bold uppercase tracking-wider">
             {getMessage(
               messages,
@@ -169,7 +169,7 @@ export function ProfileStatusCard() {
 
         {!verified && !requestedAt ? (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
-            <HourglassLow className="size-4" />
+            <Hourglass className="size-4" />
             {getMessage(
               messages,
               "profilePage.verification.pendingDescription",

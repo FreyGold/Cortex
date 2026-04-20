@@ -2,16 +2,16 @@
 
 import {
   FolderOpen,
-  FolderSimple,
+  Folder,
   Plus,
   FileText,
-  Tag as TagIcon,
-  CaretRight,
-  CaretDown,
-  MagnifyingGlass,
-  Sparkle,
-  House
-} from "@phosphor-icons/react";
+  Tag,
+  ChevronRight,
+  ChevronDown,
+  Search,
+  Sparkles,
+  Home
+} from "lucide-react";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -100,9 +100,9 @@ function FolderNode({
         onDragStart={(e) => handleDragStart(e, folder.id, "folder")}
       >
         <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }} className="mr-1 p-0.5 rounded hover:bg-muted-foreground/20 text-muted-foreground transition-transform">
-          <CaretRight weight="bold" className={cn("size-3", expanded && "rotate-90", (childFolders.length === 0 && folderNotes.length === 0) && "opacity-20")} />
+          <ChevronRight className={cn("size-3", expanded && "rotate-90", (childFolders.length === 0 && folderNotes.length === 0) && "opacity-20")} />
         </button>
-        <FolderSimple className={cn("mr-2 size-4 text-muted-foreground group-hover:text-foreground", isOver && "text-primary")} />
+        <Folder className={cn("mr-2 size-4 text-muted-foreground group-hover:text-foreground", isOver && "text-primary")} />
         <span className="truncate flex-1 font-semibold" onClick={() => setExpanded(!expanded)}>{folder.name}</span>
         <Button size="sm" variant="ghost" className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 ml-1" onClick={(e) => { e.stopPropagation(); onCreateNoteInFolder(folder.id); setExpanded(true); }}>
           <Plus className="size-3" />
@@ -190,7 +190,7 @@ export function NotesSidebar() {
       {/* SEARCH & AI */}
       <section className="space-y-2 px-2 pt-2">
         <div className="flex items-center bg-muted/20 hover:bg-muted/40 transition-all border border-border/40 rounded-xl px-3 h-10 shadow-inner group">
-          <MagnifyingGlass className="size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="size-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Search library..."
             value={searchQuery}
@@ -204,7 +204,7 @@ export function NotesSidebar() {
           onClick={() => setGlobalAssistantOpen(true)}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <Sparkle className="mr-2 size-4 group-hover:scale-110 transition-transform" weight="fill" />
+          <Sparkles className="mr-2 size-4 group-hover:scale-110 transition-transform" />
           Neural Research Assistant
         </Button>
       </section>
@@ -214,9 +214,9 @@ export function NotesSidebar() {
         {!searchQuery && (
           <>
             <div className="flex items-center justify-between px-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/40">
-              <span className="flex items-center gap-1.5"><FolderOpen size={12} weight="bold" /> Workspace</span>
+              <span className="flex items-center gap-1.5"><FolderOpen size={12} /> Workspace</span>
               <Button variant="ghost" size="icon" onClick={() => setIsFolderDialogOpen(true)} className="size-6 rounded-full hover:bg-primary/10 hover:text-primary transition-all">
-                <Plus size={12} weight="bold" />
+                <Plus size={12} />
               </Button>
             </div>
 
@@ -264,7 +264,7 @@ export function NotesSidebar() {
           className="w-full justify-start h-10 text-xs font-bold bg-primary/10 text-primary rounded-xl hover:bg-primary/15 transition-all shadow-sm group" 
           onClick={async () => { const c = await createNote.mutateAsync({ title: "Untitled note" }); router.push(`/notes/${c.id}`); }}
         >
-          <Plus className="mr-2 size-4 group-hover:scale-110 transition-transform" weight="bold" /> 
+          <Plus className="mr-2 size-4 group-hover:scale-110 transition-transform" /> 
           New Document
         </Button>
       </section>

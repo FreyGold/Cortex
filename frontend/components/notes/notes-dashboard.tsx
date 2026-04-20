@@ -1,6 +1,6 @@
 "use client";
 
-import { Placeholder, Plus, FileText } from "@phosphor-icons/react";
+import { FileQuestion as Placeholder, Plus, FileText } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";

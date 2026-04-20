@@ -2,11 +2,11 @@ import {
   ArrowRight,
   Brain,
   CheckCircle,
-  Lightning,
-  BookBookmark,
+  Zap,
+  BookMarked,
   Notebook,
   ShieldCheck,
-} from "@phosphor-icons/react/dist/ssr";
+} from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ShellHeaderActions } from "@/components/shell-header-actions";
 import { getServerSession } from "@/lib/auth";
 
-const featureIcons = [Notebook, BookBookmark, Brain];
+const featureIcons = [Notebook, BookMarked, Brain];
 
 export const metadata = {
   title: "Cortex | Academic workspace",
@@ -136,7 +136,7 @@ export default async function Home() {
                 <Card key={item.title} className="shadow-none">
                   <CardHeader className="space-y-2">
                     <div className="flex items-center gap-2 text-primary">
-                      <Lightning className="size-4" weight="duotone" />
+                      <Zap className="size-4" />
                       <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                         {t("highlights.label")}
                       </span>
@@ -156,7 +156,7 @@ export default async function Home() {
           <Card className="border-border/60 shadow-none">
             <CardHeader className="space-y-2 border-b border-border/60 pb-5">
               <div className="flex items-center gap-2 text-primary">
-                <ShieldCheck className="size-5" weight="duotone" />
+                <ShieldCheck className="size-5" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   {t("panel.kicker")}
                 </span>
@@ -224,7 +224,7 @@ export default async function Home() {
               return (
                 <Card key={title} className="shadow-none">
                   <CardHeader className="space-y-3">
-                    <Icon className="size-5 text-primary" weight="duotone" />
+                    <Icon className="size-5 text-primary" />
                     <CardTitle className="text-base font-semibold">
                       {title}
                     </CardTitle>

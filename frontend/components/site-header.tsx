@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen } from "@phosphor-icons/react";
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,7 @@ export function SiteHeader({
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur">
       <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4">
         <Link href={brandHref} className="flex items-center gap-2">
-          <BookOpen className="size-5 text-primary" weight="fill" />
+          <BookOpen className="size-5 text-primary" />
           <span className="text-sm font-semibold tracking-tight">Cortex</span>
         </Link>
 

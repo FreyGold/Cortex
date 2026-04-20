@@ -49,6 +49,7 @@ import {
   useUpdateNoteTags,
   useArchiveNote,
   useCreateCourseResource,
+  useCreateTag,
 } from "@/hooks/use-notes";
 import { useCatalog } from "@/hooks/use-data";
 import { 
@@ -63,7 +64,8 @@ import {
   Link2,
   Users,
   Copy,
-  ChevronDown
+  ChevronDown,
+  Plus
 } from "lucide-react";
 
 type NoteEditorPageProps = {

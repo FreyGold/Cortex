@@ -2,10 +2,10 @@
 
 import {
   Database,
-  NotePencil,
+  SquarePen as NotePencil,
   ShieldCheck,
-  UserCircle,
-} from "@phosphor-icons/react";
+  UserCircle2 as UserCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMessages } from "next-intl";

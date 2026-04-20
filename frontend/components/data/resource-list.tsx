@@ -1,15 +1,15 @@
 "use client";
 
 import {
-  DownloadSimple,
+  Download,
   Eye,
   FileText,
   FolderOpen,
   Ghost,
-  GridFour,
+  LayoutGrid,
   List,
   User,
-} from "@phosphor-icons/react/dist/ssr";
+} from "lucide-react";
 import { useState } from "react";
 import { DriveViewerDialog } from "@/components/data/drive-viewer-dialog";
 import { EditResourceDialog } from "@/components/data/edit-resource-dialog";
@@ -60,7 +60,6 @@ export function ResourceList({
         <CardContent className="py-14 text-center">
           <Ghost
             className="mx-auto mb-3 size-10 text-muted-foreground/60"
-            weight="duotone"
           />
           <h3 className="text-base font-semibold">No resources found</h3>
           <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
@@ -81,7 +80,7 @@ export function ResourceList({
             className="h-8 gap-1.5"
             onClick={() => setViewMode("card")}
           >
-            <GridFour className="size-4" />
+            <LayoutGrid className="size-4" />
             Cards
           </Button>
           <Button
@@ -139,7 +138,7 @@ export function ResourceList({
                       {resource.view_count ?? 0} views
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <DownloadSimple className="size-3.5" />
+                      <Download className="size-3.5" />
                       {resource.download_count ?? 0} downloads
                     </span>
                   </div>

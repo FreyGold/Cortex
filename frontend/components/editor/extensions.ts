@@ -1,6 +1,6 @@
 "use client";
 
-import { DotsSixVertical } from "@phosphor-icons/react";
+import { GripVertical as DotsSixVertical } from "lucide-react";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import {
   Details,
@@ -99,7 +99,6 @@ export const editorExtensions = [
       root.render(
         createElement(DotsSixVertical, {
           className: "size-4",
-          weight: "regular",
         }),
       );
 

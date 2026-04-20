@@ -1,10 +1,10 @@
 import {
   ArrowLeft,
-  Books,
-  CaretLeft,
+  Library,
+  ChevronLeft,
   Ghost,
   User,
-} from "@phosphor-icons/react/dist/ssr";
+} from "lucide-react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { EditCourseDialog } from "@/components/data/edit-course-dialog";
@@ -59,7 +59,6 @@ export default async function CourseResourcesPage({
         <main className="container mx-auto flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 py-16 text-center">
           <Ghost
             className="mb-4 size-12 text-muted-foreground/50"
-            weight="duotone"
           />
           <h1 className="text-2xl font-semibold tracking-tight">
             Course not found
@@ -117,7 +116,7 @@ export default async function CourseResourcesPage({
               className="-ml-2 h-8 gap-1.5 text-muted-foreground"
             >
               <Link href="/data">
-                <CaretLeft className="size-4" />
+                <ChevronLeft className="size-4" />
                 Back to Data
               </Link>
             </Button>
@@ -129,7 +128,7 @@ export default async function CourseResourcesPage({
                     {course.code ?? "Course"}
                   </Badge>
                   <Badge variant="outline" className="font-medium">
-                    <Books className="mr-1 size-3.5" />
+                    <Library className="mr-1 size-3.5" />
                     {resources.length} resources
                   </Badge>
                   <Badge variant="outline" className="font-medium">

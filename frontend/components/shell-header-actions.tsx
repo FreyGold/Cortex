@@ -1,6 +1,6 @@
 "use client";
 
-import { SignOut, Sparkle } from "@phosphor-icons/react";
+import { LogOut as SignOut, Sparkles as Sparkle } from "lucide-react";
 import Link from "next/link";
 import { useMessages } from "next-intl";
 import { useState } from "react";
@@ -30,7 +30,7 @@ export function ShellHeaderActions({
         className="hidden gap-1.5 md:inline-flex"
         onClick={() => setAiOpen(true)}
       >
-        <Sparkle className="size-3.5" weight="fill" />
+        <Sparkle className="size-3.5" />
         {getMessage(messages, "shell.ai.open", "Ask AI")}
       </Button>
       <ThemeToggle />

@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  ArrowSquareOut,
-  CaretRight,
+  ExternalLink,
+  ChevronRight,
   FileText,
   FolderOpen,
-} from "@phosphor-icons/react/dist/ssr";
+} from "lucide-react";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -158,7 +158,7 @@ export function DriveViewerDialog({
           {initialIsFolder ? (
             <FolderOpen className="size-4" />
           ) : (
-            <ArrowSquareOut className="size-4" />
+            <ExternalLink className="size-4" />
           )}
           {label}
         </Button>
@@ -193,7 +193,7 @@ export function DriveViewerDialog({
                     className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
                     onClick={() => handleBreadcrumbClick(index)}
                   >
-                    {index > 0 ? <CaretRight className="size-3" /> : null}
+                    {index > 0 ? <ChevronRight className="size-3" /> : null}
                     <span className="max-w-[180px] truncate">{crumb.name}</span>
                   </button>
                 ))}
@@ -216,7 +216,7 @@ export function DriveViewerDialog({
                         <FolderOpen className="size-4 text-muted-foreground" />
                         <span className="truncate text-sm">{item.name}</span>
                       </span>
-                      <CaretRight className="size-3.5 text-muted-foreground" />
+                      <ChevronRight className="size-3.5 text-muted-foreground" />
                     </button>
                   ))
                 )}

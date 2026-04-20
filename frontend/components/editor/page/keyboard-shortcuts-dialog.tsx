@@ -1,6 +1,6 @@
 "use client";
 
-import { Keyboard } from "@phosphor-icons/react";
+import { Keyboard } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   KeyboardShortcutBadge,

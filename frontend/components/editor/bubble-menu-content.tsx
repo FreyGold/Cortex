@@ -4,18 +4,18 @@ import {
   Code,
   Highlighter,
   Link,
-  LinkBreak,
-  ListBullets,
-  ListNumbers,
-  Quotes,
-  TextAlignCenter,
-  TextAlignLeft,
-  TextAlignRight,
-  TextB,
-  TextItalic,
-  TextStrikethrough,
-  TextUnderline,
-} from "@phosphor-icons/react";
+  Unlink as LinkBreak,
+  List as ListBullets,
+  ListOrdered as ListNumbers,
+  Quote as Quotes,
+  AlignCenter as TextAlignCenter,
+  AlignLeft as TextAlignLeft,
+  AlignRight as TextAlignRight,
+  Bold as TextB,
+  Italic as TextItalic,
+  Strikethrough as TextStrikethrough,
+  Underline as TextUnderline,
+} from "lucide-react";
 import type { Editor } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -42,7 +42,7 @@ interface ToolbarButton {
 export function BubbleMenuContent({ editor }: BubbleMenuContentProps) {
   const formatButtons: ToolbarButton[] = [
     {
-      icon: <TextB className="size-4" weight="bold" />,
+      icon: <TextB className="size-4" />,
       label: "Bold",
       shortcut: "⌘B",
       action: () => editor.chain().focus().toggleBold().run(),

@@ -1,6 +1,6 @@
 "use client";
 
-import { Desktop, Moon, Sun } from "@phosphor-icons/react";
+import { Monitor as Desktop, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -67,9 +67,9 @@ export function ThemeToggle() {
       onClick={onToggle}
       aria-label={`Current theme: ${theme}. Click to change.`}
     >
-      {theme === "dark" && <Moon className="size-4" weight="bold" />}
-      {theme === "light" && <Sun className="size-4" weight="bold" />}
-      {theme === "system" && <Desktop className="size-4" weight="bold" />}
+      {theme === "dark" && <Moon className="size-4" />}
+      {theme === "light" && <Sun className="size-4" />}
+      {theme === "system" && <Desktop className="size-4" />}
     </Button>
   );
 }

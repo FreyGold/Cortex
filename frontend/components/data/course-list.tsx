@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Ghost, GridFour, List } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Ghost, LayoutGrid, List } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,7 +68,7 @@ export function CourseList({
             className="h-8 px-2.5 rounded-md"
             onClick={() => setViewMode("card")}
           >
-            <GridFour className="size-4 mr-1.5" />
+            <LayoutGrid className="size-4 mr-1.5" />
             <span className="text-xs font-medium">Cards</span>
           </Button>
           <Button
@@ -167,7 +167,7 @@ export function CourseList({
                     </TableCell>
                     <TableCell>
                       {yearItem ? (
-                        <Badge variant="muted" className="text-[10px]">
+                        <Badge variant="secondary" className="text-[10px]">
                           Y{yearItem.level}
                         </Badge>
                       ) : (

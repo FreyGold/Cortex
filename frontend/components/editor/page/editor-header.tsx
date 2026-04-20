@@ -2,13 +2,13 @@
 
 import {
   ArrowLeft,
-  ArrowsInSimple,
-  ArrowsOutSimple,
+  Minimize2 as ArrowsInSimple,
+  Maximize2 as ArrowsOutSimple,
   Clock,
-  DotsThree,
-  Export,
-  FloppyDisk,
-} from "@phosphor-icons/react";
+  MoreHorizontal as DotsThree,
+  Share as Export,
+  Save as FloppyDisk,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { EditorShortcut } from "./editor-shortcuts";
@@ -90,7 +90,7 @@ export function EditorHeader({
           </Button>
 
           <Button variant="ghost" size="icon-sm">
-            <DotsThree className="size-4" weight="bold" />
+            <DotsThree className="size-4" />
           </Button>
 
           <Button

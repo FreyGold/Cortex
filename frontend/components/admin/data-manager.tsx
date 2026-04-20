@@ -2,10 +2,10 @@
 
 import {
   ArrowRight,
-  Buildings,
-  CheckCircle,
+  Building2 as Buildings,
+  CheckCircle2 as CheckCircle,
   GraduationCap,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -185,7 +185,7 @@ export function DataManager() {
       <Card className="shadow-none border-border/60">
         <CardHeader className="space-y-1">
           <div className="mb-2 flex items-center gap-2 text-primary">
-            <Buildings className="size-5" weight="duotone" />
+            <Buildings className="size-5" />
             <span className="text-[10px] font-bold uppercase tracking-wider">
               Institution
             </span>
@@ -224,22 +224,23 @@ export function DataManager() {
               className="font-mono text-xs"
             />
           </div>
-          <Button
-            className="w-full gap-2"
-            onClick={submitUniversity}
-            disabled={busy || !universityName || !universitySlug}
-          >
-            {busy && <Loader2 className="size-4 animate-spin" />}
-            Save University
-            <ArrowRight className="size-3.5" />
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              className="flex-1"
+              onClick={submitUniversity}
+              disabled={busy || !universityName || !universitySlug}
+            >
+              Save University
+            </Button>
+            {busy && <Loader2 className="size-4 animate-spin my-auto" />}
+          </div>
         </CardContent>
       </Card>
 
       <Card className="shadow-none border-border/60">
         <CardHeader className="space-y-1">
           <div className="mb-2 flex items-center gap-2 text-primary">
-            <GraduationCap className="size-5" weight="duotone" />
+            <GraduationCap className="size-5" />
             <span className="text-[10px] font-bold uppercase tracking-wider">
               Faculty
             </span>

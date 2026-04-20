@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SidebarSimple, List } from "@phosphor-icons/react";
+import { PanelLeft as SidebarSimple, Menu as List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotesSidebar } from "@/components/notes/notes-sidebar";
 import { cn } from "@/lib/utils";

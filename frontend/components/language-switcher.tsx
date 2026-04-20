@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe } from "@phosphor-icons/react";
+import { Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { defaultLocale, type Locale, localeCookieName } from "@/lib/i18n";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkle } from "@phosphor-icons/react";
+import { Sparkles as Sparkle } from "lucide-react";
 import { useMessages } from "next-intl";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
@@ -183,7 +183,7 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
       <DialogContent className="right-0 left-auto top-0 h-screen w-[min(100vw,480px)] max-w-none translate-x-0 translate-y-0 rounded-none border-l border-border p-0 flex flex-col bg-background shadow-2xl">
         <DialogHeader className="border-b border-border px-6 py-4">
           <DialogTitle className="flex items-center gap-2 text-lg font-bold">
-            <Sparkle className="size-5 text-primary" weight="fill" />
+            <Sparkle className="size-5 text-primary" />
             {getMessage(
               translationMessages,
               "shell.ai.title",

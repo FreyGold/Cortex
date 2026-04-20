@@ -1,6 +1,6 @@
 "use client";
 
-import { MagnifyingGlass, UserCheck, UserMinus } from "@phosphor-icons/react";
+import { Search as MagnifyingGlass, UserCheck, UserMinus } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";

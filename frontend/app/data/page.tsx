@@ -4,7 +4,7 @@ import {
   Calendar,
   Ghost,
   GraduationCap,
-} from "@phosphor-icons/react/dist/ssr";
+} from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { AppShell } from "@/components/app-shell";
