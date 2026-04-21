@@ -51,8 +51,9 @@ export type Resource = {
   type: "lecture" | "exam" | "assignment" | "other";
   exam_type: "midterm" | "final" | "quiz" | null;
   doctor_id: string | null;
-  google_drive_id: string;
+  google_drive_id: string | null;
   google_drive_url: string | null;
+  note_id: string | null;
   file_type: string | null;
   file_size: number | null;
   download_count: number | null;

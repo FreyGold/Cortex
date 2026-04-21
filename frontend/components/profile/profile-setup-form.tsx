@@ -214,7 +214,7 @@ export function ProfileSetupForm({
               <Check className="size-3 text-primary" />
               Your academic context is used to personalize your experience.
               <Link
-                href="/profile"
+                href="/settings"
                 className="font-medium text-primary hover:underline"
               >
                 {t("verificationLink")}

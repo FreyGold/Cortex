@@ -26,6 +26,7 @@ const editorContainerVariants = cva(
         ),
         default: 'h-full',
         demo: 'h-[650px]',
+        none: 'h-auto overflow-visible',
         select: cn(
           'group rounded-md border border-input ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
           'has-data-readonly:w-fit has-data-readonly:cursor-default has-data-readonly:border-transparent has-data-readonly:focus-within:[box-shadow:none]'
@@ -66,7 +67,7 @@ const editorVariants = cva(
     },
     variants: {
       disabled: {
-        true: 'cursor-not-allowed opacity-50',
+        true: 'cursor-default opacity-100',
       },
       focused: {
         true: 'ring-2 ring-ring ring-offset-2',
@@ -80,7 +81,7 @@ const editorVariants = cva(
           'size-full px-20 pt-4 pb-72 text-base]',
         demo: 'size-full px-20 pt-4 pb-72 text-base]',
         fullWidth: 'size-full px-20 pt-4 pb-72 text-base sm:px-24',
-        none: '',
+        none: 'w-full h-auto text-base',
         select: 'px-3 py-2 text-base data-readonly:w-fit',
       },
     },

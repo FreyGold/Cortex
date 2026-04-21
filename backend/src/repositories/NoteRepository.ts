@@ -6,12 +6,22 @@ export class NoteRepository {
   async getDashboardNotes(userId: string) {
     const { data, error } = await this.supabase
       .from("notes")
-      .select("id,title,folder_id,is_pinned,updated_at,created_at,note_tags(tags(id,name,color))")
+      .select("id,title,folder_id,is_pinned,is_published,updated_at,created_at,note_tags(tags(id,name,color))")
       .eq("user_id", userId)
       .eq("is_archived", false)
       .order("updated_at", { ascending: false });
     if (error) throw error;
     return data;
+  }
+
+  async getSharedNotes(userId: string) {
+    const { data, error } = await this.supabase
+      .from("note_shares")
+      .select("note:notes(id,title,updated_at,is_pinned,is_published,user_id)")
+      .eq("shared_with_user_id", userId)
+      .eq("note.is_archived", false);
+    if (error) throw error;
+    return data?.map(item => item.note).filter(Boolean) || [];
   }
 
   async getFolders(userId: string) {
@@ -193,6 +203,7 @@ export class NoteRepository {
       .from("notes")
       .update({
         status: "archived",
+        is_archived: true,
         archived_at: new Date().toISOString(),
       })
       .eq("id", noteId)

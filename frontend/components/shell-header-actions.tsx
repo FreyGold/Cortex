@@ -33,8 +33,6 @@ export function ShellHeaderActions({
         <Sparkle className="size-3.5" />
         {getMessage(messages, "shell.ai.open", "Ask AI")}
       </Button>
-      <ThemeToggle />
-      <LanguageSwitcher />
       <Link href={signedIn ? "/auth/logout" : "/auth/login"}>
         <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
           {signedIn ? <SignOut className="size-3.5" /> : null}

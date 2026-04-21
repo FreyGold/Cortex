@@ -49,11 +49,33 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir={getDirection(locale)}
-      className={cn("h-full antialiased overflow-hidden", inter.variable, geist.variable, "font-mono", geistMono.variable, geistHeading.variable)}
+      className={cn(inter.variable, geist.variable, "font-mono", geistMono.variable, geistHeading.variable)}
       style={{ fontFamily: "var(--font-sans)" }}
       data-scroll-behavior="smooth"
     >
-      <body className="h-full flex flex-col overflow-hidden bg-background">
+      <body className="bg-background">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+                  if (!theme && supportDarkMode) theme = 'dark';
+                  if (!theme) theme = 'dark'; // Default to dark
+                  
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  } else if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                  } else if (theme === 'system') {
+                    if (supportDarkMode) document.documentElement.classList.add('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             {children}

@@ -133,14 +133,26 @@
       "helper": "ابدأ بشكل عام ثم ضيّق الخيارات حتى تصل لما تحتاجه بالضبط.",
       "clearAll": "مسح الكل",
       "searchLabel": "ابحث باسم المقرر أو رمزه",
-      "searchPlaceholder": "مثال: قواعد البيانات أو cs301",
+      "searchPlaceholder": "مثل: قواعد البيانات، cs301",
+      "fullSearchPlaceholder": "بحث دلالي في جميع المقررات...",
+      "allUniversities": "جميع الجامعات",
+      "allColleges": "جميع الكليات",
       "apply": "تطبيق",
       "majorLabel": "التخصص",
       "allMajors": "كل التخصصات",
       "yearLabel": "السنة الدراسية",
       "allYears": "كل السنوات",
-      "year": "السنة {level}"
+      "year": "السنة {level}",
+    "filterLabels": {
+        "university": "الجامعة",
+        "college": "الكلية",
+        "major": "التخصص",
+        "year": "السنة",
+        "search": "البحث"
+    }
     },
+    "header": "متصفح البيانات الأكاديمية",
+    "filtersTitle": "المرشحات",
     "results": {
       "summary": "عدد المقررات المطابقة: {count}",
       "majorChip": "التخصص: {value}",
@@ -163,7 +175,7 @@
     "nav": {
       "notes": "الملاحظات",
       "data": "البيانات",
-      "profile": "الملف",
+      "settings": "الإعدادات",
       "admin": "الإدارة"
     },
     "logout": "تسجيل الخروج",
@@ -226,6 +238,26 @@
       "missing": "تعذر العثور على سجل ملف لهذا الحساب.",
       "editSetup": "تعديل الإعداد الأكاديمي"
     }
+  },
+  "settingsPage": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة حسابك وسياقك الأكاديمي وتفضيلاتك.",
+    "tabs": {
+        "profile": "حالة الملف الشخصي",
+        "academic": "السياق الأكاديمي",
+        "preferences": "التفضيلات"
+    },
+    "appearance": {
+        "title": "المظهر",
+        "theme": "السمة",
+        "themeSubtitle": "بدّل بين السمات الفاتحة والداكنة وتلقائي النظام."
+    },
+    "localization": {
+        "title": "اللغة والمنطقة",
+        "language": "اللغة",
+        "languageSubtitle": "اختر لغة الواجهة المفضلة لديك."
+    },
+    "academicHelper": "حدّث الجامعة والكلية والتخصص للحصول على محتوى مخصص لك."
   },
   "notesPage": {
     "title": "مساحة الملاحظات",

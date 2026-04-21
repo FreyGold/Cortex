@@ -10,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { AppShell } from "@/components/app-shell";
 import { CourseDialog } from "@/components/data/course-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -84,16 +85,16 @@ export default async function DataPage({ searchParams }: PageProps) {
     : null;
   const activeFilterTokens = [
     selectedUniversity
-      ? { label: "University", value: selectedUniversity.name_en }
+      ? { label: t("filters.filterLabels.university"), value: selectedUniversity.name_en }
       : null,
     selectedCollege
-      ? { label: "College", value: selectedCollege.name_en }
+      ? { label: t("filters.filterLabels.college"), value: selectedCollege.name_en }
       : null,
-    selectedMajor ? { label: "Major", value: selectedMajor.name_en } : null,
+    selectedMajor ? { label: t("filters.filterLabels.major"), value: selectedMajor.name_en } : null,
     selectedYear
-      ? { label: "Year", value: `Year ${selectedYear.level}` }
+      ? { label: t("filters.filterLabels.year"), value: t("filters.year", { level: selectedYear.level }) }
       : null,
-    rawQuery ? { label: "Search", value: rawQuery } : null,
+    rawQuery ? { label: t("filters.filterLabels.search"), value: rawQuery } : null,
   ].filter((item): item is { label: string; value: string } => Boolean(item));
 
   const majorsById = new Map(majors.map((item) => [item.id, item]));
@@ -149,50 +150,47 @@ export default async function DataPage({ searchParams }: PageProps) {
       });
 
   return (
-    <AppShell>
-      <main className="py-8 md:py-12">
-        <div className="container mx-auto max-w-[1320px] space-y-8 px-4 md:px-6 lg:px-8">
-          <header className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-                  {t("title")}
-                </h1>
-                <p className="text-lg text-muted-foreground">{t("subtitle")}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-2">
-                  <GraduationCap className="size-4 text-foreground/80" />
-                  {majors.length} {t("stats.majors")}
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <Calendar className="size-4 text-foreground/80" />
-                  {yearLevels.length} {t("stats.yearLevels")}
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <Book className="size-4 text-foreground/80" />
-                  {filteredCourses.length} {t("stats.matchingCourses")}
-                </span>
-              </div>
+    <main className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="max-w-[1400px] mx-auto space-y-6 px-6 py-8 md:py-12">
+        <header className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
+                {t("header")}
+              </h1>
+              <p className="text-muted-foreground text-lg max-w-2xl">{t("subtitle")}</p>
             </div>
-            {isVerifiedOrAdmin && (
-              <CourseDialog
-                colleges={colleges}
-                majors={majors}
-                yearLevels={yearLevels}
-              />
-            )}
-          </header>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground/60">
+              <span className="inline-flex items-center gap-1.5">
+                <GraduationCap className="size-3.5" />
+                {majors.length} {t("stats.majors")}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar className="size-3.5" />
+                {yearLevels.length} {t("stats.yearLevels")}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Book className="size-3.5" />
+                {filteredCourses.length} {t("stats.matchingCourses")}
+              </span>
+            </div>
+          </div>
+          {isVerifiedOrAdmin && (
+            <CourseDialog
+              colleges={colleges}
+              majors={majors}
+              yearLevels={yearLevels}
+            />
+          )}
+        </header>
 
-          <section className="grid gap-6 lg:grid-cols-[240px_1fr] lg:items-start">
-            <aside className="lg:sticky lg:top-24">
-              <Card className="border-border/70 shadow-none">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">
-                    {t("filters.title")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
+        <section className="grid gap-8 lg:grid-cols-[280px_1fr] lg:items-start">
+          <aside className="lg:sticky lg:top-4">
+            <div className="rounded-3xl border border-border/40 bg-card/30 p-1">
+               <div className="px-4 py-3 border-b border-border/5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">{t("filtersTitle")}</span>
+               </div>
+               <div className="p-2 pt-4">
                   <DataFilters
                     universities={universities}
                     colleges={colleges}
@@ -204,102 +202,100 @@ export default async function DataPage({ searchParams }: PageProps) {
                     selectedYearId={selectedYearId}
                     q={rawQuery}
                   />
-                </CardContent>
-              </Card>
-            </aside>
-
-            <div className="space-y-5">
-              {activeFilterTokens.length > 0 || hasSearchQuery ? (
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {activeFilterTokens.map((item) => (
-                      <div
-                        key={`${item.label}-${item.value}`}
-                        className="inline-flex max-w-full items-center gap-2 rounded-full border border-border/70 bg-card px-3 py-1.5"
-                      >
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          {item.label}
-                        </span>
-                        <span className="max-w-[240px] truncate text-sm font-medium text-foreground">
-                          {item.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  {hasSearchQuery ? (
-                    <p className="text-xs text-muted-foreground">
-                      Global search is active. Results ignore
-                      university/college/major/year filters while searching.
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {filteredCourses.length === 0 ? (
-                <Card className="border-dashed bg-muted/20">
-                  <CardHeader className="text-center py-12">
-                    <Ghost className="mx-auto size-12 text-muted-foreground/50 mb-4" />
-                    <CardTitle>{t("empty.title")}</CardTitle>
-                    <CardDescription>{t("empty.description")}</CardDescription>
-                  </CardHeader>
-                </Card>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {filteredCourses.map((course) => {
-                    const majorItem = majorsById.get(course.major_id);
-                    const yearItem = course.year_level_id
-                      ? yearLevelsById.get(course.year_level_id)
-                      : null;
-
-                    return (
-                      <Link
-                        key={course.id}
-                        href={`/data/${course.id}`}
-                        className="block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
-                      >
-                        <Card className="flex h-full flex-col hover:border-primary/50 transition-colors">
-                          <CardHeader className="space-y-2 pb-4">
-                            <div className="flex items-center gap-2">
-                              {course.code && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px]"
-                                >
-                                  {course.code}
-                                </Badge>
-                              )}
-                              {yearItem && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px]"
-                                >
-                                  Y{yearItem.level}
-                                </Badge>
-                              )}
-                            </div>
-                            <CardTitle className="text-base line-clamp-2">
-                              {course.name_en}
-                            </CardTitle>
-                            <CardDescription className="line-clamp-2 text-xs">
-                              {course.description || t("courses.noDescription")}
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent className="mt-auto pt-0 pb-4 flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground truncate">
-                              {majorItem?.name_en ?? "No Major"}
-                            </span>
-                            <ArrowRight className="size-4 text-muted-foreground" />
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+               </div>
             </div>
-          </section>
-        </div>
-      </main>
-    </AppShell>
+          </aside>
+
+          <div className="space-y-6">
+            {activeFilterTokens.length > 0 || hasSearchQuery ? (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {activeFilterTokens.map((item) => (
+                    <div
+                      key={`${item.label}-${item.value}`}
+                      className="inline-flex max-w-full items-center gap-2 rounded-xl border border-border/40 bg-muted/20 px-3 py-1.5 transition-all hover:bg-muted/30"
+                    >
+                      <span className="text-[9px] font-bold uppercase tracking-wide text-muted-foreground/50">
+                        {item.label}
+                      </span>
+                      <span className="max-w-[200px] truncate text-xs font-semibold text-foreground">
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                  {(activeFilterTokens.length > 0 || hasSearchQuery) && (
+                     <Button asChild variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold text-muted-foreground/40 hover:text-foreground">
+                        <Link href="/data">{t("filters.clearAll")}</Link>
+                     </Button>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {filteredCourses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 rounded-3xl border border-dashed border-border/10 bg-muted/5">
+                <div className="size-16 rounded-3xl bg-muted/10 flex items-center justify-center">
+                  <Ghost className="size-8 text-muted-foreground/20" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold text-muted-foreground">{t("empty.title")}</p>
+                  <p className="text-sm text-muted-foreground/40">{t("empty.description")}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 pb-20">
+                {filteredCourses.map((course) => {
+                  const majorItem = majorsById.get(course.major_id);
+                  const yearItem = course.year_level_id
+                    ? yearLevelsById.get(course.year_level_id)
+                    : null;
+
+                  return (
+                    <Link
+                      key={course.id}
+                      href={`/data/${course.id}`}
+                      className="block h-full group"
+                    >
+                      <div className="flex h-full flex-col p-6 rounded-3xl border border-border/40 bg-card hover:border-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 relative overflow-hidden">
+                        <div className="flex items-center gap-2 mb-4">
+                          {course.code && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[9px] font-bold h-5 px-1.5 bg-muted/50 text-muted-foreground border-none"
+                            >
+                              {course.code}
+                            </Badge>
+                          )}
+                          {yearItem && (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] font-bold h-5 px-1.5 border-border/40 text-muted-foreground/40"
+                            >
+                              Y{yearItem.level}
+                            </Badge>
+                          )}
+                        </div>
+                        <h3 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors line-clamp-2 mb-2">
+                          {course.name_en}
+                        </h3>
+                        <p className="text-sm text-muted-foreground/60 leading-relaxed line-clamp-3 mb-6 flex-1">
+                          {course.description || t("courses.noDescription")}
+                        </p>
+                        <div className="mt-auto pt-4 border-t border-border/5 flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/30 truncate">
+                            {majorItem?.name_en ?? "No Major"}
+                          </span>
+                          <ArrowRight className="size-4 text-muted-foreground/20 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

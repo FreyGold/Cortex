@@ -190,11 +190,47 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex h-full bg-background overflow-hidden">
+      <div className="flex h-full bg-background overflow-hidden relative">
         {/* Main Content */}
-        <div className="flex-1 min-w-0 h-full overflow-y-auto relative">
-          <div className="p-8 sm:p-12">
-            <div className="flex items-center justify-between mb-8">
+        <div className="flex-1 min-w-0 h-full overflow-y-auto relative custom-scrollbar flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border/5 bg-background/50 backdrop-blur-sm sticky top-0 z-10">
+            <div className="flex items-center gap-3">
+               {/* Minimal breadcrumb can go here */}
+               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Private</span>
+               <span className="text-muted-foreground/20 text-lg">/</span>
+               <span className="text-sm font-semibold truncate max-w-[200px]">{title || "Untitled note"}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {lastSavedAt && (
+                <span className="text-[10px] text-muted-foreground/40 hidden sm:inline-block">
+                  Saved {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+              <div className="h-4 w-[1px] bg-border/10 mx-1 hidden sm:block" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+                onClick={handleArchive}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-lg transition-all",
+                  sidebarOpen ? "text-primary bg-primary/5 border border-primary/10" : "text-muted-foreground hover:bg-accent/50"
+                )}
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                <PanelRight className="size-4.5" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="w-full max-w-4xl mx-auto flex-1 pb-40">
+            <div className="px-8 pt-12 pb-6">
               <input
                 type="text"
                 value={title}
@@ -203,41 +239,20 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                   setDirty(true);
                 }}
                 placeholder="Untitled note"
-                className="flex-1 bg-transparent text-4xl font-bold placeholder:text-muted-foreground/30 focus:outline-none"
+                className="w-full bg-transparent text-4xl md:text-5xl font-bold placeholder:text-muted-foreground/10 focus:outline-none tracking-tight leading-tight mb-8"
               />
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "rounded-full transition-colors",
-                    sidebarOpen ? "text-primary bg-primary/5" : "text-muted-foreground"
-                  )}
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                >
-                  <PanelRight className="size-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full text-muted-foreground hover:text-destructive"
-                  onClick={handleArchive}
-                >
-                  <Trash2 className="size-5" />
-                </Button>
-              </div>
+              
+              <PlateEditor
+                content={editorContent}
+                onChange={(v) => { 
+                  setEditorContent(v); 
+                  setContentText(extractText(v)); 
+                  setDirty(true); 
+                }}
+                className="w-full "
+                editorClassName="text-lg md:text-xl leading-relaxed outline-none"
+              />
             </div>
-
-            <PlateEditor
-              content={editorContent}
-              onChange={(v) => { 
-                setEditorContent(v); 
-                setContentText(extractText(v)); 
-                setDirty(true); 
-              }}
-              className="w-full"
-              editorClassName="pb-40 text-lg leading-relaxed px-0"
-            />
           </div>
 
           <GlobalAssistantModal
@@ -248,49 +263,56 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
           />
         </div>
 
-        <NotePropertiesSidebar 
-          noteId={noteId}
-          folderId={folderId}
-          setFolderId={setFolderId}
-          setDirty={setDirty}
-          folders={detailQuery.data?.folders || []}
-          tags={detailQuery.data?.tags || []}
-          selectedTagIds={selectedTagIds}
-          setSelectedTagIds={setSelectedTagIds}
-          tagSearch={tagSearch}
-          setTagSearch={setTagSearch}
-          handleCreateTag={handleCreateTag}
-          updateTagsMutation={updateTags}
-          shareMode={shareMode}
-          setShareMode={setShareMode}
-          recipientUserId={recipientUserId}
-          setRecipientUserId={setRecipientUserId}
-          shareCanEdit={shareCanEdit}
-          setShareCanEdit={setShareCanEdit}
-          handleCreateShare={handleCreateShare}
-          createShareMutation={createShare}
-          shareFeedback={shareFeedback}
-          shares={sharesQuery.data || []}
-          deleteShareMutation={deleteShare}
-          resourceOpen={resourceOpen}
-          setResourceOpen={setResourceOpen}
-          catalogLoading={catalogQuery.isLoading}
-          courses={catalogQuery.data?.courses || []}
-          handleCreateResource={handleCreateResource}
-          embedNoteMutation={embedNoteMutation}
-          summaryMutation={summaryMutation}
-          suggestTagsMutation={suggestTagsMutation}
-          summaryText={summaryText}
-          setSummaryText={setSummaryText}
-          suggestedTagsText={suggestedTagsText}
-          setSuggestedTagsText={setSuggestedTagsText}
-          question={question}
-          setQuestion={setQuestion}
-          setAssistantOpen={setAssistantOpen}
-          isOpen={sidebarOpen}
-          onOpenChange={setSidebarOpen}
-          isMobile={isMobile}
-        />
+        <div className={cn(
+            "h-full overflow-y-auto border-l border-border/10 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+            sidebarOpen ? "w-[320px] opacity-100" : "w-0 opacity-0 pointer-events-none border-none"
+        )}>
+          <div className="w-[320px]">
+            <NotePropertiesSidebar 
+              noteId={noteId}
+              folderId={folderId}
+              setFolderId={setFolderId}
+              setDirty={setDirty}
+              folders={detailQuery.data?.folders || []}
+              tags={detailQuery.data?.tags || []}
+              selectedTagIds={selectedTagIds}
+              setSelectedTagIds={setSelectedTagIds}
+              tagSearch={tagSearch}
+              setTagSearch={setTagSearch}
+              handleCreateTag={handleCreateTag}
+              updateTagsMutation={updateTags}
+              shareMode={shareMode}
+              setShareMode={setShareMode}
+              recipientUserId={recipientUserId}
+              setRecipientUserId={setRecipientUserId}
+              shareCanEdit={shareCanEdit}
+              setShareCanEdit={setShareCanEdit}
+              handleCreateShare={handleCreateShare}
+              createShareMutation={createShare}
+              shareFeedback={shareFeedback}
+              shares={sharesQuery.data || []}
+              deleteShareMutation={deleteShare}
+              resourceOpen={resourceOpen}
+              setResourceOpen={setResourceOpen}
+              catalogLoading={catalogQuery.isLoading}
+              courses={catalogQuery.data?.courses || []}
+              handleCreateResource={handleCreateResource}
+              embedNoteMutation={embedNoteMutation}
+              summaryMutation={summaryMutation}
+              suggestTagsMutation={suggestTagsMutation}
+              summaryText={summaryText}
+              setSummaryText={setSummaryText}
+              suggestedTagsText={suggestedTagsText}
+              setSuggestedTagsText={setSuggestedTagsText}
+              question={question}
+              setQuestion={setQuestion}
+              setAssistantOpen={setAssistantOpen}
+              isOpen={sidebarOpen}
+              onOpenChange={setSidebarOpen}
+              isMobile={isMobile}
+            />
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   );

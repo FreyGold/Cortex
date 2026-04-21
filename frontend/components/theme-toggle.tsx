@@ -30,7 +30,7 @@ export function ThemeToggle() {
     const initialTheme: Theme =
       stored === "light" || stored === "dark" || stored === "system"
         ? (stored as Theme)
-        : "system";
+        : "dark";
     setTheme(initialTheme);
     applyTheme(initialTheme);
   }, []);

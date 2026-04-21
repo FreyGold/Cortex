@@ -4,12 +4,13 @@ export class NoteService {
   constructor(private repo: NoteRepository) {}
 
   async getDashboard(userId: string) {
-    const [notes, folders, tags] = await Promise.all([
+    const [notes, sharedNotes, folders, tags] = await Promise.all([
       this.repo.getDashboardNotes(userId),
+      this.repo.getSharedNotes(userId),
       this.repo.getFolders(userId),
       this.repo.getTags(userId),
     ]);
-    return { notes, folders, tags };
+    return { notes, sharedNotes, folders, tags };
   }
 
   async getNoteDetail(userId: string, noteId: string) {

@@ -26,13 +26,17 @@ import type { Doctor, Resource } from "@/lib/data/catalog";
 import { getAccessToken } from "@/lib/supabase/client";
 import { getBackendUrl } from "@/lib/api/backend-url";
 import { AddDoctorDialog } from "./add-doctor-dialog";
+import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   resource: Resource;
   doctors: Doctor[];
+  triggerClassName?: string;
 };
 
-export function EditResourceDialog({ resource, doctors: initialDoctors }: Props) {
+export function EditResourceDialog({ resource, doctors: initialDoctors, triggerClassName }: Props) {
+  const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -118,7 +122,7 @@ export function EditResourceDialog({ resource, doctors: initialDoctors }: Props)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+        <Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-full", triggerClassName)}>
           <Pencil className="size-4 text-muted-foreground hover:text-primary transition-colors" />
         </Button>
       </DialogTrigger>

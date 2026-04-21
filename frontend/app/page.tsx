@@ -51,8 +51,8 @@ export default async function Home() {
       label: shellT("nav.data"),
     },
     {
-      href: "/profile/setup",
-      label: shellT("nav.profile"),
+      href: "/settings",
+      label: shellT("nav.settings", "Settings"),
     },
     ...(isAdmin
       ? [
@@ -65,7 +65,7 @@ export default async function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <SiteHeader
         navItems={headerLinks.map((item) => ({
           ...item,
@@ -79,18 +79,18 @@ export default async function Home() {
         }
       />
 
-      <main className="container mx-auto space-y-16 px-4 py-10 md:py-16 lg:py-20">
+      <main className="container mx-auto space-y-12 px-4 py-8 md:py-12 lg:py-16">
         <section className="grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
-          <div className="space-y-7">
-            <Badge variant="outline" className="rounded-full px-3">
+          <div className="space-y-6">
+            <Badge variant="outline" className="rounded-full px-3 text-[11px] font-bold uppercase tracking-wider">
               {signedIn ? t("hero.badgeSignedIn") : t("hero.badge")}
             </Badge>
 
             <div className="space-y-4">
-              <h1 className="max-w-3xl text-balance text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+              <h1 className="max-w-3xl text-balance text-4xl font-bold tracking-tight md:text-5xl lg:text-7xl leading-[1.1]">
                 {signedIn ? t("hero.titleSignedIn") : t("hero.title")}
               </h1>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
+              <p className="max-w-2xl text-base leading-relaxed text-muted-foreground md:text-xl">
                 {signedIn ? t("hero.subtitleSignedIn") : t("hero.subtitle")}
               </p>
             </div>

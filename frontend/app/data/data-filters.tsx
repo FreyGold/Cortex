@@ -2,6 +2,7 @@
 
 import { Search as MagnifyingGlass } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,7 @@ export function DataFilters({
   selectedYearId,
   q,
 }: DataFiltersProps) {
+  const t = useTranslations("dataPage");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
@@ -115,7 +117,7 @@ export function DataFilters({
         <Input
           id="data-search"
           value={searchValue}
-          placeholder="Semantic search across all courses..."
+          placeholder={t("filters.fullSearchPlaceholder")}
           className="h-10 pl-9"
           onChange={(e) => setSearchValue(e.target.value)}
         />
@@ -123,7 +125,7 @@ export function DataFilters({
 
       <div className="space-y-2">
         <p className="text-xs font-semibold text-muted-foreground">
-          University
+          {t("filters.filterLabels.university")}
         </p>
         <Select
           value={selectedUniversityId ?? "all"}
@@ -132,10 +134,10 @@ export function DataFilters({
           }
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="All Universities" />
+            <SelectValue placeholder={t("filters.allUniversities")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Universities</SelectItem>
+            <SelectItem value="all">{t("filters.allUniversities")}</SelectItem>
             {universities.map((u) => (
               <SelectItem key={u.id} value={u.id}>
                 {u.name_en}
@@ -146,7 +148,7 @@ export function DataFilters({
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground">College</p>
+        <p className="text-xs font-semibold text-muted-foreground">{t("filters.filterLabels.college")}</p>
         <Select
           value={selectedCollegeId ?? "all"}
           onValueChange={(val) =>
@@ -155,10 +157,10 @@ export function DataFilters({
           disabled={filteredColleges.length === 0}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="All Colleges" />
+            <SelectValue placeholder={t("filters.allColleges")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Colleges</SelectItem>
+            <SelectItem value="all">{t("filters.allColleges")}</SelectItem>
             {filteredColleges.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name_en}
@@ -169,7 +171,7 @@ export function DataFilters({
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground">Major</p>
+        <p className="text-xs font-semibold text-muted-foreground">{t("filters.filterLabels.major")}</p>
         <Select
           value={selectedMajorId ?? "all"}
           onValueChange={(val) =>
@@ -178,10 +180,10 @@ export function DataFilters({
           disabled={filteredMajors.length === 0}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="All Majors" />
+            <SelectValue placeholder={t("filters.allMajors")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Majors</SelectItem>
+            <SelectItem value="all">{t("filters.allMajors")}</SelectItem>
             {filteredMajors.map((m) => (
               <SelectItem key={m.id} value={m.id}>
                 {m.name_en}
@@ -193,7 +195,7 @@ export function DataFilters({
 
       <div className="space-y-2">
         <p className="text-xs font-semibold text-muted-foreground">
-          Year Level
+          {t("filters.filterLabels.year")}
         </p>
         <Select
           value={selectedYearId ?? "all"}
@@ -202,13 +204,13 @@ export function DataFilters({
           }
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="All Years" />
+            <SelectValue placeholder={t("filters.allYears")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Years</SelectItem>
+            <SelectItem value="all">{t("filters.allYears")}</SelectItem>
             {yearLevels.map((y) => (
               <SelectItem key={y.id} value={y.id}>
-                Year {y.level}
+                {t("filters.year", { level: y.level })}
               </SelectItem>
             ))}
           </SelectContent>
@@ -220,13 +222,10 @@ export function DataFilters({
           variant="outline"
           className="w-full"
           onClick={() => {
-            // keep default university and college if we are "clearing" to default state
-            // wait, just clear all makes it easier to navigate.
-            // Or reset to default values. For now, clear all.
             router.push("/data");
           }}
         >
-          Clear Filters
+          {t("filters.clearAll")}
         </Button>
       </div>
     </div>

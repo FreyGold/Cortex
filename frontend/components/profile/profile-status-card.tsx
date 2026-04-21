@@ -28,7 +28,7 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export function ProfileStatusCard() {
+export function ProfileStatusCard({ showEditLink = true }: { showEditLink?: boolean }) {
   const messages = useMessages();
   const { data, isLoading, isError, error } = useCurrentProfile();
   const requestVerification = useRequestVerification();
@@ -76,16 +76,18 @@ export function ProfileStatusCard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button asChild variant="secondary">
-            <Link href="/profile/setup">
-              {getMessage(
-                messages,
-                "profilePage.verification.editSetup",
-                "Edit academic setup",
-              )}
-              <ArrowRight className="size-3.5" />
-            </Link>
-          </Button>
+          {showEditLink && (
+            <Button asChild variant="secondary">
+              <Link href="/settings">
+                {getMessage(
+                  messages,
+                  "profilePage.verification.editSetup",
+                  "Edit academic setup",
+                )}
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -205,16 +207,18 @@ export function ProfileStatusCard() {
                     "Request verification",
                   )}
           </Button>
-          <Button asChild variant="secondary">
-            <Link href="/profile/setup">
-              {getMessage(
-                messages,
-                "profilePage.verification.editSetup",
-                "Edit academic setup",
-              )}
-              <ArrowRight className="size-3.5" />
-            </Link>
-          </Button>
+          {showEditLink && (
+            <Button asChild variant="secondary">
+              <Link href="/settings">
+                {getMessage(
+                  messages,
+                  "profilePage.verification.editSetup",
+                  "Edit academic setup",
+                )}
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          )}
         </div>
 
         {requestVerification.isSuccess ? (

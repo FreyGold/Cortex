@@ -7,6 +7,7 @@ export type NoteListItem = {
   summary: string | null;
   folder_id: string | null;
   is_pinned: boolean;
+  is_published: boolean;
   updated_at: string;
   created_at: string;
   archived_at?: string | null;
@@ -44,6 +45,7 @@ export type NoteShareItem = {
 export function getDashboardNotes(accessToken: string) {
   return apiRequest<{
     notes: NoteListItem[];
+    sharedNotes: NoteListItem[];
     folders: FolderItem[];
     tags: TagItem[];
   }>("/api/notes/dashboard", {

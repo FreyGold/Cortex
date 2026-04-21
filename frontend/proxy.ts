@@ -8,7 +8,7 @@ import {
 } from "@/lib/i18n";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const protectedPrefixes = ["/notes", "/profile", "/admin"];
+const protectedPrefixes = ["/notes", "/profile", "/admin", "/settings"];
 const authPrefixes = ["/auth/login", "/auth/signup"];
 
 function startsWithPrefix(pathname: string, prefixes: string[]) {

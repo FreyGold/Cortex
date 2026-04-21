@@ -134,13 +134,25 @@
       "clearAll": "Clear all",
       "searchLabel": "Search by course name or code",
       "searchPlaceholder": "e.g. database, cs301",
+      "fullSearchPlaceholder": "Semantic search across all courses...",
+      "allUniversities": "All universities",
+      "allColleges": "All colleges",
       "apply": "Apply",
       "majorLabel": "Major",
       "allMajors": "All majors",
       "yearLabel": "Year level",
       "allYears": "All years",
-      "year": "Year {level}"
+      "year": "Year {level}",
+    "filterLabels": {
+        "university": "University",
+        "college": "College",
+        "major": "Major",
+        "year": "Year",
+        "search": "Search"
+    }
     },
+    "header": "Data Browser",
+    "filtersTitle": "Filters",
     "results": {
       "summary": "{count, plural, =0 {No matching courses} one {# matching course} other {# matching courses}}",
       "majorChip": "Major: {value}",
@@ -163,7 +175,7 @@
     "nav": {
       "notes": "Notes",
       "data": "Data",
-      "profile": "Profile",
+      "settings": "Settings",
       "admin": "Admin"
     },
     "logout": "Logout",
@@ -226,6 +238,26 @@
       "missing": "We could not find a profile record for this account.",
       "editSetup": "Edit academic setup"
     }
+  },
+  "settingsPage": {
+    "title": "Settings",
+    "subtitle": "Manage your account, academic context, and preferences.",
+    "tabs": {
+        "profile": "Profile Status",
+        "academic": "Academic Context",
+        "preferences": "Preferences"
+    },
+    "appearance": {
+        "title": "Appearance",
+        "theme": "Theme",
+        "themeSubtitle": "Switch between light, dark, and system themes."
+    },
+    "localization": {
+        "title": "Localization",
+        "language": "Language",
+        "languageSubtitle": "Select your preferred interface language."
+    },
+    "academicHelper": "Update your university, college, and major to get personalized content."
   },
   "notesPage": {
     "title": "Notes workspace",

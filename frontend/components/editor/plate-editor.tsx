@@ -15,9 +15,17 @@ export interface PlateEditorProps {
   className?: string;
   editorClassName?: string;
   readOnly?: boolean;
+  variant?: 'default' | 'demo' | 'fullWidth' | 'none';
 }
 
-export function PlateEditor({ content, onChange, className, editorClassName, readOnly = false }: PlateEditorProps = {}) {
+export function PlateEditor({ 
+  content, 
+  onChange, 
+  className, 
+  editorClassName, 
+  readOnly = false,
+  variant = 'demo'
+}: PlateEditorProps = {}) {
   const initialValue = Array.isArray(content) && content.length > 0 ? content : value;
 
   const editor = usePlateEditor({
@@ -27,8 +35,8 @@ export function PlateEditor({ content, onChange, className, editorClassName, rea
 
   return (
     <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)} readOnly={readOnly}>
-      <EditorContainer className={className}>
-        <Editor variant="demo" className={editorClassName} disabled={readOnly} />
+      <EditorContainer className={className} variant={variant === 'demo' ? 'demo' : variant === 'none' ? 'none' : 'default'}>
+        <Editor variant={variant} className={editorClassName} disabled={readOnly} />
       </EditorContainer>
 
       <SettingsDialog />

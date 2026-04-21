@@ -1,13 +1,9 @@
 "use client";
 
-import {
-  ExternalLink,
-  ChevronRight,
-  FileText,
-  FolderOpen,
-} from "lucide-react";
-import { useCallback, useState } from "react";
+import { ExternalLink, ChevronRight, FileText, FolderOpen } from "lucide-react";
+import { useCallback, useState, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -36,9 +32,11 @@ type DriveViewerDialogProps = {
   driveId: string;
   driveUrl: string | null;
   title: string;
-  triggerLabel?: string;
+  triggerLabel?: ReactNode;
   triggerVariant?: "default" | "outline" | "secondary" | "ghost";
   triggerSize?: "default" | "sm" | "lg";
+  triggerClassName?: string;
+  className?: string;
 };
 
 function isFolder(item: DriveNode) {
@@ -76,6 +74,8 @@ export function DriveViewerDialog({
   triggerLabel,
   triggerVariant = "outline",
   triggerSize = "sm",
+  triggerClassName,
+  className,
 }: DriveViewerDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -154,7 +154,7 @@ export function DriveViewerDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant={triggerVariant} size={triggerSize} className="gap-2">
+        <Button variant={triggerVariant} size={triggerSize} className={cn("gap-2", triggerClassName, className)}>
           {initialIsFolder ? (
             <FolderOpen className="size-4" />
           ) : (
