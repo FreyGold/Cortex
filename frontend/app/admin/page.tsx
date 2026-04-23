@@ -15,65 +15,51 @@ export default async function AdminPage() {
   await requireAdmin();
 
   return (
-    <AppShell>
-      <main className="container mx-auto max-w-4xl space-y-8 px-4 py-10 md:py-16">
-        <header className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
-            Manage your academic platform's core data and user community.
+    <main className="flex-1 overflow-y-auto custom-scrollbar bg-background">
+      <div className="max-w-5xl mx-auto space-y-12 px-6 py-12 md:py-20">
+        <header className="space-y-3">
+          <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent leading-[1.1]">
+            Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed">
+            Manage your academic platform's core data, verify student identities, and maintain the knowledge graph.
           </p>
         </header>
 
-        <Separator />
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Link href="/admin/users" className="block group">
-            <Card className="h-full border-border/50 shadow-none transition-all hover:border-primary/30 hover:bg-accent/30 cursor-pointer">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-orange-500/10 p-2.5">
-                    <Users
-                      className="size-6 text-orange-600 dark:text-orange-400"
-                    />
-                  </div>
-                  <CardTitle className="text-xl">User management</CardTitle>
+        <div className="grid gap-8 md:grid-cols-2">
+          <Link href="/admin/users" className="group">
+            <div className="h-full flex flex-col p-8 rounded-[2rem] border border-border/40 bg-card hover:border-orange-500/30 transition-all hover:shadow-2xl hover:shadow-orange-500/5 hover:-translate-y-1 relative overflow-hidden">
+                <div className="size-14 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-6 group-hover:scale-110 transition-transform">
+                    <Users className="size-7" />
                 </div>
-                <CardDescription className="pt-1.5 leading-relaxed">
-                  Review student registrations, verify accounts, and manage
-                  roles across the system.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 flex items-center gap-1.5 text-sm font-semibold text-primary">
-                Review users
-                <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </CardContent>
-            </Card>
+                <h3 className="text-2xl font-bold tracking-tight mb-3">User Management</h3>
+                <p className="text-muted-foreground leading-relaxed mb-8 flex-1">
+                    Review student registrations, verify academic identities, and manage system roles across the community.
+                </p>
+                <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                    Manage Users
+                    <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+            </div>
           </Link>
 
-          <Link href="/admin/data" className="block group">
-            <Card className="h-full border-border/50 shadow-none transition-all hover:border-primary/30 hover:bg-accent/30 cursor-pointer">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-blue-500/10 p-2.5">
-                    <Database
-                      className="size-6 text-blue-600 dark:text-blue-400"
-                    />
-                  </div>
-                  <CardTitle className="text-xl">Data management</CardTitle>
+          <Link href="/admin/data" className="group">
+            <div className="h-full flex flex-col p-8 rounded-[2rem] border border-border/40 bg-card hover:border-blue-500/30 transition-all hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-1 relative overflow-hidden">
+                <div className="size-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 group-hover:scale-110 transition-transform">
+                    <Database className="size-7" />
                 </div>
-                <CardDescription className="pt-1.5 leading-relaxed">
-                  Maintain the academic catalog: update universities, colleges,
-                  majors, and course listings.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 flex items-center gap-1.5 text-sm font-semibold text-primary">
-                Open catalog tools
-                <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </CardContent>
-            </Card>
+                <h3 className="text-2xl font-bold tracking-tight mb-3">Data Catalog</h3>
+                <p className="text-muted-foreground leading-relaxed mb-8 flex-1">
+                    Maintain the core academic hierarchy: update universities, colleges, departments, and course listings.
+                </p>
+                <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                    Explore Catalog
+                    <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+            </div>
           </Link>
         </div>
-      </main>
-    </AppShell>
+      </div>
+    </main>
   );
 }

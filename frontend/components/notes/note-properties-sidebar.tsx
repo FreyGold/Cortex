@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useUpdateNote } from "@/hooks/use-notes";
 import { 
   Plus, 
   Share2, 
@@ -88,6 +89,7 @@ interface NotePropertiesSidebarProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   isMobile?: boolean;
+  isPublished?: boolean;
 }
 
 export function NotePropertiesSidebar({
@@ -132,9 +134,11 @@ export function NotePropertiesSidebar({
   isOpen,
   onOpenChange,
   isMobile = false,
+  isPublished = false,
 }: NotePropertiesSidebarProps) {
+  const updateNote = useUpdateNote(noteId);
   const content = (
-    <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-6 space-y-8">
+    <div className="flex flex-col h-full overflow-y-auto custom-scrollbar p-5 space-y-8">
       {/* PROPERTIES */}
       <div className="space-y-4">
         <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Properties</h3>
@@ -281,21 +285,37 @@ export function NotePropertiesSidebar({
                     <input type="checkbox" checked={shareCanEdit} onChange={(e) => setShareCanEdit(e.target.checked)} className="size-4 accent-primary" />
                   </div>
 
-                  <Button className="w-full h-10 shadow-lg shadow-primary/20 rounded-lg group" onClick={handleCreateShare} disabled={createShareMutation.isPending}>
-                    {createShareMutation.isPending ? "Generating..." : (shareMode === "link" ? "Generate Access Link" : "Grant User Access")}
+                  <Button className="w-full h-10 shadow-lg shadow-primary/20 rounded-lg group" onClick={async () => {
+                    if (shareMode === "link") {
+                      updateNote.mutate({ isPublished: true });
+                      const url = `${window.location.origin}/notes/public/${noteId}`;
+                      await navigator.clipboard.writeText(url);
+                      return;
+                    }
+                    handleCreateShare();
+                  }} disabled={createShareMutation.isPending || updateNote.isPending}>
+                    {createShareMutation.isPending || updateNote.isPending ? "Generating..." : (shareMode === "link" ? "Generate Access Link" : "Grant User Access")}
                     <Sparkles className="size-3.5 ml-2 opacity-60 group-hover:scale-125 transition-transform" />
                   </Button>
 
-                  {shareFeedback && <p className="text-[11px] text-center text-primary font-bold px-4 py-2 bg-primary/5 rounded-lg animate-in fade-in slide-in-from-top-1">{shareFeedback}</p>}
+                  {isPublished && shareMode === "link" && (
+                    <div className="text-[11px] text-center text-primary font-bold px-4 py-2 bg-primary/5 rounded-lg animate-in fade-in slide-in-from-top-1 flex items-center justify-center gap-2">
+                      Link is active. 
+                      <Button variant="link" className="h-auto p-0 text-primary text-[11px] font-bold" onClick={async () => { await navigator.clipboard.writeText(`${window.location.origin}/notes/public/${noteId}`); }}>Copy Link</Button>
+                      <Button variant="link" className="h-auto p-0 text-destructive text-[11px]" onClick={() => updateNote.mutate({ isPublished: false })}>Revoke</Button>
+                    </div>
+                  )}
 
-                  {shares && shares.length > 0 && (
+                  {shareFeedback && shareMode === "user" && <p className="text-[11px] text-center text-primary font-bold px-4 py-2 bg-primary/5 rounded-lg animate-in fade-in slide-in-from-top-1">{shareFeedback}</p>}
+
+                  {shares && shares.length > 0 && shareMode === "user" && (
                     <div className="space-y-2 border-t border-border/20 pt-4">
                       <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/60 px-1">Active Permissions</p>
                       {shares.map((s: any) => (
                         <div key={s.id} className="flex items-center justify-between text-[11px] bg-muted/20 p-2.5 rounded-lg border border-border/10">
                           <span className="font-medium opacity-70 flex items-center gap-2">
-                            {s.shared_with_user_id ? <Users className="size-3" /> : <Link2 className="size-3" />}
-                            {s.shared_with_user_id ? `User: ${s.shared_with_user_id.slice(0, 8)}...` : `Link: ${s.share_token?.slice(0, 8)}...`}
+                            <Users className="size-3" />
+                            {s.shared_with_user_id ? `User: ${s.shared_with_user_id.slice(0, 8)}...` : "Unknown"}
                             {s.can_edit && <Badge variant="outline" className="h-4 text-[8px] bg-emerald-500/10 text-emerald-500 border-none px-1">Editor</Badge>}
                           </span>
                           <Button variant="ghost" className="h-6 text-[10px] text-destructive hover:bg-destructive/10" onClick={() => deleteShareMutation.mutate(s.id)}>Revoke</Button>
@@ -407,7 +427,7 @@ export function NotePropertiesSidebar({
   if (isMobile) {
     return (
       <Sheet open={isOpen} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="p-0 w-[300px] border-l border-border/5 bg-background">
+        <SheetContent side="right" className="p-0 w-[320px] border-l border-border/5 bg-background">
           <SheetHeader className="sr-only">
             <SheetTitle>Note Properties</SheetTitle>
           </SheetHeader>
@@ -420,20 +440,8 @@ export function NotePropertiesSidebar({
   }
 
   return (
-    <AnimatePresence mode="wait">
-      {isOpen && (
-        <motion.aside 
-          initial={{ width: 0, opacity: 0 }}
-          animate={{ width: 300, opacity: 1 }}
-          exit={{ width: 0, opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="shrink-0 bg-background border-l border-border/5 flex-col h-full overflow-hidden"
-        >
-          <div className="w-[300px] h-full overflow-y-auto custom-scrollbar">
-            {content}
-          </div>
-        </motion.aside>
-      )}
-    </AnimatePresence>
+    <div className="w-full h-full overflow-hidden">
+      {content}
+    </div>
   );
 }

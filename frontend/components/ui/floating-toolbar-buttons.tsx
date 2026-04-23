@@ -73,14 +73,12 @@ export function FloatingToolbarButtons() {
         </>
       )}
 
-      {!readOnly && (
-        <ToolbarGroup>
-          <CommentToolbarButton />
-          <SuggestionToolbarButton />
+      <ToolbarGroup>
+        <CommentToolbarButton />
+        {!readOnly && <SuggestionToolbarButton />}
 
-          <MoreToolbarButton />
-        </ToolbarGroup>
-      )}
+        {!readOnly && <MoreToolbarButton />}
+      </ToolbarGroup>
     </>
   );
 }

@@ -122,6 +122,10 @@ export function DriveViewerDialog({
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) {
+      if (!driveId) {
+        setError("Invalid Google Drive ID. Please ensure the resource has a valid link.");
+        return;
+      }
       void loadNode(driveId, null);
       return;
     }

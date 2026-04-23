@@ -1,67 +1,67 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { PlateEditor } from "@/components/editor";
-import { Badge } from "@/components/ui/badge";
-import { GlobalAssistantModal } from "./global-assistant-modal";
+import { usePublicNote, useReplicateNote, useNoteDetail, useNoteShares, useUpdateNote, useUpdateNoteTags, useArchiveNote, useCreateCourseResource, useCreateNoteShare, useDeleteNoteShare, useCreateTag } from "@/hooks/use-notes";
+import { useEmbedNote, useGenerateSummary, useSuggestTags } from "@/hooks/use-note-ai";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Trash2, PanelRight, Star, Archive, Globe, Settings, ChevronDown, PanelLeftClose, Plus, Share2, BookOpen, Sparkles, FolderIcon, Tag as TagIcon, Clock, Users, Link2, MessageSquarePlus, Copy, ClipboardPaste } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { 
-  useNoteDetail, 
-  useNoteShares, 
-  useUpdateNote, 
-  useUpdateNoteTags, 
-  useArchiveNote, 
-  useCreateCourseResource, 
-  useCreateNoteShare, 
-  useDeleteNoteShare, 
-  useCreateTag
-} from "@/hooks/use-notes";
-import { useCatalog } from "@/hooks/use-data";
-import { 
-  useGenerateSummary, 
-  useSuggestTags, 
-  useSemanticSearch, 
-  useEmbedNote 
-} from "@/hooks/use-note-ai";
+import { PlateEditor } from "@/components/editor";
+import React, { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Trash2, PanelRight } from "lucide-react";
-import { NotePropertiesSidebar } from "./note-properties-sidebar";
+import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useCatalog } from "@/hooks/use-data";
+import { GlobalAssistantModal } from "./global-assistant-modal";
+import { NotePropertiesSidebar } from "./note-properties-sidebar";
 
-type NoteEditorPageProps = {
-  noteId: string;
-};
+function extractText(content: any): string {
+  if (!content) return "";
+  if (Array.isArray(content)) {
+    return content.map(extractText).join(" ");
+  }
+  if (typeof content === "object") {
+    if (content.text) return content.text;
+    if (content.children) return extractText(content.children);
+  }
+  return "";
+}
 
-const extractText = (nodes: any[]): string => {
-  if (!Array.isArray(nodes)) return "";
-  return nodes.map(node => {
-    if (node.text) return node.text;
-    if (node.children) return extractText(node.children);
-    return "";
-  }).join(" ");
-};
+const INTRO_NOTE_CONTENT = [
+  { type: "h1", children: [{ text: "Welcome to Cortex!" }] },
+  { type: "p", children: [{ text: "This is your personal academic workspace. Use this space to capture lectures, synthesize research, and organize your studies." }] },
+  { type: "h2", children: [{ text: "Features" }] },
+  { type: "ul", children: [
+    { type: "li", children: [{ text: "Rich-text editing with Plate" }] },
+    { type: "li", children: [{ text: "AI-powered summaries and tag suggestions" }] },
+    { type: "li", children: [{ text: "Folder-based organization" }] },
+    { type: "li", children: [{ text: "Global search and assistant" }] }
+  ]},
+  { type: "p", children: [{ text: "Feel free to edit this note to try out the editor features. Note that changes to this introduction will not be saved." }] }
+];
 
-export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
+export function NoteEditorPage({ noteId }: { noteId: string }) {
   const router = useRouter();
   const isMobile = useIsMobile();
-  const detailQuery = useNoteDetail(noteId);
-  const sharesQuery = useNoteShares(noteId);
+  const isIntroRoute = noteId === "introduction";
+  const fetchId = isIntroRoute ? "d538eda1-b07f-45f6-9353-aedefd89b61b" : noteId;
+  
+  const detailQuery = useNoteDetail(fetchId);
+  const sharesQuery = useNoteShares(fetchId);
   const catalogQuery = useCatalog();
-  const updateNote = useUpdateNote(noteId);
-  const updateTags = useUpdateNoteTags(noteId);
+  const updateNote = useUpdateNote(fetchId);
+  const updateTags = useUpdateNoteTags(fetchId);
   const archiveNoteMutation = useArchiveNote();
-  const createResourceMutation = useCreateCourseResource(noteId);
-  const createShare = useCreateNoteShare(noteId);
-  const deleteShare = useDeleteNoteShare(noteId);
+  const createResourceMutation = useCreateCourseResource(fetchId);
+  const createShare = useCreateNoteShare(fetchId);
+  const deleteShare = useDeleteNoteShare(fetchId);
   const embedNoteMutation = useEmbedNote();
-  const summaryMutation = useGenerateSummary(noteId);
-  const suggestTagsMutation = useSuggestTags(noteId);
+  const summaryMutation = useGenerateSummary(fetchId);
+  const suggestTagsMutation = useSuggestTags(fetchId);
 
   const [title, setTitle] = useState("");
-  const [editorContent, setEditorContent] = useState<any[]>([]);
+  const [editorContent, setEditorContent] = useState<any[] | null>(null);
   const [contentText, setContentText] = useState("");
   const [folderId, setFolderId] = useState<string>("");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -92,7 +92,6 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
   };
 
   useEffect(() => {
-    // On mobile, sidebar should be closed by default
     if (isMobile) {
       setSidebarOpen(false);
     } else {
@@ -109,18 +108,21 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
     let initialContent: any[] = [];
     let initialText = "";
 
-    if (Array.isArray(content)) {
+    if (Array.isArray(content) && content.length > 0) {
       initialContent = content;
       initialText = extractText(content);
     } else if (typeof content === "object" && content !== null && "html" in content) {
       initialContent = [{ type: "p", children: [{ text: (content as any).html.replace(/<[^>]+>/g, "") }] }];
       initialText = (content as any).html.replace(/<[^>]+>/g, "");
-    } else if (typeof content === "string") {
+    } else if (typeof content === "string" && content.trim().length > 0) {
       initialContent = [{ type: "p", children: [{ text: content }] }];
       initialText = content;
-    } else if (note.content_text) {
+    } else if (note.content_text && note.content_text.trim().length > 0) {
       initialContent = [{ type: "p", children: [{ text: note.content_text }] }];
       initialText = note.content_text;
+    } else {
+      initialContent = [{ type: "p", children: [{ text: "" }] }];
+      initialText = "";
     }
 
     setEditorContent(initialContent);
@@ -132,7 +134,7 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
   }, [detailQuery.data]);
 
   useEffect(() => {
-    if (!dirty) return;
+    if (isIntroRoute || !dirty || !editorContent) return;
     const timer = setTimeout(async () => {
       await updateNote.mutateAsync({
         title: title.trim() || "Untitled note",
@@ -144,9 +146,9 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
       setDirty(false);
     }, 1000);
     return () => clearTimeout(timer);
-  }, [dirty, folderId, editorContent, contentText, title, updateNote]);
+  }, [isIntroRoute, dirty, folderId, editorContent, contentText, title, updateNote]);
 
-  if (detailQuery.isLoading) return <div className="flex items-center justify-center min-h-[400px] text-muted-foreground animate-pulse">Initializing editor...</div>;
+  if (detailQuery.isLoading || !editorContent) return <div className="flex items-center justify-center min-h-[400px] text-muted-foreground animate-pulse">Initializing editor...</div>;
   if (detailQuery.isError || !detailQuery.data) return <div className="p-8 text-destructive">Failed to load note context.</div>;
 
   const handleArchive = async () => {
@@ -161,7 +163,6 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
         courseId,
         titleEn: title || "Note Resource",
       });
-      setResourceOpen(false);
       alert("Note added to course resources!");
     } catch (e: any) {
       alert("Error: " + e.message);
@@ -171,18 +172,12 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
   const handleCreateShare = async () => {
     setShareFeedback(null);
     try {
-      const created = await createShare.mutateAsync({
+      await createShare.mutateAsync({
         mode: shareMode,
         sharedWithUserId: shareMode === "user" ? recipientUserId.trim() : undefined,
         canEdit: shareCanEdit,
       });
-      if (created.share_token) {
-        const url = `${window.location.origin}/notes/public/${noteId}?shareToken=${created.share_token}`;
-        await navigator.clipboard.writeText(url);
-        setShareFeedback("Public link copied!");
-      } else {
-        setShareFeedback("Shared with user!");
-      }
+      setShareFeedback("Shared with user!");
     } catch (error: any) {
       setShareFeedback(error.message);
     }
@@ -191,11 +186,9 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex h-full bg-background overflow-hidden relative">
-        {/* Main Content */}
         <div className="flex-1 min-w-0 h-full overflow-y-auto relative custom-scrollbar flex flex-col">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border/5 bg-background/50 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center gap-3">
-               {/* Minimal breadcrumb can go here */}
                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Private</span>
                <span className="text-muted-foreground/20 text-lg">/</span>
                <span className="text-sm font-semibold truncate max-w-[200px]">{title || "Untitled note"}</span>
@@ -207,14 +200,16 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                 </span>
               )}
               <div className="h-4 w-[1px] bg-border/10 mx-1 hidden sm:block" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
-                onClick={handleArchive}
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              {!isIntroRoute && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+                  onClick={handleArchive}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -229,8 +224,8 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
             </div>
           </div>
 
-          <div className="w-full max-w-4xl mx-auto flex-1 pb-40">
-            <div className="px-8 pt-12 pb-6">
+          <div className="w-full px-14 flex-1 pb-40">
+            <div className="px-1 md:px-2 pt-12 pb-6">
               <input
                 type="text"
                 value={title}
@@ -249,7 +244,7 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
                   setContentText(extractText(v)); 
                   setDirty(true); 
                 }}
-                className="w-full "
+                className="w-full"
                 editorClassName="text-lg md:text-xl leading-relaxed outline-none"
               />
             </div>
@@ -264,54 +259,53 @@ export function NoteEditorPage({ noteId }: NoteEditorPageProps) {
         </div>
 
         <div className={cn(
-            "h-full overflow-y-auto border-l border-border/10 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
-            sidebarOpen ? "w-[320px] opacity-100" : "w-0 opacity-0 pointer-events-none border-none"
+          "h-full overflow-y-auto overflow-x-hidden border-l border-border/10 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+          sidebarOpen ? "w-[320px] opacity-100" : "w-0 opacity-0 pointer-events-none border-none"
         )}>
-          <div className="w-[320px]">
-            <NotePropertiesSidebar 
-              noteId={noteId}
-              folderId={folderId}
-              setFolderId={setFolderId}
-              setDirty={setDirty}
-              folders={detailQuery.data?.folders || []}
-              tags={detailQuery.data?.tags || []}
-              selectedTagIds={selectedTagIds}
-              setSelectedTagIds={setSelectedTagIds}
-              tagSearch={tagSearch}
-              setTagSearch={setTagSearch}
-              handleCreateTag={handleCreateTag}
-              updateTagsMutation={updateTags}
-              shareMode={shareMode}
-              setShareMode={setShareMode}
-              recipientUserId={recipientUserId}
-              setRecipientUserId={setRecipientUserId}
-              shareCanEdit={shareCanEdit}
-              setShareCanEdit={setShareCanEdit}
-              handleCreateShare={handleCreateShare}
-              createShareMutation={createShare}
-              shareFeedback={shareFeedback}
-              shares={sharesQuery.data || []}
-              deleteShareMutation={deleteShare}
-              resourceOpen={resourceOpen}
-              setResourceOpen={setResourceOpen}
-              catalogLoading={catalogQuery.isLoading}
-              courses={catalogQuery.data?.courses || []}
-              handleCreateResource={handleCreateResource}
-              embedNoteMutation={embedNoteMutation}
-              summaryMutation={summaryMutation}
-              suggestTagsMutation={suggestTagsMutation}
-              summaryText={summaryText}
-              setSummaryText={setSummaryText}
-              suggestedTagsText={suggestedTagsText}
-              setSuggestedTagsText={setSuggestedTagsText}
-              question={question}
-              setQuestion={setQuestion}
-              setAssistantOpen={setAssistantOpen}
-              isOpen={sidebarOpen}
-              onOpenChange={setSidebarOpen}
-              isMobile={isMobile}
-            />
-          </div>
+          <NotePropertiesSidebar 
+            noteId={noteId}
+            folderId={folderId}
+            setFolderId={setFolderId}
+            setDirty={setDirty}
+            folders={detailQuery.data?.folders || []}
+            tags={detailQuery.data?.tags || []}
+            selectedTagIds={selectedTagIds}
+            setSelectedTagIds={setSelectedTagIds}
+            tagSearch={tagSearch}
+            setTagSearch={setTagSearch}
+            handleCreateTag={handleCreateTag}
+            updateTagsMutation={updateTags}
+            shareMode={shareMode}
+            setShareMode={setShareMode}
+            recipientUserId={recipientUserId}
+            setRecipientUserId={setRecipientUserId}
+            shareCanEdit={shareCanEdit}
+            setShareCanEdit={setShareCanEdit}
+            handleCreateShare={handleCreateShare}
+            createShareMutation={createShare}
+            shareFeedback={shareFeedback}
+            shares={sharesQuery.data || []}
+            deleteShareMutation={deleteShare}
+            resourceOpen={resourceOpen}
+            setResourceOpen={setResourceOpen}
+            catalogLoading={catalogQuery.isLoading}
+            courses={catalogQuery.data?.courses || []}
+            handleCreateResource={handleCreateResource}
+            embedNoteMutation={embedNoteMutation}
+            summaryMutation={summaryMutation}
+            suggestTagsMutation={suggestTagsMutation}
+            summaryText={summaryText}
+            setSummaryText={setSummaryText}
+            suggestedTagsText={suggestedTagsText}
+            setSuggestedTagsText={setSuggestedTagsText}
+            question={question}
+            setQuestion={setQuestion}
+            setAssistantOpen={setAssistantOpen}
+            isOpen={sidebarOpen}
+            onOpenChange={setSidebarOpen}
+            isMobile={isMobile}
+            isPublished={detailQuery.data?.note?.is_published}
+          />
         </div>
       </div>
     </TooltipProvider>

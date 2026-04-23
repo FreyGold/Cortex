@@ -16,3 +16,6 @@ dataRouter.put("/courses/:id", authMiddleware, adminMiddleware, DataController.u
 dataRouter.post("/courses/:courseId/resources", authMiddleware, verifiedMiddleware, DataController.createResource);
 dataRouter.put("/resources/:id", authMiddleware, adminMiddleware, DataController.updateResource);
 dataRouter.delete("/resources/:id", authMiddleware, adminMiddleware, DataController.deleteResource);
+
+dataRouter.post("/courses/:courseId/doctors", authMiddleware, adminMiddleware, DataController.assignDoctor);
+dataRouter.delete("/courses/:courseId/doctors/:doctorId", authMiddleware, adminMiddleware, DataController.unassignDoctor);

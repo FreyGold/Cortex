@@ -33,7 +33,7 @@ export function AppShell({ children }: AppShellProps) {
   const messages = useMessages();
   const { data: profileData } = useCurrentProfile();
 
-  const isAppPage = pathname.startsWith("/notes") || pathname.startsWith("/data");
+  const isAppPage = pathname.startsWith("/notes") || pathname.startsWith("/data") || pathname.startsWith("/admin");
 
   const visibleNavItems = useMemo(
     () =>

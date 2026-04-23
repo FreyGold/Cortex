@@ -21,7 +21,8 @@ export class NoteController {
   static async getDashboard(req: Request, res: Response) {
     try {
       const service = getService(req);
-      const data = await service.getDashboard(req.user!.id);
+      const workspaceId = req.query.workspaceId as string | undefined;
+      const data = await service.getDashboard(req.user!.id, workspaceId);
       res.setHeader("Cache-Control", "private, max-age=10");
       return res.status(200).json(data);
     } catch (error: any) {
@@ -52,8 +53,9 @@ export class NoteController {
   static async createNote(req: Request, res: Response) {
     try {
       const service = getService(req);
-      const { title, folderId } = req.body;
-      const data = await service.createNote(req.user!.id, title || "Untitled note", folderId ?? null);
+      const { title, folderId, workspaceId } = req.body;
+      const targetUserId = workspaceId || req.user!.id;
+      const data = await service.createNote(targetUserId, title || "Untitled note", folderId ?? null);
       return res.status(201).json(data);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -92,6 +94,12 @@ export class NoteController {
       if (input.folderId !== undefined) {
         updatePayload.folder_id = input.folderId;
       }
+      if (typeof input.isPublished === "boolean") {
+        updatePayload.is_published = input.isPublished;
+      }
+      if (typeof input.isPinned === "boolean") {
+        updatePayload.is_pinned = input.isPinned;
+      }
 
       await service.updateNote(req.user!.id, req.params.id as string, updatePayload);
       return res.status(200).json({ success: true });
@@ -110,12 +118,33 @@ export class NoteController {
     }
   }
 
+  static async restoreNote(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      await service.restoreNote(req.user!.id, req.params.id as string);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async deleteNoteForever(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      await service.deleteNoteForever(req.user!.id, req.params.id as string);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   static async createFolder(req: Request, res: Response) {
     try {
       const service = getService(req);
-      const { name } = req.body;
+      const { name, workspaceId, parentId } = req.body;
       if (!name) return res.status(400).json({ error: "Folder name required" });
-      await service.createFolder(req.user!.id, name.trim());
+      const targetUserId = workspaceId || req.user!.id;
+      await service.createFolder(targetUserId, name.trim(), parentId || null);
       return res.status(201).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -131,6 +160,36 @@ export class NoteController {
       if (req.body.color !== undefined) updatePayload.color = req.body.color;
 
       await service.updateFolder(req.user!.id, req.params.id as string, updatePayload);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async deleteFolder(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      await service.deleteFolder(req.user!.id, req.params.id as string);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async restoreFolder(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      await service.restoreFolder(req.user!.id, req.params.id as string);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async deleteFolderForever(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      await service.deleteFolderForever(req.user!.id, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -189,7 +248,7 @@ export class NoteController {
         }
         payload.shared_with_user_id = sharedWithUserId.trim();
       } else {
-        payload.share_token = crypto.randomUUID().replace(/-/g, "");
+        return res.status(400).json({ error: "Invalid share mode" });
       }
 
       const data = await service.createNoteShare(payload);
@@ -212,13 +271,6 @@ export class NoteController {
   static async getPublicNote(req: Request, res: Response) {
     try {
       const service = getServiceAnon();
-      const { shareToken } = req.query;
-      
-      if (shareToken) {
-        const data = await service.getNoteByShareToken(shareToken as string);
-        if (!data) return res.status(404).json({ error: "Note not found or link expired" });
-        return res.status(200).json(data);
-      }
 
       const data = await service.getPublicNote(req.params.id as string);
       if (!data) return res.status(404).json({ error: "Note not found" });
@@ -227,7 +279,6 @@ export class NoteController {
       return res.status(500).json({ error: error.message });
     }
   }
-
   static async replicateNote(req: Request, res: Response) {
     try {
       const service = getService(req);

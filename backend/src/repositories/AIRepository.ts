@@ -28,10 +28,10 @@ export class AIRepository {
     const { data, error } = await this.supabase
       .from("embedding_jobs")
       .insert(payload)
-      .select("id")
-      .single();
+      .select("id");
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Failed to create embedding job.");
+    return data[0];
   }
 
   async clearNoteChunks(note_id: string) {

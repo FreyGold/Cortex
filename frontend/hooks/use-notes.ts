@@ -14,8 +14,13 @@ import {
   createNoteShare,
   deleteNoteShare,
   updateFolder,
+  deleteFolder,
   deleteNote,
-  getArchivedNotes,
+  restoreNote,
+  deleteNoteForever,
+  getArchivedItems,
+  restoreFolder,
+  deleteFolderForever,
   getPublicNoteDetail,
   replicateNote,
   createCourseResource,
@@ -39,22 +44,22 @@ async function getAccessToken() {
   return session.access_token;
 }
 
-export function useNotesDashboard() {
+export function useNotesDashboard(workspaceId?: string) {
   return useQuery({
-    queryKey: ["notes-dashboard"],
+    queryKey: ["notes-dashboard", workspaceId],
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      return getDashboardNotes(accessToken);
+      return getDashboardNotes(accessToken, workspaceId);
     },
   });
 }
 
-export function useArchivedNotes() {
+export function useArchivedItems() {
   return useQuery({
-    queryKey: ["archived-notes"],
+    queryKey: ["archived-items"],
     queryFn: async () => {
       const accessToken = await getAccessToken();
-      return getArchivedNotes(accessToken);
+      return getArchivedItems(accessToken);
     },
   });
 }
@@ -63,9 +68,9 @@ export function useCreateNote() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: { title: string; folderId?: string | null }) => {
+    mutationFn: async (input: { title: string; folderId?: string | null; workspaceId?: string }) => {
       const accessToken = await getAccessToken();
-      return createNote(accessToken, input.title, input.folderId ?? null);
+      return createNote(accessToken, input.title, input.folderId ?? null, input.workspaceId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
@@ -77,9 +82,12 @@ export function useCreateFolder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async (input: { name: string; workspaceId?: string; parentId?: string | null } | string) => {
+      const name = typeof input === "string" ? input : input.name;
+      const workspaceId = typeof input === "string" ? undefined : input.workspaceId;
+      const parentId = typeof input === "string" ? undefined : input.parentId;
       const accessToken = await getAccessToken();
-      await createFolder(accessToken, name);
+      await createFolder(accessToken, name, workspaceId, parentId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
@@ -122,6 +130,8 @@ export function useUpdateNote(noteId: string) {
       content?: any;
       contentText?: string;
       folderId?: string | null;
+      isPublished?: boolean;
+      isPinned?: boolean;
     }) => {
       const accessToken = await getAccessToken();
       await updateNote(accessToken, noteId, input);
@@ -144,6 +154,36 @@ export function useArchiveNote() {
     onSuccess: (_, noteId) => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
+      queryClient.invalidateQueries({ queryKey: ["archived-notes"] });
+    },
+  });
+}
+
+export function useRestoreNote() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (noteId: string) => {
+      const accessToken = await getAccessToken();
+      await restoreNote(accessToken, noteId);
+    },
+    onSuccess: (_, noteId) => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
+      queryClient.invalidateQueries({ queryKey: ["archived-notes"] });
+    },
+  });
+}
+
+export function useDeleteNoteForever() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (noteId: string) => {
+      const accessToken = await getAccessToken();
+      await deleteNoteForever(accessToken, noteId);
+    },
+    onSuccess: (_, noteId) => {
       queryClient.invalidateQueries({ queryKey: ["archived-notes"] });
     },
   });
@@ -227,6 +267,25 @@ export function useMoveNote() {
   });
 }
 
+export function useUpdateFolder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      folderId,
+      name,
+    }: {
+      folderId: string;
+      name: string;
+    }) => {
+      const accessToken = await getAccessToken();
+      await updateFolder(accessToken, folderId, { name });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+    },
+  });
+}
+
 export function useMoveFolder() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -242,6 +301,20 @@ export function useMoveFolder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+    },
+  });
+}
+
+export function useDeleteFolder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderId: string) => {
+      const accessToken = await getAccessToken();
+      await deleteFolder(accessToken, folderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["note-detail"] });
     },
   });
 }
@@ -271,10 +344,37 @@ export function useCreateCourseResource(noteId: string) {
   });
 }
 
-export function usePublicNote(noteId: string, shareToken?: string) {
+export function usePublicNote(noteId: string) {
   return useQuery({
-    queryKey: ["public-note", noteId, shareToken],
-    queryFn: () => getPublicNoteDetail(noteId, shareToken),
+    queryKey: ["public-note", noteId],
+    queryFn: () => getPublicNoteDetail(noteId),
     enabled: !!noteId,
+  });
+}
+
+export function useRestoreFolder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderId: string) => {
+      const accessToken = await getAccessToken();
+      await restoreFolder(accessToken, folderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["archived-items"] });
+    },
+  });
+}
+
+export function useDeleteFolderForever() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (folderId: string) => {
+      const accessToken = await getAccessToken();
+      await deleteFolderForever(accessToken, folderId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["archived-items"] });
+    },
   });
 }

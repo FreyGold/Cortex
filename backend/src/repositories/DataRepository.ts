@@ -66,7 +66,7 @@ export class DataRepository {
     const { data, error } = await this.supabase
       .from("resources")
       .select(
-        "id,course_id,title_en,type,exam_type,doctor_id,google_drive_id,google_drive_url,file_type,file_size,download_count,view_count,average_rating,rating_count"
+        "id,course_id,title_en,type,exam_type,doctor_id,google_drive_id,google_drive_url,note_id,file_type,file_size,download_count,view_count,average_rating,rating_count"
       )
       .eq("course_id", courseId)
       .order("created_at", { ascending: false });
@@ -92,24 +92,40 @@ export class DataRepository {
     return data;
   }
 
+  async assignDoctorToCourse(courseId: string, doctorId: string) {
+    const { error } = await this.supabase
+      .from("course_doctors")
+      .upsert({ course_id: courseId, doctor_id: doctorId }, { onConflict: "course_id,doctor_id", ignoreDuplicates: true });
+    if (error) throw error;
+  }
+
+  async unassignDoctorFromCourse(courseId: string, doctorId: string) {
+    const { error } = await this.supabase
+      .from("course_doctors")
+      .delete()
+      .eq("course_id", courseId)
+      .eq("doctor_id", doctorId);
+    if (error) throw error;
+  }
+
   async createDoctor(name_en: string) {
     const { data, error } = await this.supabase
       .from("doctors")
       .insert({ name_en })
-      .select()
-      .single();
+      .select();
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Failed to create instructor.");
+    return data[0];
   }
 
   async createCourse(payload: any) {
     const { data, error } = await this.supabase
       .from("courses")
       .insert(payload)
-      .select("id,major_id,name_en,code")
-      .single();
+      .select("id,major_id,name_en,code");
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Failed to create course. Ensure you have admin permissions.");
+    return data[0];
   }
 
   async updateCourse(courseId: string, updates: any) {
@@ -117,20 +133,20 @@ export class DataRepository {
       .from("courses")
       .update(updates)
       .eq("id", courseId)
-      .select()
-      .single();
+      .select();
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Course not found or permission denied.");
+    return data[0];
   }
 
   async createResource(payload: any) {
     const { data, error } = await this.supabase
       .from("resources")
       .insert(payload)
-      .select()
-      .single();
+      .select();
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Failed to create resource. Ensure you are verified or an admin.");
+    return data[0];
   }
 
   async updateResource(resourceId: string, updates: any) {
@@ -138,10 +154,13 @@ export class DataRepository {
       .from("resources")
       .update(updates)
       .eq("id", resourceId)
-      .select()
-      .single();
+      .select();
+    
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) {
+      throw new Error("Resource not found or you don't have permission to update it.");
+    }
+    return data[0];
   }
 
   async deleteResource(resourceId: string) {

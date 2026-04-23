@@ -13,17 +13,30 @@ import {
   Globe,
   Archive,
   Star,
+  BookOpen,
   Settings,
   UserCircle,
   Database,
   ShieldCheck,
   PanelLeftClose,
-  ChevronDown
+  ChevronDown,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
 import React, { useState, useMemo, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,15 +45,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from "@/components/ui/context-menu";
+import {
   useCreateFolder,
   useCreateNote,
   useMoveFolder,
   useMoveNote,
+  useUpdateFolder,
   useNotesDashboard,
-  useArchivedNotes,
+  useArchivedItems,
   useArchiveNote,
+  useUpdateNote,
+  useDeleteFolder,
 } from "@/hooks/use-notes";
 import { useCurrentProfile } from "@/hooks/use-profile";
+import { useJoinedWorkspaces } from "@/hooks/use-workspace";
 import { cn } from "@/lib/utils";
 import { GlobalAssistantModal } from "./global-assistant-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,39 +94,119 @@ interface NoteItemProps {
 
 function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
   const archiveNote = useArchiveNote();
+  const updateNote = useUpdateNote(note.id);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(note.title || "");
+  const isIntro = note.title === "Introduction";
+
+  const handleRenameSubmit = () => {
+    if (renameValue.trim() && renameValue !== note.title) {
+      updateNote.mutate({ title: renameValue.trim() });
+    } else {
+      setRenameValue(note.title || "");
+    }
+    setIsRenaming(false);
+  };
 
   return (
-    <Link 
-      href={`/notes/${note.id}`} 
-      className={cn(
-        "group flex items-center gap-2 py-1.5 px-3 rounded-md transition-all relative select-none",
-        active ? "bg-accent/60 text-foreground" : "text-muted-foreground/70 hover:bg-accent/30 hover:text-foreground"
-      )}
-      style={{ paddingLeft: `${depth * 12 + 12}px` }}
-      draggable
-      onDragStart={onDragStart}
-    >
-      <FileText className={cn("size-3.5 shrink-0", active ? "text-primary/70" : "opacity-30 group-hover:opacity-60")} />
-      <span className={cn("truncate flex-1 text-[13px] font-medium leading-none", active && "font-semibold text-foreground")}>
-        {note.title || "Untitled"}
-      </span>
-      
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-         {note.is_published && <Globe className="size-3 text-emerald-500/40" />}
-         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button className="p-0.5 hover:bg-muted-foreground/10 rounded transition-colors" onClick={(e) => e.preventDefault()}>
-                    <MoreVertical className="size-3" />
-                </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 rounded-xl">
-                <DropdownMenuItem className="text-xs gap-2" onClick={() => archiveNote.mutate(note.id)}>
-                    <Archive className="size-3" /> Archive
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </Link>
+    <ContextMenu onOpenChange={setIsMenuOpen}>
+      <ContextMenuTrigger asChild>
+        <Link 
+          href={`/notes/${note.id}`} 
+          className={cn(
+            "group flex items-center gap-2 py-1.5 px-3 rounded-md transition-all relative select-none",
+            active ? "bg-accent/60 text-foreground" : "text-muted-foreground/70 hover:bg-accent/30 hover:text-foreground",
+            isMenuOpen && "bg-accent/40 ring-1 ring-primary/10"
+          )}
+          style={{ paddingLeft: `${depth * 12 + 12}px` }}
+          draggable={!isIntro && !isRenaming}
+          onDragStart={onDragStart}
+          onClick={(e) => {
+            if (isRenaming) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }}
+        >
+          <FileText className={cn("size-3.5 shrink-0", active ? "text-primary/70" : "opacity-30 group-hover:opacity-60")} />
+          
+          {isRenaming ? (
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onBlur={handleRenameSubmit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleRenameSubmit();
+                if (e.key === "Escape") {
+                  setRenameValue(note.title || "");
+                  setIsRenaming(false);
+                }
+              }}
+              className="flex-1 min-w-0 bg-transparent text-[13px] font-medium leading-none outline-none border-b border-primary/50"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <span className={cn("truncate flex-1 text-[13px] font-medium leading-none", active && "font-semibold text-foreground")}>
+              {note.title || "Untitled"}
+            </span>
+          )}
+          
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {note.is_published && <Globe className="size-3 text-emerald-500/40" />}
+            {!isIntro && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button 
+                      className="p-0.5 hover:bg-muted-foreground/10 rounded transition-colors" 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    >
+                        <MoreVertical className="size-3" />
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40 rounded-xl">
+                    <DropdownMenuItem className="text-xs gap-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsRenaming(true); }}>
+                        <FileText className="size-3" /> Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-xs gap-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateNote.mutate({ isPinned: !note.is_pinned }); }}>
+                        <Star className="size-3" /> {note.is_pinned ? "Unpin Note" : "Pin Note"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-xs gap-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); archiveNote.mutate(note.id); }}>
+                        <Archive className="size-3" /> Archive
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+        </Link>
+      </ContextMenuTrigger>
+  <ContextMenuContent className="w-48">
+    {!isIntro && (
+      <>
+        <ContextMenuItem onClick={() => setIsRenaming(true)}>
+          <FileText className="size-4" />
+          Rename Note
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onClick={() => updateNote.mutate({ isPinned: !note.is_pinned })}>
+          <Star className="size-4" />
+          {note.is_pinned ? "Unpin Note" : "Pin Note"}
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onClick={() => archiveNote.mutate(note.id)} variant="destructive">
+          <Archive className="size-4" />
+          Archive Note
+        </ContextMenuItem>
+      </>
+    )}
+    {isIntro && (
+      <ContextMenuItem disabled className="text-muted-foreground italic">
+        System Note
+      </ContextMenuItem>
+    )}
+  </ContextMenuContent>
+</ContextMenu>
   );
 }
 
@@ -119,6 +223,17 @@ interface FolderNodeProps {
 function FolderNode({ folder, allFolders, notes, depth, activeNoteId, onDrop, onCreateNote }: FolderNodeProps) {
   const [expanded, setExpanded] = useState(false);
   const [isOver, setIsOver] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(folder.name);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const deleteFolder = useDeleteFolder();
+  const updateFolder = useUpdateFolder();
+  const createFolder = useCreateFolder();
+  const searchParams = useSearchParams();
+  const currentWorkspaceId = searchParams.get("workspaceId") || undefined;
 
   const childFolders = useMemo(() => allFolders.filter(f => f.parent_id === folder.id), [allFolders, folder.id]);
   const folderNotes = useMemo(() => notes.filter(n => n.folder_id === folder.id), [notes, folder.id]);
@@ -126,6 +241,15 @@ function FolderNode({ folder, allFolders, notes, depth, activeNoteId, onDrop, on
   useEffect(() => {
     if (activeNoteId && folderNotes.some(n => n.id === activeNoteId)) setExpanded(true);
   }, [activeNoteId, folderNotes]);
+
+  const handleRenameSubmit = () => {
+    if (renameValue.trim() && renameValue !== folder.name) {
+      updateFolder.mutate({ folderId: folder.id, name: renameValue.trim() });
+    } else {
+      setRenameValue(folder.name);
+    }
+    setIsRenaming(false);
+  };
 
   return (
     <div 
@@ -139,36 +263,110 @@ function FolderNode({ folder, allFolders, notes, depth, activeNoteId, onDrop, on
         if (type && id) onDrop(type, id, folder.id);
       }}
     >
-      <div 
-        className={cn(
-          "group flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-all select-none",
-          isOver ? "bg-primary/5 ring-1 ring-primary/20" : "hover:bg-accent/30 text-muted-foreground/70 hover:text-foreground"
-        )}
-        style={{ paddingLeft: `${depth * 12 + 4}px` }}
-        draggable
-        onDragStart={(e) => {
-          e.dataTransfer.setData("type", "folder");
-          e.dataTransfer.setData("id", folder.id);
-        }}
-        onClick={() => setExpanded(!expanded)}
-      >
-        <button 
-          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-          className="p-0.5 rounded hover:bg-muted-foreground/10 transition-transform"
-        >
-          <ChevronRight className={cn("size-3.5 transition-transform", expanded && "rotate-90", (childFolders.length === 0 && folderNotes.length === 0) && "opacity-20")} />
-        </button>
-        <Folder className={cn("size-3.5 shrink-0", isOver ? "text-primary" : "opacity-30 group-hover:opacity-60")} />
-        <span className="truncate flex-1 text-[13px] font-semibold tracking-tight">
-          {folder.name}
-        </span>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onCreateNote(folder.id); setExpanded(true); }}
-          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-muted-foreground/10 rounded transition-opacity"
-        >
-          <Plus className="size-3" />
-        </button>
-      </div>
+      <ContextMenu onOpenChange={setIsMenuOpen}>
+        <ContextMenuTrigger asChild>
+          <div 
+            className={cn(
+              "group flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-all select-none",
+              isOver ? "bg-primary/5 ring-1 ring-primary/20" : "hover:bg-accent/30 text-muted-foreground/70 hover:text-foreground",
+              isMenuOpen && "bg-accent/40 ring-1 ring-primary/10"
+            )}
+            style={{ paddingLeft: `${depth * 12 + 4}px` }}
+            draggable={!isRenaming}
+            onDragStart={(e) => {
+              if (isRenaming) { e.preventDefault(); return; }
+              e.dataTransfer.setData("type", "folder");
+              e.dataTransfer.setData("id", folder.id);
+            }}
+            onClick={() => !isRenaming && setExpanded(!expanded)}
+          >
+            <button 
+              onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+              className="p-0.5 rounded hover:bg-muted-foreground/10 transition-transform"
+            >
+              <ChevronRight className={cn("size-3.5 transition-transform", expanded && "rotate-90", (childFolders.length === 0 && folderNotes.length === 0) && "opacity-20")} />
+            </button>
+            <Folder className={cn("size-3.5 shrink-0", isOver ? "text-primary" : "opacity-30 group-hover:opacity-60")} />
+            
+            {isRenaming ? (
+              <input
+                autoFocus
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onBlur={handleRenameSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRenameSubmit();
+                  if (e.key === "Escape") {
+                    setRenameValue(folder.name);
+                    setIsRenaming(false);
+                  }
+                }}
+                className="flex-1 min-w-0 bg-transparent text-[13px] font-semibold tracking-tight outline-none border-b border-primary/50"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span className="truncate flex-1 text-[13px] font-semibold tracking-tight">
+                {folder.name}
+              </span>
+            )}
+
+            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button 
+                onClick={(e) => { e.stopPropagation(); onCreateNote(folder.id); setExpanded(true); }}
+                className="p-0.5 hover:bg-muted-foreground/10 rounded"
+              >
+                <Plus className="size-3" />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setShowDeleteAlert(true); }}
+                className="p-0.5 hover:bg-destructive/10 text-destructive/70 hover:text-destructive rounded"
+              >
+                <Trash2 className="size-3" />
+              </button>
+            </div>
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-48">
+          <ContextMenuItem onClick={() => { setIsRenaming(true); setExpanded(true); }}>
+            <Folder className="size-4" />
+            Rename Folder
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => { onCreateNote(folder.id); setExpanded(true); }}>
+            <FileText className="size-4" />
+            New Note Inside
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => { createFolder.mutate({ name: "New Folder", workspaceId: currentWorkspaceId, parentId: folder.id }); setExpanded(true); }}>
+            <Folder className="size-4" />
+            New Folder Inside
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => setShowDeleteAlert(true)} variant="destructive">
+            <Archive className="size-4" />
+            Archive Folder
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+
+      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Folder</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive the folder "{folder.name}"? All nested folders and notes will also be archived. You can restore them from the archive later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={(e) => { e.stopPropagation(); deleteFolder.mutate(folder.id); }}
+            >
+              Archive
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {expanded && (
         <div className="space-y-0.5 relative">
@@ -206,24 +404,36 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  const currentWorkspaceId = searchParams.get("workspaceId") || undefined;
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [globalAssistantOpen, setGlobalAssistantOpen] = useState(false);
   const [isRootOver, setIsRootOver] = useState(false);
 
   const { data: profileData } = useCurrentProfile();
-  const dashboardQuery = useNotesDashboard();
-  const archivedQuery = useArchivedNotes();
+  const { data: joinedWorkspaces } = useJoinedWorkspaces();
+  const dashboardQuery = useNotesDashboard(currentWorkspaceId);
+  const archivedQuery = useArchivedItems();
   const createNote = useCreateNote();
   const createFolder = useCreateFolder();
   const moveNote = useMoveNote();
   const moveFolder = useMoveFolder();
 
+  // Helper to update URL with new search params
+  const updateUrl = (updates: Record<string, string | undefined>) => {
+    const p = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) p.set(key, value); else p.delete(key);
+    });
+    const newUrl = `${pathname}?${p.toString()}`;
+    if (newUrl !== `${pathname}?${searchParams.toString()}`) {
+      router.replace(newUrl);
+    }
+  };
+
   // DEBOUNCED SEARCH
   useEffect(() => {
     const timer = setTimeout(() => {
-      const p = new URLSearchParams(searchParams.toString());
-      if (searchQuery) p.set("q", searchQuery); else p.delete("q");
-      router.replace(`${pathname}?${p.toString()}`);
+      updateUrl({ q: searchQuery });
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -240,37 +450,80 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
   const rootNotes = notes.filter(n => !n.folder_id);
   const pinnedNotes = notes.filter(n => n.is_pinned);
   const publicNotes = notes.filter(n => n.is_published);
-  const archivedNotes = archivedQuery.data ?? [];
+  const archivedNotes = archivedQuery.data?.notes ?? [];
+  const archivedFolders = archivedQuery.data?.folders ?? [];
 
   const profile = profileData?.profile;
+
+  // Find active workspace name
+  const activeWorkspaceName = currentWorkspaceId 
+    ? joinedWorkspaces?.find(w => w.id === currentWorkspaceId)?.name || "Workspace"
+    : profile?.name || "My Workspace";
 
   const NavButton = ({ icon: Icon, label, onClick, className, active }: any) => (
     <button 
         onClick={onClick}
         className={cn(
-            "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all group select-none",
+            "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all group select-none overflow-hidden",
             active ? "bg-accent text-foreground" : "text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground",
             className
         )}
     >
         <Icon className={cn("size-4 shrink-0 transition-colors", active ? "text-primary" : "text-muted-foreground/40 group-hover:text-muted-foreground")} />
-        <span className="truncate">{label}</span>
+        <span className="truncate flex-1 text-left">{label}</span>
     </button>
   );
 
   return (
-    <div className="w-full flex flex-col h-full bg-[#fbfbfa] dark:bg-[#121212] select-none border-r border-border/5">
+    <div className="w-full flex flex-col h-full bg-[#fbfbfa] dark:bg-[#121212] select-none border-r border-border/5 overflow-x-hidden">
       {/* HEADER: User Profile & Workspace */}
       <div className="px-3 pt-4 pb-2 group/header">
         <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 px-1 py-1 rounded-lg hover:bg-accent/40 cursor-pointer transition-colors flex-1 min-w-0">
-                <Avatar className="size-5 rounded-md border border-border/10">
-                    <AvatarImage src={profile?.avatar_url || undefined} />
-                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{profile?.name?.charAt(0) || "U"}</AvatarFallback>
-                </Avatar>
-                <span className="text-[13px] font-bold truncate tracking-tight">{profile?.name || "Workspace"}</span>
-                <ChevronDown className="size-3 text-muted-foreground/30 ml-auto" />
-            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-2 px-1 py-1 rounded-lg hover:bg-accent/40 cursor-pointer transition-colors flex-1 min-w-0">
+                        <Avatar className="size-5 rounded-md border border-border/10">
+                            <AvatarImage src={(currentWorkspaceId ? joinedWorkspaces?.find(w => w.id === currentWorkspaceId)?.avatar_url : profile?.avatar_url) || undefined} />
+                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{activeWorkspaceName.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-[13px] font-bold truncate tracking-tight">{activeWorkspaceName}</span>
+                        <ChevronDown className="size-3 text-muted-foreground/30 ml-auto" />
+                    </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56 rounded-xl">
+                    <DropdownMenuItem className="text-xs gap-2" onClick={() => updateUrl({ workspaceId: undefined })}>
+                        <UserCircle className="size-4" /> My Workspace
+                    </DropdownMenuItem>
+                    
+                    {joinedWorkspaces && joinedWorkspaces.length > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Shared Workspaces</div>
+                        {joinedWorkspaces.map(w => (
+                          <DropdownMenuItem key={w.id} className="text-xs gap-2" onClick={() => updateUrl({ workspaceId: w.id })}>
+                            <Avatar className="size-4 rounded-sm">
+                              <AvatarImage src={w.avatar_url || undefined} />
+                              <AvatarFallback className="text-[8px]">{w.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            {w.name}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
+
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-xs gap-2" onClick={() => router.push("/settings?tab=team")}>
+                        <Users className="size-4" /> Manage Team
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-xs gap-2" onClick={() => router.push("/settings")}>
+                        <Settings className="size-4" /> Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => window.location.href = "/auth/signout"}>
+                        Logout
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
             <button 
                 onClick={onToggle}
                 className="p-1.5 text-muted-foreground/30 hover:text-foreground hover:bg-accent/40 rounded-md transition-all opacity-0 group-hover/header:opacity-100"
@@ -281,19 +534,20 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
 
         {/* Global Action Shortcuts */}
         <div className="space-y-0.5 mb-6">
+            <NavButton icon={BookOpen} label="Introduction" onClick={() => router.push("/notes/introduction")} active={pathname === "/notes/introduction"} />
             <NavButton icon={Search} label="Search" onClick={() => router.push("/notes")} active={pathname === "/notes" && !!searchParams.get("q")} />
             <NavButton icon={Sparkles} label="Assistant" onClick={() => setGlobalAssistantOpen(true)} />
             <NavButton icon={Settings} label="Settings" onClick={() => router.push("/settings")} active={pathname === "/settings"} />
             <NavButton icon={Clock} label="Recent" onClick={() => router.push("/notes")} active={pathname === "/notes" && !searchParams.get("q")} />
         </div>
-      </div>
+        </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-10 space-y-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-10 space-y-6">
         {/* FAVORITES */}
-        {pinnedNotes.length > 0 && (
+        {pinnedNotes.filter(n => n.title !== "Introduction").length > 0 && (
             <div className="space-y-1">
                 <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Favorites</span>
-                {pinnedNotes.map(n => (
+                {pinnedNotes.filter(n => n.title !== "Introduction").map(n => (
                     <NoteItem 
                         key={n.id} 
                         note={n} 
@@ -313,47 +567,74 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
           <div className="flex items-center justify-between px-3 mb-2 group/section">
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">Workspace</span>
             <div className="flex items-center gap-1 opacity-0 group-hover/section:opacity-100 transition-opacity">
-              <button onClick={() => createFolder.mutate("New Folder")} className="p-1 hover:bg-muted-foreground/10 rounded transition-colors text-muted-foreground/50 hover:text-foreground">
+              <button onClick={() => createFolder.mutate({ name: "New Folder", workspaceId: currentWorkspaceId })} className="p-1 hover:bg-muted-foreground/10 rounded transition-colors text-muted-foreground/50 hover:text-foreground">
                 <Plus className="size-3.5" />
               </button>
             </div>
           </div>
 
+          <button
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all text-primary hover:bg-primary/10 select-none group"
+            onClick={async () => {
+              const c = await createNote.mutateAsync({ title: "", workspaceId: currentWorkspaceId });
+              router.push(`/notes/${c.id}`);
+            }}
+          >
+            <Plus className="size-4 shrink-0 transition-transform group-hover:scale-110" />
+            <span className="truncate flex-1 text-left font-semibold">New Page</span>
+          </button>
+
           {dashboardQuery.isLoading ? <SidebarNavSkeleton /> : (
-            <div 
-              className="space-y-0.5 min-h-[40px]" 
-              onDragOver={(e) => { e.preventDefault(); setIsRootOver(true); }} 
-              onDragLeave={() => setIsRootOver(false)} 
-              onDrop={(e) => { e.preventDefault(); setIsRootOver(false); const t = e.dataTransfer.getData("type"); const id = e.dataTransfer.getData("id"); if (t && id) handleDrop(t, id, null); }}
-            >
-              {rootFolders.map(f => (
-                <FolderNode 
-                  key={f.id} 
-                  folder={f} 
-                  allFolders={folders} 
-                  notes={notes} 
-                  depth={0} 
-                  activeNoteId={activeNoteId} 
-                  onDrop={handleDrop} 
-                  onCreateNote={async (fid) => {
-                    const c = await createNote.mutateAsync({ title: "Untitled note", folderId: fid });
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <div 
+                  className="space-y-0.5 min-h-[200px] pb-10" 
+                  onDragOver={(e) => { e.preventDefault(); setIsRootOver(true); }} 
+                  onDragLeave={() => setIsRootOver(false)} 
+                  onDrop={(e) => { e.preventDefault(); setIsRootOver(false); const t = e.dataTransfer.getData("type"); const id = e.dataTransfer.getData("id"); if (t && id) handleDrop(t, id, null); }}
+                >
+                  {rootFolders.map(f => (
+                    <FolderNode 
+                      key={f.id} 
+                      folder={f} 
+                      allFolders={folders} 
+                      notes={notes} 
+                      depth={0} 
+                      activeNoteId={activeNoteId} 
+                      onDrop={handleDrop} 
+                      onCreateNote={async (fid) => {
+                        const c = await createNote.mutateAsync({ title: "Untitled note", folderId: fid, workspaceId: currentWorkspaceId });
+                        router.push(`/notes/${c.id}`);
+                      }} 
+                    />
+                  ))}
+                  {rootNotes.filter(n => n.title !== "Introduction").map(n => (
+                    <NoteItem 
+                      key={n.id} 
+                      note={n} 
+                      active={activeNoteId === n.id} 
+                      depth={0} 
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("type", "note");
+                        e.dataTransfer.setData("id", n.id);
+                      }} 
+                    />
+                  ))}
+                </div>
+              </ContextMenuTrigger>              <ContextMenuContent className="w-48">
+                <ContextMenuItem onClick={async () => {
+                    const c = await createNote.mutateAsync({ title: "", workspaceId: currentWorkspaceId });
                     router.push(`/notes/${c.id}`);
-                  }} 
-                />
-              ))}
-              {rootNotes.map(n => (
-                <NoteItem 
-                  key={n.id} 
-                  note={n} 
-                  active={activeNoteId === n.id} 
-                  depth={0} 
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData("type", "note");
-                    e.dataTransfer.setData("id", n.id);
-                  }} 
-                />
-              ))}
-            </div>
+                }}>
+                  <FileText className="size-4" />
+                  New Note
+                </ContextMenuItem>
+                <ContextMenuItem onClick={() => createFolder.mutate({ name: "New Folder", workspaceId: currentWorkspaceId })}>
+                  <Folder className="size-4" />
+                  New Folder
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           )}
         </div>
 
@@ -393,39 +674,21 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
         )}
 
         {/* ARCHIVE SECTION */}
-        {archivedNotes.length > 0 && (
-            <div className="space-y-1">
-                <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Archive</span>
-                {archivedNotes.map(n => (
-                    <div key={n.id} className="flex items-center gap-2 px-3 py-1 text-muted-foreground/40 text-[12px] italic">
-                        <Archive className="size-3" />
-                        <span className="truncate">{n.title || "Untitled"}</span>
-                    </div>
-                ))}
-            </div>
-        )}
-
-        {/* SYSTEM & GLOBAL NAV */}
-        <div className="space-y-1 mt-auto pt-4 border-t border-border/5">
-            <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Cortex</span>
-            <NavButton icon={Database} label="Data Browser" onClick={() => router.push("/data")} active={pathname === "/data" || pathname.startsWith("/data/")} />
-            {profile?.role === "admin" && (
-                <NavButton icon={ShieldCheck} label="Admin Panel" onClick={() => router.push("/admin")} active={pathname === "/admin"} />
-            )}
+        <div className="space-y-1">
+            <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Archive</span>
+            <NavButton icon={Trash2} label="Trash" onClick={() => router.push("/notes/archive")} active={pathname === "/notes/archive"} />
         </div>
       </div>
 
-      {/* FOOTER ACTIONS */}
-      <div className="p-3 mt-auto">
-        <button 
-          className="w-full flex items-center justify-center h-10 text-[13px] font-bold bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all gap-2" 
-          onClick={async () => {
-            const c = await createNote.mutateAsync({ title: "" });
-            router.push(`/notes/${c.id}`);
-          }}
-        >
-          <Plus className="size-4 stroke-[3]" /> New Page
-        </button>
+      {/* SYSTEM & GLOBAL NAV */}
+      <div className="p-2 border-t border-border/5 bg-[#fbfbfa] dark:bg-[#121212] shrink-0">
+          <div className="space-y-1">
+              <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Cortex</span>
+              <NavButton icon={Database} label="Data Browser" onClick={() => router.push("/data")} active={pathname === "/data" || pathname.startsWith("/data/")} />
+              {profile?.role === "admin" && (
+                  <NavButton icon={ShieldCheck} label="Admin Panel" onClick={() => router.push("/admin")} active={pathname === "/admin"} />
+              )}
+          </div>
       </div>
 
       <GlobalAssistantModal isOpen={globalAssistantOpen} onOpenChange={setGlobalAssistantOpen} />

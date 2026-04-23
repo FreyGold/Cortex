@@ -33,14 +33,14 @@ export function NotesLayoutClient({ children }: { children: React.ReactNode }) {
           isMobile && "absolute z-40 shadow-2xl"
         )}
       >
-        <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+        <div className="flex-1 overflow-hidden">
            <NotesSidebar onToggle={() => setIsOpen(false)} />
         </div>
       </div>
 
       {/* Toggle button when closed (floating) */}
       {!isOpen && (
-        <div className="absolute top-4 left-4 z-50">
+        <div className="absolute top-12 left-4 z-50">
           <Button
             variant="ghost"
             size="icon"

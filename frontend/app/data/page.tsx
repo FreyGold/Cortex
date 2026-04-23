@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   Book,
@@ -45,28 +46,33 @@ export default async function DataPage({ searchParams }: PageProps) {
     await getCatalogData();
 
   const session = await getServerSession();
-  const isVerifiedOrAdmin =
-    session?.profile?.role === "admin" ||
-    session?.profile?.is_verified === true;
+  const isAdmin = session?.profile?.role === "admin";
 
-  // Determine default values
-  const defaultUniversity = universities.find(
-    (u) => u.slug === "menofia" || u.name_en.toLowerCase().includes("menofia"),
-  );
-  const defaultCollege = colleges.find(
-    (c) => c.slug === "fee" || c.name_en.toLowerCase().includes("electronic"),
-  );
+  if (Object.keys(params).length === 0) {
+    const defaultUniversity = universities.find(
+      (u) => u.id === session?.profile?.university_id || u.slug === "menofia" || u.name_en.toLowerCase().includes("menofia"),
+    );
+    const defaultCollege = colleges.find(
+      (c) => c.id === session?.profile?.college_id || c.slug === "fee" || c.name_en.toLowerCase().includes("electronic"),
+    );
+    const defaultMajor = majors.find(
+      (m) => m.id === session?.profile?.major_id,
+    );
 
-  const shouldUseDefaultFilters =
-    Object.keys(params).length === 0 && defaultUniversity && defaultCollege;
+    const redirectParams = new URLSearchParams();
+    if (defaultUniversity) redirectParams.set("university", defaultUniversity.id);
+    if (defaultCollege) redirectParams.set("college", defaultCollege.id);
+    if (defaultMajor) redirectParams.set("major", defaultMajor.id);
 
-  const selectedUniversityId =
-    params.university ??
-    (shouldUseDefaultFilters ? defaultUniversity.id : null);
-  const selectedCollegeId =
-    params.college ?? (shouldUseDefaultFilters ? defaultCollege.id : null);
-  const selectedMajorId = params.major ?? null;
-  const selectedYearId = params.year ?? null;
+    if (redirectParams.toString()) {
+      redirect(`/data?${redirectParams.toString()}`);
+    }
+  }
+
+  const selectedUniversityId = params.university === "all" ? null : (params.university ?? null);
+  const selectedCollegeId = params.college === "all" ? null : (params.college ?? null);
+  const selectedMajorId = params.major === "all" ? null : (params.major ?? null);
+  const selectedYearId = params.year === "all" ? null : (params.year ?? null);
   const rawQuery = params.q?.trim() ?? "";
   const normalizedQuery = rawQuery.toLowerCase();
   const hasSearchQuery = normalizedQuery.length > 0;
@@ -175,7 +181,7 @@ export default async function DataPage({ searchParams }: PageProps) {
               </span>
             </div>
           </div>
-          {isVerifiedOrAdmin && (
+          {isAdmin && (
             <CourseDialog
               colleges={colleges}
               majors={majors}

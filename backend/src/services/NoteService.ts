@@ -3,14 +3,31 @@ import { NoteRepository } from "../repositories/NoteRepository";
 export class NoteService {
   constructor(private repo: NoteRepository) {}
 
-  async getDashboard(userId: string) {
+  async getDashboard(userId: string, workspaceId?: string) {
+    const targetUserId = workspaceId || userId;
     const [notes, sharedNotes, folders, tags] = await Promise.all([
-      this.repo.getDashboardNotes(userId),
+      this.repo.getDashboardNotes(targetUserId),
       this.repo.getSharedNotes(userId),
-      this.repo.getFolders(userId),
-      this.repo.getTags(userId),
+      this.repo.getFolders(targetUserId),
+      this.repo.getTags(targetUserId),
     ]);
     return { notes, sharedNotes, folders, tags };
+  }
+
+  async getArchived(userId: string) {
+    const [notes, folders] = await Promise.all([
+      this.repo.getArchivedNotes(userId),
+      this.repo.getArchivedFolders(userId),
+    ]);
+    return { notes, folders };
+  }
+
+  async restoreFolder(userId: string, folderId: string) {
+    await this.repo.restoreFolder(userId, folderId);
+  }
+
+  async deleteFolderForever(userId: string, folderId: string) {
+    await this.repo.deleteFolderForever(userId, folderId);
   }
 
   async getNoteDetail(userId: string, noteId: string) {
@@ -41,12 +58,16 @@ export class NoteService {
     await this.repo.updateNote(userId, noteId, updatePayload);
   }
 
-  async createFolder(userId: string, name: string) {
-    await this.repo.createFolder(userId, name);
+  async createFolder(userId: string, name: string, parentId?: string | null) {
+    await this.repo.createFolder(userId, name, parentId);
   }
 
   async updateFolder(userId: string, folderId: string, updatePayload: Record<string, unknown>) {
     await this.repo.updateFolder(userId, folderId, updatePayload);
+  }
+
+  async deleteFolder(userId: string, folderId: string) {
+    await this.repo.deleteFolder(userId, folderId);
   }
 
   async createTag(userId: string, name: string) {
@@ -77,16 +98,16 @@ export class NoteService {
     return this.repo.getPublicNoteDetail(noteId);
   }
 
-  async getNoteByShareToken(shareToken: string) {
-    return this.repo.getNoteByShareToken(shareToken);
-  }
-
-  async getArchived(userId: string) {
-    return this.repo.getArchivedNotes(userId);
-  }
-
   async archiveNote(userId: string, noteId: string) {
     await this.repo.archiveNote(userId, noteId);
+  }
+
+  async restoreNote(userId: string, noteId: string) {
+    await this.repo.restoreNote(userId, noteId);
+  }
+
+  async deleteNoteForever(userId: string, noteId: string) {
+    await this.repo.deleteNoteForever(userId, noteId);
   }
 
   async replicateNote(userId: string, title: string, content: any, contentText: string) {

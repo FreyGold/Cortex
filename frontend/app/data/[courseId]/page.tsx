@@ -10,6 +10,7 @@ import { AppShell } from "@/components/app-shell";
 import { EditCourseDialog } from "@/components/data/edit-course-dialog";
 import { ResourceDialog } from "@/components/data/resource-dialog";
 import { ResourceList } from "@/components/data/resource-list";
+import { ManageCourseDoctorsDialog } from "@/components/data/manage-course-doctors-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,8 +98,8 @@ export default async function CourseResourcesPage({
       updates.doctor === undefined ? (doctor ?? null) : updates.doctor;
 
     const nextParams = new URLSearchParams();
-    if (nextType) nextParams.set("type", nextType);
-    if (nextDoctor) nextParams.set("doctor", nextDoctor);
+    if (nextType && nextType !== "all") nextParams.set("type", nextType);
+    if (nextDoctor && nextDoctor !== "all") nextParams.set("doctor", nextDoctor);
 
     const query = nextParams.toString();
     return query ? `/data/${courseId}?${query}` : `/data/${courseId}`;
@@ -108,17 +109,27 @@ export default async function CourseResourcesPage({
     <main className="flex-1 overflow-y-auto custom-scrollbar bg-background">
       <div className="max-w-[1200px] mx-auto space-y-8 px-6 py-8 md:py-12">
         <header className="space-y-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="-ml-2 h-8 gap-1.5 text-muted-foreground hover:bg-accent/40 rounded-lg transition-all"
-          >
-            <Link href="/data">
-              <ChevronLeft className="size-4" />
-              Back to Explorer
-            </Link>
-          </Button>
+          <div className="flex items-center justify-between gap-4">
+            <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="-ml-2 h-8 gap-1.5 text-muted-foreground hover:bg-accent/40 rounded-lg transition-all"
+            >
+                <Link href="/data">
+                <ChevronLeft className="size-4" />
+                Back to Explorer
+                </Link>
+            </Button>
+
+            {isAdmin && (
+                <ManageCourseDoctorsDialog 
+                    courseId={courseId} 
+                    allDoctors={doctors} 
+                    assignedDoctors={courseDoctors} 
+                />
+            )}
+          </div>
 
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-3xl space-y-4">
@@ -167,12 +178,11 @@ export default async function CourseResourcesPage({
             <ResourceList
               resources={filteredResources}
               doctorsById={doctorsById}
-              selectedType={type ?? null}
-              selectedDoctorId={doctor ?? null}
               isAdmin={isAdmin}
               doctors={doctors}
-            />
-          </section>
+              selectedType={(type as string) || null}
+              selectedDoctorId={(doctor as string) || null}
+            />          </section>
 
           <aside className="self-start lg:sticky lg:top-4">
             <div className="rounded-3xl border border-border/40 bg-card/30 p-1">
@@ -248,7 +258,7 @@ export default async function CourseResourcesPage({
 
                   {isVerifiedOrAdmin && (
                     <div className="pt-4 border-t border-border/5">
-                        <ResourceDialog courseId={courseId} doctors={doctors} />
+                        <ResourceDialog courseId={courseId} doctors={doctors} isAdmin={isAdmin} />
                     </div>
                   )}
                </div>

@@ -18,6 +18,9 @@ notesRouter.get("/ask-all/conversation", AIController.getGlobalConversation);
 
 notesRouter.post("/folders", NoteController.createFolder);
 notesRouter.put("/folders/:id", NoteController.updateFolder);
+notesRouter.delete("/folders/:id", NoteController.deleteFolder);
+notesRouter.post("/folders/:id/restore", NoteController.restoreFolder);
+notesRouter.delete("/folders/:id/forever", NoteController.deleteFolderForever);
 notesRouter.post("/tags", NoteController.createTag);
 
 notesRouter.post("/replicate", NoteController.replicateNote);
@@ -29,6 +32,8 @@ notesRouter.get("/public/:id", NoteController.getPublicNote); // Can also use ?s
 notesRouter.get("/:id", NoteController.getNoteDetail);
 notesRouter.put("/:id", NoteController.updateNote);
 notesRouter.delete("/:id", NoteController.archiveNote);
+notesRouter.post("/:id/restore", NoteController.restoreNote);
+notesRouter.delete("/:id/forever", NoteController.deleteNoteForever);
 notesRouter.post("/:id/tags", NoteController.updateNoteTags);
 
 

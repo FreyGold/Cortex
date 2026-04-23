@@ -130,7 +130,7 @@ export function DataFilters({
         <Select
           value={selectedUniversityId ?? "all"}
           onValueChange={(val) =>
-            updateParams({ university: val === "all" ? null : val })
+            updateParams({ university: val })
           }
         >
           <SelectTrigger className="w-full">
@@ -152,7 +152,7 @@ export function DataFilters({
         <Select
           value={selectedCollegeId ?? "all"}
           onValueChange={(val) =>
-            updateParams({ college: val === "all" ? null : val })
+            updateParams({ college: val })
           }
           disabled={filteredColleges.length === 0}
         >
@@ -175,7 +175,7 @@ export function DataFilters({
         <Select
           value={selectedMajorId ?? "all"}
           onValueChange={(val) =>
-            updateParams({ major: val === "all" ? null : val })
+            updateParams({ major: val })
           }
           disabled={filteredMajors.length === 0}
         >
@@ -200,7 +200,7 @@ export function DataFilters({
         <Select
           value={selectedYearId ?? "all"}
           onValueChange={(val) =>
-            updateParams({ year: val === "all" ? null : val })
+            updateParams({ year: val })
           }
         >
           <SelectTrigger className="w-full">

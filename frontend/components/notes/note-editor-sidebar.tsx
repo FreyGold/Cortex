@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useUpdateNote } from "@/hooks/use-notes";
 import { 
   Share2, 
   Trash2, 
@@ -98,7 +99,7 @@ interface SharingDialogProps {
   isPending?: boolean;
 }
 
-export function SharingDialog({ noteId, shares, onCreateShare, onDeleteShare, isPending }: SharingDialogProps) {
+export function SharingDialog({ noteId, shares, onCreateShare, onDeleteShare, isPending, updateNote, isPublished }: SharingDialogProps & { updateNote?: any, isPublished?: boolean }) {
   const [shareMode, setShareMode] = useState<"user" | "link">("user");
   const [recipientUserId, setRecipientUserId] = useState("");
   const [shareCanEdit, setShareCanEdit] = useState(false);
@@ -107,18 +108,20 @@ export function SharingDialog({ noteId, shares, onCreateShare, onDeleteShare, is
   const handleCreate = async () => {
     setFeedback(null);
     try {
-      const created = await onCreateShare({
+      if (shareMode === "link" && updateNote) {
+        updateNote.mutate({ isPublished: true });
+        const url = `${window.location.origin}/notes/public/${noteId}`;
+        await navigator.clipboard.writeText(url);
+        setFeedback("Link copied!");
+        return;
+      }
+      
+      await onCreateShare({
         mode: shareMode,
         sharedWithUserId: shareMode === "user" ? recipientUserId.trim() : undefined,
         canEdit: shareCanEdit,
       });
-      if (created.share_token) {
-        const url = `${window.location.origin}/notes/public/${noteId}?shareToken=${created.share_token}`;
-        await navigator.clipboard.writeText(url);
-        setFeedback("Link copied!");
-      } else {
-        setFeedback("Shared with user!");
-      }
+      setFeedback("Shared with user!");
     } catch (e: any) {
       setFeedback(e.message);
     }
@@ -186,26 +189,34 @@ export function SharingDialog({ noteId, shares, onCreateShare, onDeleteShare, is
           <Button 
             className="w-full h-10 shadow-lg shadow-primary/10 rounded-xl font-bold text-xs" 
             onClick={handleCreate} 
-            disabled={isPending}
+            disabled={isPending || (updateNote && updateNote.isPending)}
           >
-            {isPending ? "Sharing..." : (shareMode === "link" ? "Generate & Copy Link" : "Invite User")}
+            {isPending || (updateNote && updateNote.isPending) ? "Sharing..." : (shareMode === "link" ? "Generate & Copy Link" : "Invite User")}
           </Button>
 
-          {feedback && (
+          {isPublished && shareMode === "link" && updateNote && (
+            <div className="text-[11px] text-center text-primary font-bold py-2 bg-primary/5 rounded-lg animate-in fade-in zoom-in-95 flex items-center justify-center gap-2">
+              Link is active. 
+              <Button variant="link" className="h-auto p-0 text-primary text-[11px] font-bold" onClick={async () => { await navigator.clipboard.writeText(`${window.location.origin}/notes/public/${noteId}`); setFeedback("Link copied!"); }}>Copy Link</Button>
+              <Button variant="link" className="h-auto p-0 text-destructive text-[11px]" onClick={() => { updateNote.mutate({ isPublished: false }); setFeedback("Link revoked."); }}>Revoke</Button>
+            </div>
+          )}
+
+          {feedback && shareMode === "user" && (
             <div className="text-[11px] text-center text-primary font-bold py-2 bg-primary/5 rounded-lg animate-in fade-in zoom-in-95">
               {feedback}
             </div>
           )}
 
-          {shares && shares.length > 0 && (
+          {shares && shares.length > 0 && shareMode === "user" && (
             <div className="space-y-3 pt-2">
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Active Shares</p>
               <div className="space-y-2 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
                 {shares.map((s: any) => (
                   <div key={s.id} className="flex items-center justify-between text-[11px] bg-muted/20 p-2.5 rounded-xl border border-border/5">
                     <span className="font-medium opacity-80 flex items-center gap-2 overflow-hidden">
-                      {s.shared_with_user_id ? <Users className="size-3 shrink-0" /> : <Link2 className="size-3 shrink-0" />}
-                      <span className="truncate">{s.shared_with_user_id ? `User: ${s.shared_with_user_id}` : `Link: ${s.share_token?.slice(0, 12)}...`}</span>
+                      <Users className="size-3 shrink-0" />
+                      <span className="truncate">{s.shared_with_user_id ? `User: ${s.shared_with_user_id}` : "Unknown"}</span>
                       {s.can_edit && <Badge variant="outline" className="h-4 text-[8px] bg-emerald-500/10 text-emerald-500 border-none px-1 uppercase tracking-tighter">Editor</Badge>}
                     </span>
                     <Button variant="ghost" size="sm" className="h-6 text-[10px] text-destructive hover:bg-destructive/10 rounded-lg px-2" onClick={() => onDeleteShare(s.id)}>Revoke</Button>
@@ -290,13 +301,14 @@ export function NoteEditorSidebar({
 
         {/* NOTION-LIKE PAGE ACTIONS */}
         <div className="flex flex-col gap-0.5 -mx-1">
-          <SharingDialog 
-            noteId={note.id} 
-            shares={shares} 
-            onCreateShare={onCreateShare} 
-            onDeleteShare={onDeleteShare} 
-          />
-          
+          <SharingDialog
+            noteId={note.id}
+            shares={shares}
+            onCreateShare={onCreateShare}
+            onDeleteShare={onDeleteShare}
+            updateNote={useUpdateNote(note.id)}
+            isPublished={note.is_published}
+          />          
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" className="h-8 w-full justify-start gap-2 text-xs font-normal text-muted-foreground hover:text-foreground hover:bg-muted/40 px-2">

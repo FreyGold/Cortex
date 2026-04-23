@@ -239,12 +239,12 @@ const DragHandle = React.memo(function DragHandle({
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className="flex size-full items-center justify-center"
+          className="flex size-full items-center justify-center relative top-1"
           onClick={(e) => {
             e.preventDefault();
             editor.getApi(BlockSelectionPlugin).blockSelection.focus();
           }}
-          onMouseDown={(e) => {
+        onMouseDown={(e) => {
             resetPreview();
 
             if ((e.button !== 0 && e.button !== 2) || e.shiftKey) return;

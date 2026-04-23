@@ -91,13 +91,6 @@ interface MessageType {
     duration: number;
   };
 }
-
-const suggestions = [
-  "Summarize my latest notes",
-  "How do my AI and ethics notes connect?",
-  "What did I write about project management?",
-];
-
 const AttachmentItem = ({
   attachment,
   onRemove,
@@ -598,18 +591,6 @@ export function GlobalAssistantModal({
           </Conversation>
           
           <div className="grid shrink-0 gap-4 pt-4 bg-background">
-            {messages.length === 0 && !isAsking && (
-              <Suggestions className="px-4 w-full max-w-4xl mx-auto">
-                {suggestions.map((suggestion) => (
-                  <Suggestion
-                    key={suggestion}
-                    onClick={handleSuggestionClick}
-                    suggestion={suggestion}
-                  />
-                ))}
-
-              </Suggestions>
-            )}
             
             <div className="w-full px-4 pb-4 max-w-4xl mx-auto">
               <PromptInput globalDrop multiple onSubmit={handleSubmit}>

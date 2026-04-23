@@ -11,7 +11,8 @@ import {
   User,
   ArrowRight,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  X
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -45,21 +46,12 @@ type ViewMode = "card" | "table";
 export function ResourceList({
   resources,
   doctorsById,
-  selectedType,
-  selectedDoctorId,
   isAdmin = false,
   doctors = [],
 }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>("card");
 
-  const filtered = resources.filter((resource) => {
-    const typeMatch = !selectedType || resource.type === selectedType;
-    const doctorMatch =
-      !selectedDoctorId || resource.doctor_id === selectedDoctorId;
-    return typeMatch && doctorMatch;
-  });
-
-  if (filtered.length === 0) {
+  if (resources.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center space-y-6 rounded-3xl border border-dashed border-border/10 bg-muted/5">
         <div className="size-16 rounded-3xl bg-muted/10 flex items-center justify-center">
@@ -94,14 +86,15 @@ export function ResourceList({
 
       {viewMode === "card" ? (
         <div className="grid gap-4 sm:grid-cols-2">
-          {filtered.map((resource) => {
+          {resources.map((resource) => {
             const doctor = resource.doctor_id
               ? doctorsById.get(resource.doctor_id)
               : undefined;
             const isFolder =
               resource.google_drive_url?.includes("/folders/") ?? false;
             
-            const isNote = !!resource.note_id;
+            const isNote = resource.type === "note" || !!resource.note_id;
+            const hasValidNote = !!resource.note_id;
 
             return (
               <div key={resource.id} className="group relative flex flex-col p-5 rounded-3xl border border-border/40 bg-card hover:border-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-0.5 overflow-hidden">
@@ -147,12 +140,19 @@ export function ResourceList({
 
                   <div className="flex items-center gap-2">
                     {isNote ? (
-                        <Button asChild className="h-9 flex-1 text-[11px] font-bold uppercase tracking-wider rounded-xl gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all">
-                            <Link href={`/notes/${resource.note_id}`}>
-                                <Eye className="size-3.5" />
-                                Read Note
-                            </Link>
-                        </Button>
+                        hasValidNote ? (
+                            <Button asChild className="h-9 flex-1 text-[11px] font-bold uppercase tracking-wider rounded-xl gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all">
+                                <Link href={`/notes/${resource.note_id}`}>
+                                    <Eye className="size-3.5" />
+                                    Read Note
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button disabled className="h-9 flex-1 text-[11px] font-bold uppercase tracking-wider rounded-xl gap-2 bg-muted text-muted-foreground transition-all">
+                                <FileText className="size-3.5" />
+                                Link Broken
+                            </Button>
+                        )
                     ) : (
                         <DriveViewerDialog
                             driveId={resource.google_drive_id || ""}
@@ -191,13 +191,14 @@ export function ResourceList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((resource) => {
+              {resources.map((resource) => {
                 const doctor = resource.doctor_id
                   ? doctorsById.get(resource.doctor_id)
                   : undefined;
                 const isFolder =
                   resource.google_drive_url?.includes("/folders/") ?? false;
-                const isNote = !!resource.note_id;
+                const isNote = resource.type === "note" || !!resource.note_id;
+                const hasValidNote = !!resource.note_id;
                 const Icon = isNote ? Sparkles : (isFolder ? FolderOpen : FileText);
 
                 return (
@@ -227,11 +228,17 @@ export function ResourceList({
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         {isNote ? (
-                            <Button asChild size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-lg text-emerald-500 hover:bg-emerald-500/10">
-                                <Link href={`/notes/${resource.note_id}`}>
-                                    <Eye className="size-4" />
-                                </Link>
-                            </Button>
+                            hasValidNote ? (
+                                <Button asChild size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-lg text-emerald-500 hover:bg-emerald-500/10">
+                                    <Link href={`/notes/${resource.note_id}`}>
+                                        <Eye className="size-4" />
+                                    </Link>
+                                </Button>
+                            ) : (
+                                <Button disabled size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-lg text-muted-foreground/40">
+                                    <X className="size-4" />
+                                </Button>
+                            )
                         ) : (
                             <DriveViewerDialog
                                 driveId={resource.google_drive_id || ""}

@@ -48,7 +48,7 @@ export type Resource = {
   course_id: string;
   title_en: string;
   description: string | null;
-  type: "lecture" | "exam" | "assignment" | "other";
+  type: "lecture" | "exam" | "assignment" | "note" | "other";
   exam_type: "midterm" | "final" | "quiz" | null;
   doctor_id: string | null;
   google_drive_id: string | null;

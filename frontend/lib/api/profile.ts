@@ -3,6 +3,7 @@ import { apiRequest } from "@/lib/api/client";
 export type CurrentProfile = {
   id: string;
   name: string | null;
+  avatar_url: string | null;
   role: "admin" | "user";
   is_verified: boolean;
   verified_at: string | null;

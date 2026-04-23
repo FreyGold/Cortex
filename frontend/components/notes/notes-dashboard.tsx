@@ -46,20 +46,21 @@ export function NotesDashboard() {
   const [activeTag, setActiveTag] = useState<string | null>(searchParams.get("tag") || null);
   const [assistantOpen, setAssistantOpen] = useState(false);
 
-  const dashboardQuery = useNotesDashboard();
+  const workspaceId = searchParams.get("workspaceId") || undefined;
+  const dashboardQuery = useNotesDashboard(workspaceId);
   const createNote = useCreateNote();
 
-  // Handle URL sync
+  // Sync state with URL changes (e.g. from sidebar)
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (searchQuery) params.set("q", searchQuery); else params.delete("q");
-    if (activeTag) params.set("tag", activeTag); else params.delete("tag");
-    const newUrl = `/notes${params.toString() ? `?${params.toString()}` : ""}`;
-    // router.replace(newUrl, { scroll: false });
-  }, [searchQuery, activeTag]);
+    const q = searchParams.get("q") || "";
+    if (q !== searchQuery) setSearchQuery(q);
+    
+    const tag = searchParams.get("tag") || null;
+    if (tag !== activeTag) setActiveTag(tag);
+  }, [searchParams]);
 
   const notes = useMemo(() => {
-    let data = dashboardQuery.data?.notes ?? [];
+    let data = (dashboardQuery.data?.notes ?? []).filter((n: any) => n.title !== "Introduction");
     const q = searchQuery.toLowerCase();
     if (q) {
       data = data.filter(n => 
@@ -96,8 +97,9 @@ export function NotesDashboard() {
   const onCreateNote = async () => {
     const created = await createNote.mutateAsync({
       title: "",
+      workspaceId,
     });
-    router.push(`/notes/${created.id}`);
+    router.push(`/notes/${created.id}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`);
   };
 
   return (

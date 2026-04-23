@@ -52,7 +52,7 @@ export default async function Home() {
     },
     {
       href: "/settings",
-      label: shellT("nav.settings", "Settings"),
+      label: shellT("nav.settings"),
     },
     ...(isAdmin
       ? [

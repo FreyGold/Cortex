@@ -49,9 +49,10 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir={getDirection(locale)}
-      className={cn(inter.variable, geist.variable, "font-mono", geistMono.variable, geistHeading.variable)}
+      className={cn(inter.variable, geist.variable, "font-mono", geistMono.variable, geistHeading.variable, "dark")}
       style={{ fontFamily: "var(--font-sans)" }}
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
     >
       <body className="bg-background">
         <script

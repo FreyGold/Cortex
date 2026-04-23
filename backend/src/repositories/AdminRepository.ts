@@ -42,40 +42,40 @@ export class AdminRepository {
     const { data, error } = await this.supabase
       .from("universities")
       .insert(payload)
-      .select("id,name_en,slug")
-      .single();
+      .select("id,name_en,slug");
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Failed to create university.");
+    return data[0];
   }
 
   async createCollege(payload: any) {
     const { data, error } = await this.supabase
       .from("colleges")
       .insert(payload)
-      .select("id,university_id,name_en,slug")
-      .single();
+      .select("id,university_id,name_en,slug");
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Failed to create college.");
+    return data[0];
   }
 
   async createMajor(payload: any) {
     const { data, error } = await this.supabase
       .from("majors")
       .insert(payload)
-      .select("id,college_id,name_en,slug")
-      .single();
+      .select("id,college_id,name_en,slug");
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Failed to create major.");
+    return data[0];
   }
 
   async createCourse(payload: any) {
     const { data, error } = await this.supabase
       .from("courses")
       .insert(payload)
-      .select("id,major_id,name_en,code")
-      .single();
+      .select("id,major_id,name_en,code");
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) throw new Error("Failed to create course.");
+    return data[0];
   }
 
   async seedYearLevels(payload: any[]) {

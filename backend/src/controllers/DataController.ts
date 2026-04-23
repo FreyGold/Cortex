@@ -90,4 +90,25 @@ export class DataController {
       return res.status(500).json({ error: error.message });
     }
   }
+
+  static async assignDoctor(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const { doctorId } = req.body;
+      await service.assignDoctorToCourse(req.params.courseId as string, doctorId);
+      return res.status(201).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async unassignDoctor(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      await service.unassignDoctorFromCourse(req.params.courseId as string, req.params.doctorId as string);
+      return res.status(200).json({ success: true });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 }

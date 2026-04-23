@@ -11,7 +11,7 @@ import { PlateContainer, PlateContent, PlateView } from 'platejs/react';
 import { cn } from '@/lib/utils';
 
 const editorContainerVariants = cva(
-  'relative w-full cursor-text select-text overflow-y-auto caret-primary selection:bg-brand/25 focus-visible:outline-none [&_.slate-selection-area]:z-50 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
+  'relative w-full cursor-text select-text caret-primary selection:bg-brand/25 focus-visible:outline-none [&_.slate-selection-area]:z-50 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-brand/25 [&_.slate-selection-area]:bg-brand/15',
   {
     defaultVariants: {
       variant: 'default',
@@ -24,8 +24,8 @@ const editorContainerVariants = cva(
           'has-[[data-slate-editor]:focus]:border-brand/50 has-[[data-slate-editor]:focus]:ring-2 has-[[data-slate-editor]:focus]:ring-brand/30',
           'has-aria-disabled:border-input has-aria-disabled:bg-muted'
         ),
-        default: 'h-full',
-        demo: 'h-[650px]',
+        default: 'h-full overflow-y-auto',
+        demo: 'min-h-[500px] h-auto overflow-visible',
         none: 'h-auto overflow-visible',
         select: cn(
           'group rounded-md border border-input ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
@@ -56,7 +56,7 @@ export function EditorContainer({
 const editorVariants = cva(
   cn(
     'group/editor',
-    'relative w-full cursor-text select-text overflow-x-hidden whitespace-pre-wrap break-words',
+    'relative w-full cursor-text select-text whitespace-pre-wrap break-words',
     'rounded-md ring-offset-background focus-visible:outline-none',
     '**:data-slate-placeholder:!top-1/2 **:data-slate-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-slate-placeholder:text-muted-foreground/80 **:data-slate-placeholder:opacity-100!',
     '[&_strong]:font-bold'
@@ -78,9 +78,9 @@ const editorVariants = cva(
           'max-h-[min(70vh,320px)] w-full overflow-y-auto px-3 py-2 text-base md:text-sm',
         comment: cn('rounded-none border-none bg-transparent text-sm'),
         default:
-          'size-full px-20 pt-4 pb-72 text-base]',
-        demo: 'size-full px-20 pt-4 pb-72 text-base]',
-        fullWidth: 'size-full px-20 pt-4 pb-72 text-base sm:px-24',
+          'min-h-full px-4 md:px-6 pt-4 pb-12 text-base',
+        demo: 'min-h-full px-4 md:px-6 pt-4 pb-12 text-base',
+        fullWidth: 'min-h-full px-4 md:px-10 pt-4 pb-12 text-base',
         none: 'w-full h-auto text-base',
         select: 'px-3 py-2 text-base data-readonly:w-fit',
       },

@@ -3,10 +3,11 @@ import { getTranslations } from "next-intl/server";
 import { AppShell } from "@/components/app-shell";
 import { ProfileSetupForm } from "@/components/profile/profile-setup-form";
 import { ProfileStatusCard } from "@/components/profile/profile-status-card";
+import { WorkspaceTeam } from "@/components/settings/workspace-team";
 import { getCatalogData } from "@/lib/data/catalog";
 import { getServerSession } from "@/lib/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, GraduationCap, Settings2, Globe, Moon } from "lucide-react";
+import { User, GraduationCap, Settings2, Globe, Moon, Users } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
@@ -37,6 +38,10 @@ export default async function SettingsPage() {
               <User className="size-4" />
               {t("tabs.profile")}
             </TabsTrigger>
+            <TabsTrigger value="team" className="gap-2">
+              <Users className="size-4" />
+              Team
+            </TabsTrigger>
             <TabsTrigger value="academic" className="gap-2">
               <GraduationCap className="size-4" />
               {t("tabs.academic")}
@@ -49,6 +54,15 @@ export default async function SettingsPage() {
 
           <TabsContent value="profile" className="space-y-6 outline-none">
             <ProfileStatusCard showEditLink={false} />
+          </TabsContent>
+
+          <TabsContent value="team" className="space-y-6 outline-none">
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-4 mb-4">
+              <p className="text-sm text-muted-foreground">
+                Invite members to your workspace to collaborate on notes and folders.
+              </p>
+            </div>
+            <WorkspaceTeam />
           </TabsContent>
 
           <TabsContent value="academic" className="space-y-6 outline-none">
