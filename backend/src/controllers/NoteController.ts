@@ -54,8 +54,7 @@ export class NoteController {
     try {
       const service = getService(req);
       const { title, folderId, workspaceId } = req.body;
-      const targetUserId = workspaceId || req.user!.id;
-      const data = await service.createNote(targetUserId, title || "Untitled note", folderId ?? null);
+      const data = await service.createNote(req.user!.id, title || "Untitled note", folderId ?? null, workspaceId);
       return res.status(201).json(data);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -143,8 +142,7 @@ export class NoteController {
       const service = getService(req);
       const { name, workspaceId, parentId } = req.body;
       if (!name) return res.status(400).json({ error: "Folder name required" });
-      const targetUserId = workspaceId || req.user!.id;
-      await service.createFolder(targetUserId, name.trim(), parentId || null);
+      await service.createFolder(req.user!.id, name.trim(), parentId || null, workspaceId);
       return res.status(201).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

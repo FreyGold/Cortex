@@ -7,7 +7,7 @@ import {
   UserCircle2 as UserCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import { useMessages } from "next-intl";
 import { useMemo } from "react";
 import { useCurrentProfile } from "@/hooks/use-profile";
@@ -30,6 +30,8 @@ const navItems = [
 
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const workspaceId = searchParams.get("workspaceId");
   const messages = useMessages();
   const { data: profileData } = useCurrentProfile();
 
@@ -45,7 +47,7 @@ export function AppShell({ children }: AppShellProps) {
   );
 
   const headerNavItems = visibleNavItems.map((item) => ({
-    href: item.href,
+    href: `${item.href}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`,
     label: getMessage(messages, `shell.nav.${item.key}`, item.key),
     active: pathname === item.href || pathname.startsWith(`${item.href}/`),
   }));
@@ -79,10 +81,11 @@ export function AppShell({ children }: AppShellProps) {
               {visibleNavItems.map((item) => {
                 const active =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const href = `${item.href}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`;
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={href}
                     className={cn(
                       "flex flex-col items-center gap-0.5 rounded-md px-2 py-2 text-xs font-medium transition-colors",
                       active

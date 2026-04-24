@@ -51,8 +51,7 @@ export class AIRepository {
     const { error } = await this.supabase
       .from("notes")
       .update({ is_embedded: true, embedded_at: nowIso })
-      .eq("id", noteId)
-      .eq("user_id", userId);
+      .eq("id", noteId);
     if (error) throw error;
   }
 
@@ -186,8 +185,7 @@ export class AIRepository {
     const { error } = await this.supabase
       .from("notes")
       .update(updates)
-      .eq("id", noteId)
-      .eq("user_id", userId);
+      .eq("id", noteId);
     if (error) throw error;
   }
 }

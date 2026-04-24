@@ -3,13 +3,19 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export class NoteRepository {
   constructor(private supabase: SupabaseClient) {}
 
-  async getDashboardNotes(userId: string) {
-    const { data, error } = await this.supabase
+  async getDashboardNotes(userId: string, workspaceId?: string) {
+    let query = this.supabase
       .from("notes")
-      .select("id,title,content_text,summary,folder_id,is_pinned,is_published,updated_at,created_at,note_tags(tags(id,name,color))")
-      .eq("user_id", userId)
-      .eq("is_archived", false)
-      .order("updated_at", { ascending: false });
+      .select("id,title,content_text,summary,folder_id,is_pinned,is_published,updated_at,created_at,workspace_id,note_tags(tags(id,name,color))")
+      .eq("is_archived", false);
+
+    if (workspaceId) {
+      query = query.eq("workspace_id", workspaceId);
+    } else {
+      query = query.eq("user_id", userId).is("workspace_id", null);
+    }
+
+    const { data, error } = await query.order("updated_at", { ascending: false });
     if (error) throw error;
     return data;
   }
@@ -24,13 +30,19 @@ export class NoteRepository {
     return data?.map(item => item.note).filter(Boolean) || [];
   }
 
-  async getFolders(userId: string) {
-    const { data, error } = await this.supabase
+  async getFolders(userId: string, workspaceId?: string) {
+    let query = this.supabase
       .from("folders")
-      .select("id,name,color,parent_id")
-      .eq("user_id", userId)
-      .eq("is_archived", false)
-      .order("name", { ascending: true });
+      .select("id,name,color,parent_id,workspace_id")
+      .eq("is_archived", false);
+
+    if (workspaceId) {
+      query = query.eq("workspace_id", workspaceId);
+    } else {
+      query = query.eq("user_id", userId).is("workspace_id", null);
+    }
+
+    const { data, error } = await query.order("name", { ascending: true });
     if (error) throw error;
     return data;
   }
@@ -45,12 +57,13 @@ export class NoteRepository {
     return data;
   }
 
-  async createNote(userId: string, title: string, folderId: string | null) {
+  async createNote(userId: string, title: string, folderId: string | null, workspaceId?: string) {
     const nowIso = new Date().toISOString();
     const { data, error } = await this.supabase
       .from("notes")
       .insert({
         user_id: userId,
+        workspace_id: workspaceId || null,
         title: title || "Untitled note",
         folder_id: folderId,
         content: { type: "doc", content: [] },
@@ -63,9 +76,10 @@ export class NoteRepository {
     return data[0];
   }
 
-  async createFolder(userId: string, name: string, parentId?: string | null) {
+  async createFolder(userId: string, name: string, parentId?: string | null, workspaceId?: string) {
     const { error } = await this.supabase.from("folders").insert({
       user_id: userId,
+      workspace_id: workspaceId || null,
       name,
       parent_id: parentId || null,
     });
@@ -122,9 +136,8 @@ export class NoteRepository {
   async getNoteDetail(userId: string, noteId: string) {
     const { data, error } = await this.supabase
       .from("notes")
-      .select("id,title,content,content_text,summary,folder_id,is_published,updated_at")
+      .select("id,title,content,content_text,summary,folder_id,is_published,updated_at,workspace_id")
       .eq("id", noteId)
-      .eq("user_id", userId)
       .maybeSingle();
     if (error) throw error;
     return data;
@@ -143,8 +156,7 @@ export class NoteRepository {
     const { error } = await this.supabase
       .from("notes")
       .update(updatePayload)
-      .eq("id", noteId)
-      .eq("user_id", userId);
+      .eq("id", noteId);
     if (error) throw error;
   }
 
@@ -216,8 +228,7 @@ export class NoteRepository {
         is_archived: true,
         archived_at: new Date().toISOString(),
       })
-      .eq("id", noteId)
-      .eq("user_id", userId);
+      .eq("id", noteId);
     if (error) throw error;
   }
 
@@ -229,8 +240,7 @@ export class NoteRepository {
         is_archived: false,
         archived_at: null,
       })
-      .eq("id", noteId)
-      .eq("user_id", userId);
+      .eq("id", noteId);
     if (error) throw error;
   }
 
@@ -238,8 +248,7 @@ export class NoteRepository {
     const { error } = await this.supabase
       .from("notes")
       .delete()
-      .eq("id", noteId)
-      .eq("user_id", userId);
+      .eq("id", noteId);
     if (error) throw error;
   }
 

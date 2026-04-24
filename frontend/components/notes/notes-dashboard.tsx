@@ -268,7 +268,7 @@ export function NotesDashboard() {
       ) : viewMode === "grid" ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {notes.map((note) => (
-            <Link key={note.id} href={`/notes/${note.id}`} className="group block h-full">
+            <Link key={note.id} href={`/notes/${note.id}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`} className="group block h-full">
               <div className="flex flex-col h-full p-6 rounded-3xl border border-border/40 bg-card hover:border-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 relative overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                    <div className="size-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">
@@ -302,7 +302,7 @@ export function NotesDashboard() {
       ) : (
         <div className="flex flex-col gap-2">
           {notes.map((note) => (
-            <Link key={note.id} href={`/notes/${note.id}`}>
+            <Link key={note.id} href={`/notes/${note.id}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`}>
               <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-muted/10 transition-all group border border-transparent hover:border-border/10">
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                   <div className="flex items-center justify-center size-10 rounded-xl bg-muted/20 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all shrink-0">

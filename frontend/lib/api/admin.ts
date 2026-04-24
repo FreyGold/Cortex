@@ -3,6 +3,7 @@ import { apiRequest } from "@/lib/api/client";
 type AdminUser = {
   id: string;
   name: string | null;
+  email: string | null;
   role: "admin" | "user";
   is_verified: boolean;
   verified_at: string | null;

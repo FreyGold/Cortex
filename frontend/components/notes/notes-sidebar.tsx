@@ -64,7 +64,7 @@ import {
   useDeleteFolder,
 } from "@/hooks/use-notes";
 import { useCurrentProfile } from "@/hooks/use-profile";
-import { useJoinedWorkspaces } from "@/hooks/use-workspace";
+import { useJoinedWorkspaces, useWorkspaces, useCreateWorkspace } from "@/hooks/use-workspace";
 import { cn } from "@/lib/utils";
 import { GlobalAssistantModal } from "./global-assistant-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -93,6 +93,8 @@ interface NoteItemProps {
 }
 
 function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
+  const searchParams = useSearchParams();
+  const currentWorkspaceId = searchParams.get("workspaceId");
   const archiveNote = useArchiveNote();
   const updateNote = useUpdateNote(note.id);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -113,11 +115,12 @@ function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
     <ContextMenu onOpenChange={setIsMenuOpen}>
       <ContextMenuTrigger asChild>
         <Link 
-          href={`/notes/${note.id}`} 
+          href={`/notes/${note.id}${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`} 
           className={cn(
             "group flex items-center gap-2 py-1.5 px-3 rounded-md transition-all relative select-none",
             active ? "bg-accent/60 text-foreground" : "text-muted-foreground/70 hover:bg-accent/30 hover:text-foreground",
-            isMenuOpen && "bg-accent/40 ring-1 ring-primary/10"
+            isMenuOpen && "bg-accent/40 ring-1 ring-primary/10",
+            note.is_optimistic && "opacity-50 animate-pulse pointer-events-none"
           )}
           style={{ paddingLeft: `${depth * 12 + 12}px` }}
           draggable={!isIntro && !isRenaming}
@@ -269,9 +272,9 @@ function FolderNode({ folder, allFolders, notes, depth, activeNoteId, onDrop, on
             className={cn(
               "group flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-all select-none",
               isOver ? "bg-primary/5 ring-1 ring-primary/20" : "hover:bg-accent/30 text-muted-foreground/70 hover:text-foreground",
-              isMenuOpen && "bg-accent/40 ring-1 ring-primary/10"
-            )}
-            style={{ paddingLeft: `${depth * 12 + 4}px` }}
+              isMenuOpen && "bg-accent/40 ring-1 ring-primary/10",
+              folder.is_optimistic && "opacity-50 animate-pulse pointer-events-none"
+            )}            style={{ paddingLeft: `${depth * 12 + 4}px` }}
             draggable={!isRenaming}
             onDragStart={(e) => {
               if (isRenaming) { e.preventDefault(); return; }
@@ -411,6 +414,9 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
 
   const { data: profileData } = useCurrentProfile();
   const { data: joinedWorkspaces } = useJoinedWorkspaces();
+  const { data: ownedWorkspaces } = useWorkspaces();
+  const [workspacesExpanded, setWorkspacesExpanded] = useState(true);
+  
   const dashboardQuery = useNotesDashboard(currentWorkspaceId);
   const archivedQuery = useArchivedItems();
   const createNote = useCreateNote();
@@ -456,9 +462,14 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
   const profile = profileData?.profile;
 
   // Find active workspace name
-  const activeWorkspaceName = currentWorkspaceId 
-    ? joinedWorkspaces?.find(w => w.id === currentWorkspaceId)?.name || "Workspace"
-    : profile?.name || "My Workspace";
+  const activeWorkspaceName = useMemo(() => {
+    if (!currentWorkspaceId) return "Home";
+    const joined = joinedWorkspaces?.find(w => w.id === currentWorkspaceId);
+    if (joined) return joined.name;
+    const owned = ownedWorkspaces?.find(w => w.id === currentWorkspaceId);
+    if (owned) return owned.name;
+    return "Workspace";
+  }, [currentWorkspaceId, joinedWorkspaces, ownedWorkspaces]);
 
   const NavButton = ({ icon: Icon, label, onClick, className, active }: any) => (
     <button 
@@ -512,10 +523,10 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                     )}
 
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-xs gap-2" onClick={() => router.push("/settings?tab=team")}>
+                    <DropdownMenuItem className="text-xs gap-2" onClick={() => router.push(`/settings?tab=team${currentWorkspaceId ? `&workspaceId=${currentWorkspaceId}` : ""}`)}>
                         <Users className="size-4" /> Manage Team
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-xs gap-2" onClick={() => router.push("/settings")}>
+                    <DropdownMenuItem className="text-xs gap-2" onClick={() => router.push(`/settings${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)}>
                         <Settings className="size-4" /> Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -534,15 +545,63 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
 
         {/* Global Action Shortcuts */}
         <div className="space-y-0.5 mb-6">
-            <NavButton icon={BookOpen} label="Introduction" onClick={() => router.push("/notes/introduction")} active={pathname === "/notes/introduction"} />
-            <NavButton icon={Search} label="Search" onClick={() => router.push("/notes")} active={pathname === "/notes" && !!searchParams.get("q")} />
+            <NavButton icon={BookOpen} label="Introduction" onClick={() => router.push(`/notes/introduction${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes/introduction"} />
+            <NavButton icon={Search} label="Search" onClick={() => router.push(`/notes${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}${searchParams.get("q") ? `&q=${searchParams.get("q")}` : ""}` : (searchParams.get("q") ? `?q=${searchParams.get("q")}` : "")}`)} active={pathname === "/notes" && !!searchParams.get("q")} />
             <NavButton icon={Sparkles} label="Assistant" onClick={() => setGlobalAssistantOpen(true)} />
-            <NavButton icon={Settings} label="Settings" onClick={() => router.push("/settings")} active={pathname === "/settings"} />
-            <NavButton icon={Clock} label="Recent" onClick={() => router.push("/notes")} active={pathname === "/notes" && !searchParams.get("q")} />
+            <NavButton icon={Settings} label="Settings" onClick={() => router.push(`/settings${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/settings"} />
+            <NavButton icon={Clock} label="Recent" onClick={() => router.push(`/notes${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes" && !searchParams.get("q")} />
         </div>
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-10 space-y-6">
+        {/* WORKSPACES SECTION */}
+        <div className="space-y-1">
+          <button 
+            onClick={() => setWorkspacesExpanded(!workspacesExpanded)}
+            className="w-full flex items-center justify-between px-3 mb-2 group/section cursor-pointer hover:bg-accent/30 py-1 rounded-md transition-colors"
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 flex items-center gap-2">
+              <ChevronRight className={cn("size-3 transition-transform", workspacesExpanded && "rotate-90")} />
+              Workspaces
+            </span>
+            <div className="opacity-0 group-hover/section:opacity-100 transition-opacity">
+              <Plus className="size-3 text-muted-foreground/50 hover:text-foreground" onClick={(e) => { e.stopPropagation(); router.push("/settings?tab=team"); }} />
+            </div>
+          </button>
+
+          {workspacesExpanded && (
+            <div className="space-y-0.5 ml-1">
+               <NavButton 
+                  icon={UserCircle} 
+                  label="Home" 
+                  onClick={() => updateUrl({ workspaceId: undefined })} 
+                  active={!currentWorkspaceId} 
+               />
+               
+               {ownedWorkspaces?.map(w => (
+                 <NavButton 
+                    key={w.id}
+                    icon={Users} 
+                    label={w.name} 
+                    onClick={() => updateUrl({ workspaceId: w.id })} 
+                    active={currentWorkspaceId === w.id} 
+                 />
+               ))}
+
+               {joinedWorkspaces?.filter(jw => !ownedWorkspaces?.find(ow => ow.id === jw.id)).map(w => (
+                 <NavButton 
+                    key={w.id}
+                    icon={Users} 
+                    label={w.name} 
+                    onClick={() => updateUrl({ workspaceId: w.id })} 
+                    active={currentWorkspaceId === w.id} 
+                    className="opacity-80"
+                 />
+               ))}
+            </div>
+          )}
+        </div>
+
         {/* FAVORITES */}
         {pinnedNotes.filter(n => n.title !== "Introduction").length > 0 && (
             <div className="space-y-1">
@@ -577,7 +636,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
             className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all text-primary hover:bg-primary/10 select-none group"
             onClick={async () => {
               const c = await createNote.mutateAsync({ title: "", workspaceId: currentWorkspaceId });
-              router.push(`/notes/${c.id}`);
+              router.push(`/notes/${c.id}${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`);
             }}
           >
             <Plus className="size-4 shrink-0 transition-transform group-hover:scale-110" />
@@ -604,7 +663,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                       onDrop={handleDrop} 
                       onCreateNote={async (fid) => {
                         const c = await createNote.mutateAsync({ title: "Untitled note", folderId: fid, workspaceId: currentWorkspaceId });
-                        router.push(`/notes/${c.id}`);
+                        router.push(`/notes/${c.id}${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`);
                       }} 
                     />
                   ))}
@@ -624,7 +683,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
               </ContextMenuTrigger>              <ContextMenuContent className="w-48">
                 <ContextMenuItem onClick={async () => {
                     const c = await createNote.mutateAsync({ title: "", workspaceId: currentWorkspaceId });
-                    router.push(`/notes/${c.id}`);
+                    router.push(`/notes/${c.id}${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`);
                 }}>
                   <FileText className="size-4" />
                   New Note
@@ -676,7 +735,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
         {/* ARCHIVE SECTION */}
         <div className="space-y-1">
             <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Archive</span>
-            <NavButton icon={Trash2} label="Trash" onClick={() => router.push("/notes/archive")} active={pathname === "/notes/archive"} />
+            <NavButton icon={Trash2} label="Trash" onClick={() => router.push(`/notes/archive${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes/archive"} />
         </div>
       </div>
 

@@ -5,7 +5,7 @@ import { useEmbedNote, useGenerateSummary, useSuggestTags } from "@/hooks/use-no
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trash2, PanelRight, Star, Archive, Globe, Settings, ChevronDown, PanelLeftClose, Plus, Share2, BookOpen, Sparkles, FolderIcon, Tag as TagIcon, Clock, Users, Link2, MessageSquarePlus, Copy, ClipboardPaste } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PlateEditor } from "@/components/editor";
 import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -41,8 +41,71 @@ const INTRO_NOTE_CONTENT = [
   { type: "p", children: [{ text: "Feel free to edit this note to try out the editor features. Note that changes to this introduction will not be saved." }] }
 ];
 
+function NoteEditorSkeleton() {
+  return (
+    <div className="flex h-full bg-background overflow-hidden relative animate-in fade-in duration-500">
+      <div className="flex-1 min-w-0 h-full overflow-y-auto relative custom-scrollbar flex flex-col">
+        {/* Toolbar Skeleton */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/5">
+          <div className="flex items-center gap-3">
+             <Skeleton className="h-3 w-12 rounded opacity-40" />
+             <span className="text-muted-foreground/20">/</span>
+             <Skeleton className="h-4 w-32 rounded" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="size-8 rounded-lg" />
+            <Skeleton className="size-8 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="w-full px-14 flex-1 pt-12">
+          <Skeleton className="h-12 w-3/4 mb-8 rounded-xl" />
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-full rounded" />
+            <Skeleton className="h-4 w-[90%] rounded" />
+            <Skeleton className="h-4 w-[95%] rounded" />
+            <Skeleton className="h-4 w-[40%] rounded" />
+            
+            <div className="pt-8 space-y-4">
+                <Skeleton className="h-8 w-1/3 rounded-lg opacity-60" />
+                <Skeleton className="h-4 w-full rounded" />
+                <Skeleton className="h-4 w-[85%] rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sidebar Skeleton */}
+      <div className="w-[320px] border-l border-border/10 p-5 space-y-8 hidden md:block">
+        <div className="space-y-4">
+          <Skeleton className="h-3 w-16 rounded opacity-40" />
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-full rounded-lg" />
+            <Skeleton className="h-20 w-full rounded-lg" />
+            <div className="grid grid-cols-2 gap-2">
+                <Skeleton className="h-8 rounded-lg" />
+                <Skeleton className="h-8 rounded-lg" />
+            </div>
+          </div>
+        </div>
+        <div className="pt-4 border-t border-border/10 space-y-4">
+          <Skeleton className="h-3 w-20 rounded opacity-40" />
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-full rounded-lg" />
+            <Skeleton className="h-9 w-full rounded-lg" />
+            <Skeleton className="h-9 w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function NoteEditorPage({ noteId }: { noteId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const workspaceId = searchParams.get("workspaceId");
   const isMobile = useIsMobile();
   const isIntroRoute = noteId === "introduction";
   const fetchId = isIntroRoute ? "d538eda1-b07f-45f6-9353-aedefd89b61b" : noteId;
@@ -148,13 +211,13 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
     return () => clearTimeout(timer);
   }, [isIntroRoute, dirty, folderId, editorContent, contentText, title, updateNote]);
 
-  if (detailQuery.isLoading || !editorContent) return <div className="flex items-center justify-center min-h-[400px] text-muted-foreground animate-pulse">Initializing editor...</div>;
+  if (detailQuery.isLoading || !editorContent) return <NoteEditorSkeleton />;
   if (detailQuery.isError || !detailQuery.data) return <div className="p-8 text-destructive">Failed to load note context.</div>;
 
   const handleArchive = async () => {
     if (!confirm("Are you sure you want to move this note to trash?")) return;
     await archiveNoteMutation.mutateAsync(noteId);
-    router.push("/notes");
+    router.push(`/notes${workspaceId ? `?workspaceId=${workspaceId}` : ""}`);
   };
 
   const handleCreateResource = async (courseId: string) => {
@@ -224,8 +287,8 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
             </div>
           </div>
 
-          <div className="w-full px-14 flex-1 pb-40">
-            <div className="px-1 md:px-2 pt-12 pb-6">
+          <div className="w-full px-14 flex-1 flex flex-col">
+            <div className="px-1 md:px-2 pt-12 pb-6 flex flex-col flex-1">
               <input
                 type="text"
                 value={title}
@@ -244,7 +307,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
                   setContentText(extractText(v)); 
                   setDirty(true); 
                 }}
-                className="w-full"
+                className="w-full flex-1 pb-10"
                 editorClassName="text-lg md:text-xl leading-relaxed outline-none"
               />
             </div>

@@ -72,8 +72,40 @@ export function useCreateNote() {
       const accessToken = await getAccessToken();
       return createNote(accessToken, input.title, input.folderId ?? null, input.workspaceId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+    onMutate: async (newNote) => {
+      const workspaceId = newNote.workspaceId || undefined;
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard", workspaceId] });
+      const previousDashboard = queryClient.getQueryData(["notes-dashboard", workspaceId]);
+
+      if (previousDashboard) {
+        queryClient.setQueryData(["notes-dashboard", workspaceId], (old: any) => {
+          if (!old) return old;
+          const tempNote = {
+            id: `temp-${Math.random()}`,
+            title: newNote.title || "Untitled note",
+            folder_id: newNote.folderId || null,
+            workspace_id: newNote.workspaceId || null,
+            updated_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            is_optimistic: true,
+            note_tags: [],
+          };
+          return {
+            ...old,
+            notes: [tempNote, ...(old.notes || [])],
+          };
+        });
+      }
+
+      return { previousDashboard, workspaceId };
+    },
+    onError: (err, newNote, context) => {
+      if (context?.previousDashboard) {
+        queryClient.setQueryData(["notes-dashboard", context.workspaceId], context.previousDashboard);
+      }
+    },
+    onSettled: (_, __, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard", variables.workspaceId || undefined] });
     },
   });
 }
@@ -89,8 +121,42 @@ export function useCreateFolder() {
       const accessToken = await getAccessToken();
       await createFolder(accessToken, name, workspaceId, parentId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+    onMutate: async (input) => {
+      const name = typeof input === "string" ? input : input.name;
+      const workspaceId = typeof input === "string" ? undefined : input.workspaceId;
+      const parentId = typeof input === "string" ? undefined : input.parentId;
+
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard", workspaceId] });
+      const previousDashboard = queryClient.getQueryData(["notes-dashboard", workspaceId]);
+
+      if (previousDashboard) {
+        queryClient.setQueryData(["notes-dashboard", workspaceId], (old: any) => {
+          if (!old) return old;
+          const tempFolder = {
+            id: `temp-${Math.random()}`,
+            name: name,
+            parent_id: parentId || null,
+            workspace_id: workspaceId || null,
+            is_optimistic: true,
+            color: null,
+          };
+          return {
+            ...old,
+            folders: [tempFolder, ...(old.folders || [])],
+          };
+        });
+      }
+
+      return { previousDashboard, workspaceId };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousDashboard) {
+        queryClient.setQueryData(["notes-dashboard", context.workspaceId], context.previousDashboard);
+      }
+    },
+    onSettled: (_, __, input) => {
+      const workspaceId = typeof input === "string" ? undefined : input.workspaceId;
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard", workspaceId] });
     },
   });
 }

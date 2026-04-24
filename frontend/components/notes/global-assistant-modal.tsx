@@ -65,6 +65,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Plus, Sidebar } from "lucide-react";
 const simpleId = () => Math.random().toString(36).substring(2, 15);
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -151,6 +152,8 @@ export function GlobalAssistantModal({
   noteId,
   initialQuestion 
 }: GlobalAssistantModalProps) {
+  const searchParams = useSearchParams();
+  const workspaceId = searchParams.get("workspaceId");
   const [text, setText] = useState<string>("");
   const [status, setStatus] = useState<"submitted" | "streaming" | "ready" | "error">("ready");
   const [messages, setMessages] = useState<MessageType[]>([]);
@@ -197,7 +200,7 @@ export function GlobalAssistantModal({
           let sources;
           if (m.references?.length) {
             sources = m.references.map((r: any) => ({
-              href: `/notes/${r.noteId}`,
+              href: `/notes/${r.noteId}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`,
               title: r.noteTitle,
             }));
           }
@@ -320,7 +323,7 @@ export function GlobalAssistantModal({
         from: "assistant",
         key: `assistant-${Date.now()}`,
         sources: response.references?.map((r: any) => ({
-          href: `/notes/${r.noteId}`,
+          href: `/notes/${r.noteId}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`,
           title: r.noteTitle,
         })),
         versions: [{ content: response.answer, id: `assistant-ver-${Date.now()}` }],

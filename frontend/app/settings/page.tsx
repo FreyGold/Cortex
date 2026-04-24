@@ -11,7 +11,11 @@ import { User, GraduationCap, Settings2, Globe, Moon, Users } from "lucide-react
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
-export default async function SettingsPage() {
+export default async function SettingsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const searchParams = await props.searchParams;
+  const tab = searchParams.tab as string | undefined;
   const t = await getTranslations("settingsPage");
   const session = await getServerSession();
 
@@ -24,95 +28,117 @@ export default async function SettingsPage() {
 
   return (
     <AppShell>
-      <main className="container mx-auto max-w-4xl px-4 py-8 md:py-12">
-        <div className="mb-8 space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">
+      <main className="container mx-auto max-w-6xl px-4 py-8 md:py-16">
+        <div className="mb-10 space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground/90">{t("title")}</h1>
+          <p className="text-base text-muted-foreground/80 max-w-2xl">
             {t("subtitle")}
           </p>
         </div>
 
-        <Tabs defaultValue="profile" className="w-full" orientation="vertical">
-          <TabsList className="mb-8 flex flex-wrap gap-2 bg-transparent p-0 justify-start" variant="line">
-            <TabsTrigger value="profile" className="gap-2">
-              <User className="size-4" />
-              {t("tabs.profile")}
-            </TabsTrigger>
-            <TabsTrigger value="team" className="gap-2">
-              <Users className="size-4" />
-              Team
-            </TabsTrigger>
-            <TabsTrigger value="academic" className="gap-2">
-              <GraduationCap className="size-4" />
-              {t("tabs.academic")}
-            </TabsTrigger>
-            <TabsTrigger value="preferences" className="gap-2">
-              <Settings2 className="size-4" />
-              {t("tabs.preferences")}
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue={tab || "profile"} className="flex flex-col md:flex-row gap-8 lg:gap-12" orientation="vertical">
+          <aside className="w-full md:w-64 lg:w-72 shrink-0">
+            <TabsList className="flex flex-row md:flex-col h-auto w-full bg-transparent p-0 justify-start overflow-x-auto md:overflow-visible no-scrollbar border-b md:border-b-0 md:border-r border-border/40 pb-2 md:pb-0 md:pr-4" variant="line">
+              <TabsTrigger value="profile" className="w-auto md:w-full justify-start gap-3 py-3 px-4 rounded-xl transition-all">
+                <User className="size-4" />
+                <span className="font-medium text-[15px]">{t("tabs.profile")}</span>
+              </TabsTrigger>
+              <TabsTrigger value="team" className="w-auto md:w-full justify-start gap-3 py-3 px-4 rounded-xl transition-all">
+                <Users className="size-4" />
+                <span className="font-medium text-[15px]">Workspace & Team</span>
+              </TabsTrigger>
+              <TabsTrigger value="academic" className="w-auto md:w-full justify-start gap-3 py-3 px-4 rounded-xl transition-all">
+                <GraduationCap className="size-4" />
+                <span className="font-medium text-[15px]">{t("tabs.academic")}</span>
+              </TabsTrigger>
+              <TabsTrigger value="preferences" className="w-auto md:w-full justify-start gap-3 py-3 px-4 rounded-xl transition-all">
+                <Settings2 className="size-4" />
+                <span className="font-medium text-[15px]">{t("tabs.preferences")}</span>
+              </TabsTrigger>
+            </TabsList>
+          </aside>
 
-          <TabsContent value="profile" className="space-y-6 outline-none">
-            <ProfileStatusCard showEditLink={false} />
-          </TabsContent>
+          <div className="flex-1 min-w-0">
+            <TabsContent value="profile" className="mt-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight mb-1">Personal Profile</h2>
+                  <p className="text-sm text-muted-foreground">Manage your identity and how others see you in the workspace.</p>
+                </div>
+                <ProfileStatusCard showEditLink={false} />
+              </div>
+            </TabsContent>
 
-          <TabsContent value="team" className="space-y-6 outline-none">
-            <div className="rounded-lg border border-border/60 bg-muted/30 p-4 mb-4">
-              <p className="text-sm text-muted-foreground">
-                Invite members to your workspace to collaborate on notes and folders.
-              </p>
-            </div>
-            <WorkspaceTeam />
-          </TabsContent>
+            <TabsContent value="team" className="mt-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight mb-1">Workspace & Collaboration</h2>
+                  <p className="text-sm text-muted-foreground">Organize your study groups and invite collaborators to your workspaces.</p>
+                </div>
+                <WorkspaceTeam />
+              </div>
+            </TabsContent>
 
-          <TabsContent value="academic" className="space-y-6 outline-none">
-             <div className="rounded-lg border border-border/60 bg-muted/30 p-4 mb-4">
-                <p className="text-sm text-muted-foreground">
-                  {t("academicHelper")}
-                </p>
-             </div>
-             <ProfileSetupForm
-                universities={catalog.universities}
-                colleges={catalog.colleges}
-                majors={catalog.majors}
-                yearLevels={catalog.yearLevels}
-                initialValues={{
-                    universityId: profile?.university_id ?? null,
-                    collegeId: profile?.college_id ?? null,
-                    majorId: profile?.major_id ?? null,
-                    yearLevelId: profile?.year_level_id ?? null,
-                    preferredLanguage: profile?.preferred_language === "ar" ? "ar" : "en",
-                }}
-            />
-          </TabsContent>
+            <TabsContent value="academic" className="mt-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight mb-1">Academic Path</h2>
+                  <p className="text-sm text-muted-foreground">Keep your university details up to date to get the best resource recommendations.</p>
+                </div>
+                <div className="rounded-xl border border-border/40 bg-muted/20 p-6 flex items-start gap-4">
+                    <GraduationCap className="size-5 text-primary shrink-0 mt-0.5" />
+                    <p className="text-sm leading-relaxed text-muted-foreground/90 italic">
+                      {t("academicHelper")}
+                    </p>
+                </div>
+                <ProfileSetupForm
+                    universities={catalog.universities}
+                    colleges={catalog.colleges}
+                    majors={catalog.majors}
+                    yearLevels={catalog.yearLevels}
+                    initialValues={{
+                        universityId: profile?.university_id ?? null,
+                        collegeId: profile?.college_id ?? null,
+                        majorId: profile?.major_id ?? null,
+                        yearLevelId: profile?.year_level_id ?? null,
+                        preferredLanguage: profile?.preferred_language === "ar" ? "ar" : "en",
+                    }}
+                />
+              </div>
+            </TabsContent>
 
-          <TabsContent value="preferences" className="space-y-6 outline-none">
-            <div className="grid gap-6 sm:grid-cols-2">
-                <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
-                    <div className="flex items-center gap-2 text-primary">
-                        <Moon className="size-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">{t("appearance.title")}</span>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold">{t("appearance.theme")}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">{t("appearance.themeSubtitle")}</p>
+            <TabsContent value="preferences" className="mt-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight mb-1">Application Settings</h2>
+                  <p className="text-sm text-muted-foreground">Customize your viewing experience and language preferences.</p>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-border/40 bg-card p-8 space-y-6 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                              <Moon className="size-5" />
+                            </div>
+                            <h3 className="text-lg font-semibold">{t("appearance.theme")}</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground/80 leading-relaxed">{t("appearance.themeSubtitle")}</p>
                         <ThemeToggle />
                     </div>
-                </div>
 
-                <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
-                    <div className="flex items-center gap-2 text-primary">
-                        <Globe className="size-4" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">{t("localization.title")}</span>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold">{t("localization.language")}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">{t("localization.languageSubtitle")}</p>
+                    <div className="rounded-2xl border border-border/40 bg-card p-8 space-y-6 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                              <Globe className="size-5" />
+                            </div>
+                            <h3 className="text-lg font-semibold">{t("localization.language")}</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground/80 leading-relaxed">{t("localization.languageSubtitle")}</p>
                         <LanguageSwitcher />
                     </div>
                 </div>
-            </div>
-          </TabsContent>
+              </div>
+            </TabsContent>
+          </div>
         </Tabs>
       </main>
     </AppShell>

@@ -33,7 +33,7 @@ export function UsersManager() {
             <Input
               value={queryDraft}
               onChange={(event) => setQueryDraft(event.target.value)}
-              placeholder="Search by name..."
+              placeholder="Search by name or email..."
               className="h-10 pl-9"
             />
           </div>
@@ -84,7 +84,7 @@ export function UsersManager() {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground tracking-tight">
-                  ID: {user.id} <span className="mx-1 opacity-40">/</span> Role:{" "}
+                  {user.email ?? "No email"} <span className="mx-1 opacity-40">/</span> Role:{" "}
                   {user.role}
                 </p>
                 {user.verification_requested_at && !user.is_verified ? (

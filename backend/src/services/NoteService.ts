@@ -4,12 +4,11 @@ export class NoteService {
   constructor(private repo: NoteRepository) {}
 
   async getDashboard(userId: string, workspaceId?: string) {
-    const targetUserId = workspaceId || userId;
     const [notes, sharedNotes, folders, tags] = await Promise.all([
-      this.repo.getDashboardNotes(targetUserId),
+      this.repo.getDashboardNotes(userId, workspaceId),
       this.repo.getSharedNotes(userId),
-      this.repo.getFolders(targetUserId),
-      this.repo.getTags(targetUserId),
+      this.repo.getFolders(userId, workspaceId),
+      this.repo.getTags(userId),
     ]);
     return { notes, sharedNotes, folders, tags };
   }
@@ -31,16 +30,16 @@ export class NoteService {
   }
 
   async getNoteDetail(userId: string, noteId: string) {
-    const [note, folders, tags, noteTagsRaw] = await Promise.all([
-      this.repo.getNoteDetail(userId, noteId),
-      this.repo.getFolders(userId),
-      this.repo.getTags(userId),
-      this.repo.getNoteTags(noteId),
-    ]);
-
+    const note = await this.repo.getNoteDetail(userId, noteId);
     if (!note) {
       throw new Error("Note not found.");
     }
+
+    const [folders, tags, noteTagsRaw] = await Promise.all([
+      this.repo.getFolders(userId, note.workspace_id),
+      this.repo.getTags(userId),
+      this.repo.getNoteTags(noteId),
+    ]);
 
     const noteTags = noteTagsRaw.map((item: any) => ({
       tag_id: item.tag_id,
@@ -50,16 +49,16 @@ export class NoteService {
     return { note, folders, tags, noteTags };
   }
 
-  async createNote(userId: string, title: string, folderId: string | null) {
-    return this.repo.createNote(userId, title, folderId);
+  async createNote(userId: string, title: string, folderId: string | null, workspaceId?: string) {
+    return this.repo.createNote(userId, title, folderId, workspaceId);
   }
 
   async updateNote(userId: string, noteId: string, updatePayload: Record<string, unknown>) {
     await this.repo.updateNote(userId, noteId, updatePayload);
   }
 
-  async createFolder(userId: string, name: string, parentId?: string | null) {
-    await this.repo.createFolder(userId, name, parentId);
+  async createFolder(userId: string, name: string, parentId?: string | null, workspaceId?: string) {
+    await this.repo.createFolder(userId, name, parentId, workspaceId);
   }
 
   async updateFolder(userId: string, folderId: string, updatePayload: Record<string, unknown>) {

@@ -7,13 +7,13 @@ export class AdminRepository {
     let statement = this.supabase
       .from("profiles")
       .select(
-        "id,name,role,is_verified,verified_at,verification_requested_at,preferred_language,created_at",
+        "id,name,email,role,is_verified,verified_at,verification_requested_at,preferred_language,created_at",
       )
       .order("created_at", { ascending: false })
       .limit(limit);
 
     if (query) {
-      statement = statement.or(`name.ilike.%${query}%`);
+      statement = statement.or(`name.ilike.%${query}%,email.ilike.%${query}%`);
     }
 
     const { data, error } = await statement;
