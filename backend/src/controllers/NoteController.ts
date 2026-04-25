@@ -231,20 +231,28 @@ export class NoteController {
   static async createNoteShare(req: Request, res: Response) {
     try {
       const service = getService(req);
-      const { mode, sharedWithUserId, canEdit, expiresAt } = req.body;
+      const { mode, sharedWithUserId, canEdit, role, expiresAt } = req.body;
       const noteId = req.params.id;
+
+      const finalRole = role || (canEdit ? "editor" : "viewer");
 
       const payload: Record<string, unknown> = {
         note_id: noteId,
-        can_edit: Boolean(canEdit),
+        can_edit: finalRole === "editor",
+        role: finalRole,
         expires_at: expiresAt ?? null,
       };
 
       if (mode === "user") {
         if (!sharedWithUserId?.trim()) {
-          return res.status(400).json({ error: "Recipient user ID is required." });
+          return res.status(400).json({ error: "Recipient email is required." });
         }
-        payload.shared_with_user_id = sharedWithUserId.trim();
+        
+        if (sharedWithUserId.includes("@")) {
+          payload.shared_with_email = sharedWithUserId.trim();
+        } else {
+          payload.shared_with_user_id = sharedWithUserId.trim();
+        }
       } else {
         return res.status(400).json({ error: "Invalid share mode" });
       }

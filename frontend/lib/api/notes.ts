@@ -38,8 +38,12 @@ export type NoteShareItem = {
   shared_with_user_id: string | null;
   share_token: string | null;
   can_edit: boolean;
+  role: "viewer" | "editor";
   created_at: string;
   expires_at: string | null;
+  profiles?: {
+    email: string;
+  };
 };
 
 export function getDashboardNotes(accessToken: string, workspaceId?: string) {
@@ -184,6 +188,7 @@ export function createNoteShare(
     mode: "user" | "link";
     sharedWithUserId?: string;
     canEdit?: boolean;
+    role?: "viewer" | "editor";
     expiresAt?: string | null;
   }
 ) {

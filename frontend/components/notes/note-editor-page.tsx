@@ -132,6 +132,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
   const [shareMode, setShareMode] = useState<"user" | "link">("user");
   const [recipientUserId, setRecipientUserId] = useState("");
   const [shareCanEdit, setShareCanEdit] = useState(false);
+  const [shareRole, setShareRole] = useState<"viewer" | "editor">("viewer");
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [resourceOpen, setResourceOpen] = useState(false);
@@ -238,7 +239,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
       await createShare.mutateAsync({
         mode: shareMode,
         sharedWithUserId: shareMode === "user" ? recipientUserId.trim() : undefined,
-        canEdit: shareCanEdit,
+        role: shareRole,
       });
       setShareFeedback("Shared with user!");
     } catch (error: any) {
@@ -342,8 +343,8 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
             setShareMode={setShareMode}
             recipientUserId={recipientUserId}
             setRecipientUserId={setRecipientUserId}
-            shareCanEdit={shareCanEdit}
-            setShareCanEdit={setShareCanEdit}
+            shareRole={shareRole}
+            setShareRole={setShareRole}
             handleCreateShare={handleCreateShare}
             createShareMutation={createShare}
             shareFeedback={shareFeedback}

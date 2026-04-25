@@ -31,6 +31,13 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -64,8 +71,8 @@ interface NotePropertiesSidebarProps {
   setShareMode: (mode: "user" | "link") => void;
   recipientUserId: string;
   setRecipientUserId: (id: string) => void;
-  shareCanEdit: boolean;
-  setShareCanEdit: (can: boolean) => void;
+  shareRole: "viewer" | "editor";
+  setShareRole: (role: "viewer" | "editor") => void;
   handleCreateShare: () => void;
   createShareMutation: any;
   shareFeedback: string | null;
@@ -109,8 +116,8 @@ export function NotePropertiesSidebar({
   setShareMode,
   recipientUserId,
   setRecipientUserId,
-  shareCanEdit,
-  setShareCanEdit,
+  shareRole,
+  setShareRole,
   handleCreateShare,
   createShareMutation,
   shareFeedback,
@@ -275,14 +282,22 @@ export function NotePropertiesSidebar({
                     </Button>
                   </div>
 
-                  {shareMode === "user" && <Input placeholder="Recipient User UUID..." value={recipientUserId} onChange={(e) => setRecipientUserId(e.target.value)} className="h-10 text-sm rounded-lg" />}
+                  {shareMode === "user" && <Input placeholder="Recipient Email..." value={recipientUserId} onChange={(e) => setRecipientUserId(e.target.value)} className="h-10 text-sm rounded-lg" />}
 
                   <div className="flex items-center justify-between py-2 px-1">
                     <div className="space-y-0.5">
-                      <p className="text-xs font-bold">Collaborative access</p>
-                      <p className="text-[10px] text-muted-foreground">Allows the recipient to edit this note.</p>
+                      <p className="text-xs font-bold">Collaborative role</p>
+                      <p className="text-[10px] text-muted-foreground">Select the permission level for this user.</p>
                     </div>
-                    <input type="checkbox" checked={shareCanEdit} onChange={(e) => setShareCanEdit(e.target.checked)} className="size-4 accent-primary" />
+                    <Select value={shareRole} onValueChange={(val: any) => setShareRole(val)}>
+                      <SelectTrigger className="w-[100px] h-8 text-[10px] rounded-lg">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="viewer">Viewer</SelectItem>
+                        <SelectItem value="editor">Editor</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <Button className="w-full h-10 shadow-lg shadow-primary/20 rounded-lg group" onClick={async () => {
@@ -294,13 +309,13 @@ export function NotePropertiesSidebar({
                     }
                     handleCreateShare();
                   }} disabled={createShareMutation.isPending || updateNote.isPending}>
-                    {createShareMutation.isPending || updateNote.isPending ? "Generating..." : (shareMode === "link" ? "Generate Access Link" : "Grant User Access")}
+                    {createShareMutation.isPending || updateNote.isPending ? "Generating..." : (shareMode === "link" ? "Generate Access Link" : "Invite by Email")}
                     <Sparkles className="size-3.5 ml-2 opacity-60 group-hover:scale-125 transition-transform" />
                   </Button>
 
                   {isPublished && shareMode === "link" && (
                     <div className="text-[11px] text-center text-primary font-bold px-4 py-2 bg-primary/5 rounded-lg animate-in fade-in slide-in-from-top-1 flex items-center justify-center gap-2">
-                      Link is active. 
+                      Link is active.
                       <Button variant="link" className="h-auto p-0 text-primary text-[11px] font-bold" onClick={async () => { await navigator.clipboard.writeText(`${window.location.origin}/notes/public/${noteId}`); }}>Copy Link</Button>
                       <Button variant="link" className="h-auto p-0 text-destructive text-[11px]" onClick={() => updateNote.mutate({ isPublished: false })}>Revoke</Button>
                     </div>
@@ -315,15 +330,19 @@ export function NotePropertiesSidebar({
                         <div key={s.id} className="flex items-center justify-between text-[11px] bg-muted/20 p-2.5 rounded-lg border border-border/10">
                           <span className="font-medium opacity-70 flex items-center gap-2">
                             <Users className="size-3" />
-                            {s.shared_with_user_id ? `User: ${s.shared_with_user_id.slice(0, 8)}...` : "Unknown"}
-                            {s.can_edit && <Badge variant="outline" className="h-4 text-[8px] bg-emerald-500/10 text-emerald-500 border-none px-1">Editor</Badge>}
+                            {s.profiles?.email || (s.shared_with_user_id ? `User: ${s.shared_with_user_id.slice(0, 8)}...` : "Unknown")}
+                            <Badge variant="outline" className={cn(
+                              "h-4 text-[8px] border-none px-1 uppercase tracking-tighter",
+                              s.role === "editor" ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500/10 text-blue-500"
+                            )}>
+                              {s.role}
+                            </Badge>
                           </span>
                           <Button variant="ghost" className="h-6 text-[10px] text-destructive hover:bg-destructive/10" onClick={() => deleteShareMutation.mutate(s.id)}>Revoke</Button>
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
+                  )}                </div>
               </DialogContent>
             </Dialog>
 

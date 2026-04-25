@@ -173,18 +173,57 @@ export class NoteRepository {
   async getNoteShares(noteId: string) {
     const { data, error } = await this.supabase
       .from("note_shares")
-      .select("id,note_id,shared_with_user_id,can_edit,created_at,expires_at")
+      .select(`
+        id,
+        note_id,
+        shared_with_user_id,
+        can_edit,
+        role,
+        created_at,
+        expires_at,
+        profiles!shared_with_user_id (
+          email
+        )
+      `)
       .eq("note_id", noteId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data;
   }
 
-  async createNoteShare(payload: Record<string, unknown>) {
+  async createNoteShare(payload: Record<string, any>) {
+    // If shared_with_email is provided, resolve it to shared_with_user_id
+    if (payload.shared_with_email) {
+      const { data: profile, error: profileError } = await this.supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", payload.shared_with_email.trim())
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      if (!profile) {
+        throw new Error(`User with email ${payload.shared_with_email} not found.`);
+      }
+
+      payload.shared_with_user_id = profile.id;
+      delete payload.shared_with_email;
+    }
+
     const { data, error } = await this.supabase
       .from("note_shares")
       .insert(payload)
-      .select("id,note_id,shared_with_user_id,can_edit,created_at,expires_at");
+      .select(`
+        id,
+        note_id,
+        shared_with_user_id,
+        can_edit,
+        role,
+        created_at,
+        expires_at,
+        profiles!shared_with_user_id (
+          email
+        )
+      `);
     if (error) throw error;
     if (!data || data.length === 0) throw new Error("Failed to create note share.");
     return data[0];

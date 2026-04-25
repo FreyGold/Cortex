@@ -246,7 +246,7 @@ const BlockCommentContent = ({
         </PopoverContent>
 
         {totalCount > 0 && (
-          <div className="relative left-0 size-0 select-none">
+          <div className="relative -left-5 top-1 size-0 select-none">
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
