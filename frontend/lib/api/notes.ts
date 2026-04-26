@@ -124,6 +124,7 @@ export function getNoteDetail(accessToken: string, noteId: string) {
       summary: string | null;
       folder_id: string | null;
       is_published: boolean;
+      created_at: string;
       updated_at: string;
     };
     folders: FolderItem[];

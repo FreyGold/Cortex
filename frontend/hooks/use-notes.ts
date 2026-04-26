@@ -288,6 +288,7 @@ export function useCreateNoteShare(noteId: string) {
       mode: "user" | "link";
       sharedWithUserId?: string;
       canEdit?: boolean;
+      role?: "viewer" | "editor";
       expiresAt?: string | null;
     }) => {
       const accessToken = await getAccessToken();

@@ -4,7 +4,7 @@ import { usePublicNote, useReplicateNote, useNoteDetail, useNoteShares, useUpdat
 import { useEmbedNote, useGenerateSummary, useSuggestTags } from "@/hooks/use-note-ai";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trash2, PanelRight, Star, Archive, Globe, Settings, ChevronDown, PanelLeftClose, Plus, Share2, BookOpen, Sparkles, FolderIcon, Tag as TagIcon, Clock, Users, Link2, MessageSquarePlus, Copy, ClipboardPaste } from "lucide-react";
+import { PanelRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PlateEditor } from "@/components/editor";
 import React, { useState, useEffect } from "react";
@@ -264,16 +264,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
                 </span>
               )}
               <div className="h-4 w-[1px] bg-border/10 mx-1 hidden sm:block" />
-              {!isIntroRoute && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive transition-colors"
-                  onClick={handleArchive}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              )}
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -323,7 +314,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
         </div>
 
         <div className={cn(
-          "h-full overflow-y-auto overflow-x-hidden border-l border-border/10 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+          "h-full overflow-y-auto overflow-x-hidden border-l border-border/30 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] bg-muted/5",
           sidebarOpen ? "w-[320px] opacity-100" : "w-0 opacity-0 pointer-events-none border-none"
         )}>
           <NotePropertiesSidebar 
@@ -369,6 +360,11 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
             onOpenChange={setSidebarOpen}
             isMobile={isMobile}
             isPublished={detailQuery.data?.note?.is_published}
+            isSaving={updateNote.isPending || dirty}
+            lastSavedAt={lastSavedAt}
+            wordCount={contentText ? contentText.split(/\s+/).filter(Boolean).length : 0}
+            createdAt={detailQuery.data?.note?.created_at ?? null}
+            handleArchive={!isIntroRoute ? handleArchive : undefined}
           />
         </div>
       </div>
