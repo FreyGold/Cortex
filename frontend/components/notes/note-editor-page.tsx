@@ -142,6 +142,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
   const [suggestedTagsText, setSuggestedTagsText] = useState<string[]>([]);
   const [question, setQuestion] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [pendingTagToSelect, setPendingTagToSelect] = useState<string | null>(null);
 
   const createTagMutation = useCreateTag();
 
@@ -150,10 +151,23 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
     try {
       await createTagMutation.mutateAsync(name.trim());
       setTagSearch("");
+      setPendingTagToSelect(name.trim().toLowerCase());
     } catch (e: any) {
       alert("Error creating tag: " + e.message);
     }
   };
+
+  useEffect(() => {
+    if (pendingTagToSelect && detailQuery.data?.tags) {
+      const newTag = detailQuery.data.tags.find((t: any) => t.name.toLowerCase() === pendingTagToSelect);
+      if (newTag && !selectedTagIds.includes(newTag.id)) {
+        const next = [...selectedTagIds, newTag.id];
+        setSelectedTagIds(next);
+        updateTags.mutate(next);
+        setPendingTagToSelect(null);
+      }
+    }
+  }, [detailQuery.data?.tags, pendingTagToSelect, selectedTagIds, updateTags]);
 
   useEffect(() => {
     if (isMobile) {

@@ -13,9 +13,14 @@ function getSupabasePublicEnv() {
   return { supabaseUrl, supabaseAnonKey };
 }
 
+let browserClient: ReturnType<typeof createBrowserClient> | undefined;
+
 export function createClient() {
+  if (browserClient) return browserClient;
+
   const { supabaseUrl, supabaseAnonKey } = getSupabasePublicEnv();
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  return browserClient;
 }
 
 export async function getAccessToken() {

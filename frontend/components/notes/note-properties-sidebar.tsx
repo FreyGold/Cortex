@@ -239,6 +239,7 @@ export function NotePropertiesSidebar(props: NotePropertiesSidebarProps) {
 
   const [detailsExpanded, setDetailsExpanded] = useState(true);
   const [aiExpanded, setAiExpanded] = useState(true);
+  const [pendingTags, setPendingTags] = useState<string[]>([]);
 
   const updateNote = useUpdateNote(noteId);
 
@@ -588,11 +589,41 @@ export function NotePropertiesSidebar(props: NotePropertiesSidebarProps) {
             <AnimatePresence>
               {suggestedTagsText.length > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-wrap gap-1 mt-2 px-2">
-                  {suggestedTagsText.map((tag) => (
-                    <Badge key={tag} variant="outline" className="h-5 px-1.5 text-[9px] font-medium bg-primary/5 text-primary/70 border-primary/10 cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors" onClick={() => handleCreateTag(tag)}>
-                      + {tag}
-                    </Badge>
-                  ))}
+                  {suggestedTagsText.map((tag) => {
+                    const existingTag = tags.find((t: any) => t.name.toLowerCase() === tag.toLowerCase());
+                    const isSelected = existingTag && selectedTagIds.includes(existingTag.id);
+                    
+                    if (isSelected) return null;
+
+                    return (
+                      <Badge 
+                        key={tag} 
+                        variant="outline" 
+                        className={cn(
+                          "h-5 px-1.5 text-[10px] font-bold uppercase tracking-widest bg-primary/5 text-primary/80 border-primary/20 cursor-pointer hover:bg-primary/10 hover:text-primary transition-all",
+                          pendingTags.includes(tag) && "opacity-50 pointer-events-none"
+                        )}
+                        onClick={async () => {
+                          if (pendingTags.includes(tag)) return;
+                          setPendingTags(prev => [...prev, tag]);
+                          
+                          if (existingTag) {
+                            const next = [...selectedTagIds, existingTag.id];
+                            setSelectedTagIds(next);
+                            await updateTagsMutation.mutateAsync(next);
+                            setPendingTags(prev => prev.filter(t => t !== tag));
+                          } else {
+                            await handleCreateTag(tag);
+                            // the tag will be selected asynchronously by the editor page
+                            setPendingTags(prev => prev.filter(t => t !== tag));
+                          }
+                        }}
+                      >
+                        {pendingTags.includes(tag) ? <RefreshCw className="size-3 animate-spin mr-1 inline-block" /> : "+ "}
+                        {tag}
+                      </Badge>
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
