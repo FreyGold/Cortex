@@ -244,6 +244,8 @@
     "subtitle": "Manage your account, academic context, and preferences.",
     "tabs": {
         "profile": "Profile Status",
+        "team": "Workspace & Team",
+        "ai": "AI Integration",
         "academic": "Academic Context",
         "preferences": "Preferences"
     },

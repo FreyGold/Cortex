@@ -79,7 +79,7 @@ export function WorkspaceTeam() {
     }
   };
 
-  const selectedWorkspace = workspaces?.find(w => w.id === selectedWorkspaceId);
+  const selectedWorkspace = workspaces?.find((w: any) => w.id === selectedWorkspaceId);
 
   return (
     <div className="space-y-6">
@@ -111,7 +111,7 @@ export function WorkspaceTeam() {
                 <SelectValue placeholder="Choose a workspace..." />
             </SelectTrigger>
             <SelectContent>
-                {workspaces?.map(w => (
+                {workspaces?.map((w: any) => (
                     <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
                 ))}
             </SelectContent>
@@ -167,7 +167,7 @@ export function WorkspaceTeam() {
                 </div>
               ) : members && members.length > 0 ? (
                 <div className="divide-y divide-border/60">
-                  {members.map((member) => (
+                  {members.map((member: any) => (
                     <div key={member.id} className="flex items-center justify-between p-4 hover:bg-muted/10 transition-colors">
                       <div>
                         <p className="font-medium text-sm">{member.email}</p>

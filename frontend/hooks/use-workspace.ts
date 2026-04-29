@@ -34,8 +34,38 @@ export function useCreateWorkspace() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: async (name) => {
+      await queryClient.cancelQueries({ queryKey: ["workspaces"] });
+      await queryClient.cancelQueries({ queryKey: ["joined-workspaces"] });
+      const previousWorkspaces = queryClient.getQueryData(["workspaces"]);
+      const previousJoined = queryClient.getQueryData(["joined-workspaces"]);
+
+      if (previousWorkspaces) {
+        queryClient.setQueryData(["workspaces"], (old: any) => [
+          { id: `temp-${Math.random()}`, name, created_at: new Date().toISOString(), is_optimistic: true },
+          ...(old || [])
+        ]);
+      }
+      if (previousJoined) {
+        queryClient.setQueryData(["joined-workspaces"], (old: any) => [
+          { id: `temp-${Math.random()}`, name, avatar_url: null, is_optimistic: true },
+          ...(old || [])
+        ]);
+      }
+
+      return { previousWorkspaces, previousJoined };
+    },
+    onError: (err, name, context) => {
+      if (context?.previousWorkspaces) {
+        queryClient.setQueryData(["workspaces"], context.previousWorkspaces);
+      }
+      if (context?.previousJoined) {
+        queryClient.setQueryData(["joined-workspaces"], context.previousJoined);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["joined-workspaces"] });
     },
   });
 }
@@ -72,7 +102,25 @@ export function useAddWorkspaceMember() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onMutate: async ({ workspaceId, email, role }) => {
+      await queryClient.cancelQueries({ queryKey: ["workspace-members", workspaceId] });
+      const previousMembers = queryClient.getQueryData(["workspace-members", workspaceId]);
+
+      if (previousMembers) {
+        queryClient.setQueryData(["workspace-members", workspaceId], (old: any) => [
+          { id: `temp-${Math.random()}`, workspace_id: workspaceId, email, role, created_at: new Date().toISOString(), is_optimistic: true },
+          ...(old || [])
+        ]);
+      }
+
+      return { previousMembers, workspaceId };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousMembers) {
+        queryClient.setQueryData(["workspace-members", context.workspaceId], context.previousMembers);
+      }
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: ["workspace-members", variables.workspaceId] });
     },
   });
@@ -89,7 +137,25 @@ export function useDeleteWorkspaceMember() {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["workspace-members"] });
+      const previousMembers = queryClient.getQueriesData({ queryKey: ["workspace-members"] });
+
+      queryClient.setQueriesData({ queryKey: ["workspace-members"] }, (old: any) => {
+        if (!old) return old;
+        return old.filter((m: any) => m.id !== id);
+      });
+
+      return { previousMembers };
+    },
+    onError: (err, id, context) => {
+      if (context?.previousMembers) {
+        context.previousMembers.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["workspace-members"] });
     },
   });
@@ -106,7 +172,25 @@ export function useUpdateWorkspaceMemberRole() {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async ({ id, role }) => {
+      await queryClient.cancelQueries({ queryKey: ["workspace-members"] });
+      const previousMembers = queryClient.getQueriesData({ queryKey: ["workspace-members"] });
+
+      queryClient.setQueriesData({ queryKey: ["workspace-members"] }, (old: any) => {
+        if (!old) return old;
+        return old.map((m: any) => m.id === id ? { ...m, role } : m);
+      });
+
+      return { previousMembers };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousMembers) {
+        context.previousMembers.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["workspace-members"] });
     },
   });

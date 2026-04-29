@@ -18,7 +18,9 @@ import {
   RefreshCw,
   AlignLeft,
   Bot,
-  PanelRightClose
+  PanelRightClose,
+  X,
+  GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -348,7 +350,7 @@ export function NotePropertiesSidebar(props: NotePropertiesSidebarProps) {
                           {selectedTagIds.slice(0, 2).map(id => {
                             const t = tags.find((t: any) => t.id === id);
                             return t ? (
-                              <span key={id} className="px-1.5 bg-accent text-[10px] rounded uppercase tracking-wider">{t.name}</span>
+                              <span key={id} className="px-1.5 bg-accent/60 text-foreground/80 text-[10px] font-semibold rounded uppercase tracking-wider">{t.name}</span>
                             ) : null;
                           })}
                           {selectedTagIds.length > 2 && <span className="px-1 text-[10px] text-muted-foreground">+{selectedTagIds.length - 2}</span>}
@@ -371,20 +373,47 @@ export function NotePropertiesSidebar(props: NotePropertiesSidebarProps) {
                         <div className="py-6 text-center text-xs text-muted-foreground">Type to search or create</div>
                       )}
                     </CommandEmpty>
+                    
+                    {selectedTagIds.length > 0 && (
+                      <CommandGroup heading="Selected">
+                        <div className="flex flex-wrap gap-1 p-2 pt-0">
+                          {selectedTagIds.map(id => {
+                            const t = tags.find((tag: any) => tag.id === id);
+                            if (!t) return null;
+                            return (
+                              <Badge
+                                key={id}
+                                variant="secondary"
+                                className="h-5 px-1.5 text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors cursor-pointer group"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const next = selectedTagIds.filter((i) => i !== id);
+                                  setSelectedTagIds(next);
+                                  updateTagsMutation.mutate(next);
+                                }}
+                              >
+                                {t.name}
+                                <X className="size-3 ml-1 opacity-50 group-hover:opacity-100" />
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      </CommandGroup>
+                    )}
+
                     <CommandGroup heading="Tags">
-                      {tags.map((tag: any) => {
-                        const sel = selectedTagIds.includes(tag.id);
+                      {tags.filter((t: any) => !selectedTagIds.includes(t.id)).map((tag: any) => {
                         return (
                           <CommandItem
                             key={tag.id}
                             className="text-xs py-1.5"
                             onSelect={() => {
-                              const next = sel ? selectedTagIds.filter((i) => i !== tag.id) : [...selectedTagIds, tag.id];
+                              const next = [...selectedTagIds, tag.id];
                               setSelectedTagIds(next);
                               updateTagsMutation.mutate(next);
                             }}
                           >
-                            <div className={cn("mr-2 size-2 rounded-full border transition-all", sel ? "bg-primary border-primary" : "bg-transparent border-muted-foreground/30")} />
+                            <Plus className="mr-2 size-3 text-muted-foreground/50" />
                             {tag.name}
                           </CommandItem>
                         );
@@ -504,29 +533,61 @@ export function NotePropertiesSidebar(props: NotePropertiesSidebarProps) {
             <DialogTrigger asChild>
               <div><ActionItem icon={BookOpen} label="Publish as Resource" /></div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
-              <DialogHeader className="p-6 pb-0">
-                <DialogTitle className="flex items-center gap-2 text-lg tracking-tight">
-                  <BookOpen className="size-4 text-primary" />
-                  Publish as Resource
-                </DialogTitle>
-                <DialogDescription>
-                  Add this note to a university course.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="p-6">
-                <Command className="border rounded-xl border-border/30">
-                  <CommandInput placeholder="Search catalog…" className="h-9 text-xs" />
-                  <CommandList className="max-h-[260px]">
-                    <CommandEmpty className="py-4 text-xs text-center text-muted-foreground">No courses.</CommandEmpty>
+            <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl border-none shadow-2xl bg-background">
+              <div className="relative overflow-hidden bg-muted/30 px-6 pt-6 pb-4 border-b border-border/5">
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                  <GraduationCap className="size-32 rotate-12" />
+                </div>
+                <DialogHeader className="relative">
+                  <DialogTitle className="flex items-center gap-2.5 text-lg tracking-tight">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <BookOpen className="size-4" />
+                    </div>
+                    Publish as Resource
+                  </DialogTitle>
+                  <DialogDescription className="text-sm">
+                    Make this note available in a university course catalog.
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+              <div className="p-3">
+                <Command className="bg-transparent border-none">
+                  <CommandInput 
+                    placeholder="Search courses by name or code…" 
+                    className="h-10 text-sm border-none focus:ring-0 shadow-none bg-muted/40 rounded-lg px-3" 
+                  />
+                  <CommandList className="max-h-[300px] mt-2 p-1 custom-scrollbar">
                     {catalogLoading ? (
-                      <div className="p-4 text-xs text-center animate-pulse text-muted-foreground">Loading…</div>
+                      <div className="py-12 flex flex-col items-center justify-center gap-3">
+                        <RefreshCw className="size-5 animate-spin text-muted-foreground/40" />
+                        <span className="text-xs font-medium text-muted-foreground/60">Loading catalog…</span>
+                      </div>
                     ) : (
-                      <CommandGroup heading="Catalog">
-                        {courses?.map((c: any) => (
-                          <CommandItem key={c.id} className="flex flex-col items-start gap-0.5 p-2.5 cursor-pointer text-xs" onSelect={() => handleCreateResource(c.id)}>
-                            <span className="font-semibold">{c.name_en}</span>
-                            <span className="text-[10px] text-muted-foreground font-mono">{c.code}</span>
+                      <CommandEmpty className="py-12 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <GraduationCap className="size-8 text-muted-foreground/20" />
+                          <p className="text-sm font-medium text-muted-foreground">No courses found</p>
+                          <p className="text-xs text-muted-foreground/60">Try searching with a different term.</p>
+                        </div>
+                      </CommandEmpty>
+                    )}
+                    {!catalogLoading && courses?.length > 0 && (
+                      <CommandGroup heading="Available Courses" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-muted-foreground/40">
+                        {courses.map((c: any) => (
+                          <CommandItem 
+                            key={c.id} 
+                            className="flex items-center justify-between p-3 mb-1 cursor-pointer rounded-xl group aria-selected:bg-accent/50 aria-selected:text-foreground transition-all" 
+                            onSelect={() => handleCreateResource(c.id)}
+                          >
+                            <div className="flex flex-col items-start gap-1 min-w-0 pr-4">
+                              <span className="font-semibold text-sm truncate w-full">{c.name_en}</span>
+                              <Badge variant="secondary" className="h-5 px-1.5 text-[9px] font-mono tracking-wider bg-muted-foreground/10 text-muted-foreground group-aria-selected:bg-background border-none">
+                                {c.code}
+                              </Badge>
+                            </div>
+                            <div className="shrink-0 size-7 rounded-full bg-background border border-border/10 flex items-center justify-center opacity-0 group-aria-selected:opacity-100 transition-opacity shadow-sm">
+                              <Plus className="size-3 text-primary" />
+                            </div>
                           </CommandItem>
                         ))}
                       </CommandGroup>

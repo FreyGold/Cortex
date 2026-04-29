@@ -464,9 +464,9 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
   // Find active workspace name
   const activeWorkspaceName = useMemo(() => {
     if (!currentWorkspaceId) return "Home";
-    const joined = joinedWorkspaces?.find(w => w.id === currentWorkspaceId);
+    const joined = joinedWorkspaces?.find((w: any) => w.id === currentWorkspaceId);
     if (joined) return joined.name;
-    const owned = ownedWorkspaces?.find(w => w.id === currentWorkspaceId);
+    const owned = ownedWorkspaces?.find((w: any) => w.id === currentWorkspaceId);
     if (owned) return owned.name;
     return "Workspace";
   }, [currentWorkspaceId, joinedWorkspaces, ownedWorkspaces]);
@@ -494,7 +494,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                 <DropdownMenuTrigger asChild>
                     <div className="flex items-center gap-2 px-1 py-1 rounded-lg hover:bg-accent/40 cursor-pointer transition-colors flex-1 min-w-0">
                         <Avatar className="size-5 rounded-md border border-border/10">
-                            <AvatarImage src={(currentWorkspaceId ? joinedWorkspaces?.find(w => w.id === currentWorkspaceId)?.avatar_url : profile?.avatar_url) || undefined} />
+                            <AvatarImage src={(currentWorkspaceId ? joinedWorkspaces?.find((w: any) => w.id === currentWorkspaceId)?.avatar_url : profile?.avatar_url) || undefined} />
                             <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{activeWorkspaceName.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <span className="text-[13px] font-bold truncate tracking-tight">{activeWorkspaceName}</span>
@@ -510,7 +510,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                       <>
                         <DropdownMenuSeparator />
                         <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Shared Workspaces</div>
-                        {joinedWorkspaces.map(w => (
+                        {joinedWorkspaces.map((w: any) => (
                           <DropdownMenuItem key={w.id} className="text-xs gap-2" onClick={() => updateUrl({ workspaceId: w.id })}>
                             <Avatar className="size-4 rounded-sm">
                               <AvatarImage src={w.avatar_url || undefined} />
@@ -530,7 +530,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                         <Settings className="size-4" /> Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => window.location.href = "/auth/signout"}>
+                    <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => window.location.href = "/auth/logout/submit"}>
                         Logout
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -578,7 +578,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                   active={!currentWorkspaceId} 
                />
                
-               {ownedWorkspaces?.map(w => (
+               {ownedWorkspaces?.map((w: any) => (
                  <NavButton 
                     key={w.id}
                     icon={Users} 
@@ -588,7 +588,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                  />
                ))}
 
-               {joinedWorkspaces?.filter(jw => !ownedWorkspaces?.find(ow => ow.id === jw.id)).map(w => (
+               {joinedWorkspaces?.filter((jw: any) => !ownedWorkspaces?.find((ow: any) => ow.id === jw.id)).map((w: any) => (
                  <NavButton 
                     key={w.id}
                     icon={Users} 

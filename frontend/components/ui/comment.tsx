@@ -204,17 +204,6 @@ export function Comment(props: {
 
         {isMyComment && (hovering || dropdownOpen) && (
           <div className="absolute top-0 right-0 flex space-x-1">
-            {index === 0 && (
-              <Button
-                variant="ghost"
-                className="h-6 p-1 text-muted-foreground"
-                onClick={onResolveComment}
-                type="button"
-              >
-                <CheckIcon className="size-4" />
-              </Button>
-            )}
-
             <CommentMoreDropdown
               onCloseAutoFocus={() => {
                 setTimeout(() => {

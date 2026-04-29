@@ -169,7 +169,28 @@ export function useCreateTag() {
       const accessToken = await getAccessToken();
       await createTag(accessToken, name);
     },
-    onSuccess: () => {
+    onMutate: async (name) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+
+      queryClient.setQueriesData({ queryKey: ["notes-dashboard"] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          tags: [...(old.tags || []), { id: `temp-${Math.random()}`, name, color: null, is_optimistic: true }]
+        };
+      });
+
+      return { previousDashboards };
+    },
+    onError: (err, name, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["note-detail"] });
     },
@@ -202,9 +223,63 @@ export function useUpdateNote(noteId: string) {
       const accessToken = await getAccessToken();
       await updateNote(accessToken, noteId, input);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
+    onMutate: async (newValues) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      await queryClient.cancelQueries({ queryKey: ["note-detail", noteId] });
+
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+      const previousNoteDetail = queryClient.getQueryData(["note-detail", noteId]);
+
+      // Optimistically update all dashboard queries
+      queryClient.setQueriesData({ queryKey: ["notes-dashboard"] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          notes: old.notes?.map((n: any) => 
+            n.id === noteId ? { 
+              ...n, 
+              ...newValues,
+              folder_id: newValues.folderId !== undefined ? newValues.folderId : n.folder_id,
+              is_pinned: newValues.isPinned !== undefined ? newValues.isPinned : n.is_pinned,
+              is_published: newValues.isPublished !== undefined ? newValues.isPublished : n.is_published,
+              updated_at: new Date().toISOString()
+            } : n
+          )
+        };
+      });
+
+      // Optimistically update detail query
+      if (previousNoteDetail) {
+        queryClient.setQueryData(["note-detail", noteId], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            note: { 
+              ...old.note, 
+              ...newValues,
+              folder_id: newValues.folderId !== undefined ? newValues.folderId : old.note.folder_id,
+              is_published: newValues.isPublished !== undefined ? newValues.isPublished : old.note.is_published,
+              updated_at: new Date().toISOString()
+            }
+          };
+        });
+      }
+
+      return { previousDashboards, previousNoteDetail };
+    },
+    onError: (err, newValues, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousNoteDetail) {
+        queryClient.setQueryData(["note-detail", noteId], context.previousNoteDetail);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
     },
   });
 }
@@ -217,10 +292,31 @@ export function useArchiveNote() {
       const accessToken = await getAccessToken();
       await deleteNote(accessToken, noteId);
     },
-    onSuccess: (_, noteId) => {
+    onMutate: async (noteId) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      await queryClient.cancelQueries({ queryKey: ["note-detail", noteId] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+
+      queryClient.setQueriesData({ queryKey: ["notes-dashboard"] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          notes: old.notes?.filter((n: any) => n.id !== noteId)
+        };
+      });
+
+      return { previousDashboards };
+    },
+    onError: (err, noteId, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
-      queryClient.invalidateQueries({ queryKey: ["archived-notes"] });
+      queryClient.invalidateQueries({ queryKey: ["archived-items"] });
     },
   });
 }
@@ -233,10 +329,39 @@ export function useRestoreNote() {
       const accessToken = await getAccessToken();
       await restoreNote(accessToken, noteId);
     },
-    onSuccess: (_, noteId) => {
+    onMutate: async (noteId) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      await queryClient.cancelQueries({ queryKey: ["archived-items"] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+      const previousArchived = queryClient.getQueryData(["archived-items"]);
+
+      // We can't easily optimistic restore without knowing the note data,
+      // but we can at least remove it from archived list if it exists.
+      if (previousArchived) {
+        queryClient.setQueryData(["archived-items"], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            notes: old.notes?.filter((n: any) => n.id !== noteId)
+          };
+        });
+      }
+
+      return { previousDashboards, previousArchived };
+    },
+    onError: (err, noteId, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousArchived) {
+        queryClient.setQueryData(["archived-items"], context.previousArchived);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
-      queryClient.invalidateQueries({ queryKey: ["archived-notes"] });
+      queryClient.invalidateQueries({ queryKey: ["archived-items"] });
     },
   });
 }
@@ -249,8 +374,27 @@ export function useDeleteNoteForever() {
       const accessToken = await getAccessToken();
       await deleteNoteForever(accessToken, noteId);
     },
-    onSuccess: (_, noteId) => {
-      queryClient.invalidateQueries({ queryKey: ["archived-notes"] });
+    onMutate: async (noteId) => {
+      await queryClient.cancelQueries({ queryKey: ["archived-items"] });
+      const previousArchived = queryClient.getQueryData(["archived-items"]);
+      if (previousArchived) {
+        queryClient.setQueryData(["archived-items"], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            notes: old.notes?.filter((n: any) => n.id !== noteId)
+          };
+        });
+      }
+      return { previousArchived };
+    },
+    onError: (err, noteId, context) => {
+      if (context?.previousArchived) {
+        queryClient.setQueryData(["archived-items"], context.previousArchived);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["archived-items"] });
     },
   });
 }
@@ -327,7 +471,29 @@ export function useMoveNote() {
       const accessToken = await getAccessToken();
       await updateNote(accessToken, noteId, { folderId });
     },
-    onSuccess: (_, { noteId }) => {
+    onMutate: async ({ noteId, folderId }) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      await queryClient.cancelQueries({ queryKey: ["note-detail", noteId] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+
+      queryClient.setQueriesData({ queryKey: ["notes-dashboard"] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          notes: old.notes?.map((n: any) => n.id === noteId ? { ...n, folder_id: folderId } : n)
+        };
+      });
+
+      return { previousDashboards };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: (_, __, { noteId }) => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["note-detail", noteId] });
     },
@@ -347,7 +513,28 @@ export function useUpdateFolder() {
       const accessToken = await getAccessToken();
       await updateFolder(accessToken, folderId, { name });
     },
-    onSuccess: () => {
+    onMutate: async ({ folderId, name }) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+
+      queryClient.setQueriesData({ queryKey: ["notes-dashboard"] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          folders: old.folders?.map((f: any) => f.id === folderId ? { ...f, name } : f)
+        };
+      });
+
+      return { previousDashboards };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
     },
   });
@@ -366,7 +553,28 @@ export function useMoveFolder() {
       const accessToken = await getAccessToken();
       await updateFolder(accessToken, folderId, { parentId });
     },
-    onSuccess: () => {
+    onMutate: async ({ folderId, parentId }) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+
+      queryClient.setQueriesData({ queryKey: ["notes-dashboard"] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          folders: old.folders?.map((f: any) => f.id === folderId ? { ...f, parent_id: parentId } : f)
+        };
+      });
+
+      return { previousDashboards };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
     },
   });
@@ -379,9 +587,44 @@ export function useDeleteFolder() {
       const accessToken = await getAccessToken();
       await deleteFolder(accessToken, folderId);
     },
-    onSuccess: () => {
+    onMutate: async (folderId) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+
+      queryClient.setQueriesData({ queryKey: ["notes-dashboard"] }, (old: any) => {
+        if (!old) return old;
+        
+        // Find all child folders recursively
+        const foldersToRemove = new Set([folderId]);
+        let size;
+        do {
+          size = foldersToRemove.size;
+          old.folders?.forEach((f: any) => {
+            if (f.parent_id && foldersToRemove.has(f.parent_id)) {
+              foldersToRemove.add(f.id);
+            }
+          });
+        } while (foldersToRemove.size > size);
+
+        return {
+          ...old,
+          folders: old.folders?.filter((f: any) => !foldersToRemove.has(f.id)),
+          notes: old.notes?.filter((n: any) => !n.folder_id || !foldersToRemove.has(n.folder_id))
+        };
+      });
+
+      return { previousDashboards };
+    },
+    onError: (err, folderId, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["note-detail"] });
+      queryClient.invalidateQueries({ queryKey: ["archived-items"] });
     },
   });
 }
@@ -426,7 +669,35 @@ export function useRestoreFolder() {
       const accessToken = await getAccessToken();
       await restoreFolder(accessToken, folderId);
     },
-    onSuccess: () => {
+    onMutate: async (folderId) => {
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      await queryClient.cancelQueries({ queryKey: ["archived-items"] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
+      const previousArchived = queryClient.getQueryData(["archived-items"]);
+
+      if (previousArchived) {
+        queryClient.setQueryData(["archived-items"], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            folders: old.folders?.filter((f: any) => f.id !== folderId)
+          };
+        });
+      }
+
+      return { previousDashboards, previousArchived };
+    },
+    onError: (err, folderId, context) => {
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      if (context?.previousArchived) {
+        queryClient.setQueryData(["archived-items"], context.previousArchived);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["archived-items"] });
     },
@@ -440,7 +711,26 @@ export function useDeleteFolderForever() {
       const accessToken = await getAccessToken();
       await deleteFolderForever(accessToken, folderId);
     },
-    onSuccess: () => {
+    onMutate: async (folderId) => {
+      await queryClient.cancelQueries({ queryKey: ["archived-items"] });
+      const previousArchived = queryClient.getQueryData(["archived-items"]);
+      if (previousArchived) {
+        queryClient.setQueryData(["archived-items"], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            folders: old.folders?.filter((f: any) => f.id !== folderId)
+          };
+        });
+      }
+      return { previousArchived };
+    },
+    onError: (err, folderId, context) => {
+      if (context?.previousArchived) {
+        queryClient.setQueryData(["archived-items"], context.previousArchived);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["archived-items"] });
     },
   });

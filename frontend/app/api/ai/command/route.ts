@@ -168,9 +168,10 @@ export async function POST(req: NextRequest) {
     });
 
     return createUIMessageStreamResponse({ stream });
-  } catch {
+  } catch (error: any) {
+    console.error('[AI Command Route] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to process AI request' },
+      { error: error.message || 'Failed to process AI request' },
       { status: 500 }
     );
   }

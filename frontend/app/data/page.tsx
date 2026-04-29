@@ -49,22 +49,14 @@ export default async function DataPage({ searchParams }: PageProps) {
   const isAdmin = session?.profile?.role === "admin";
 
   if (Object.keys(params).length === 0) {
-    const defaultUniversity = universities.find(
-      (u) => u.id === session?.profile?.university_id || u.slug === "menofia" || u.name_en.toLowerCase().includes("menofia"),
-    );
-    const defaultCollege = colleges.find(
-      (c) => c.id === session?.profile?.college_id || c.slug === "fee" || c.name_en.toLowerCase().includes("electronic"),
-    );
-    const defaultMajor = majors.find(
-      (m) => m.id === session?.profile?.major_id,
-    );
-
+    const profile = session?.profile;
     const redirectParams = new URLSearchParams();
-    if (defaultUniversity) redirectParams.set("university", defaultUniversity.id);
-    if (defaultCollege) redirectParams.set("college", defaultCollege.id);
-    if (defaultMajor) redirectParams.set("major", defaultMajor.id);
+    
+    if (profile?.university_id) redirectParams.set("university", profile.university_id);
+    if (profile?.college_id) redirectParams.set("college", profile.college_id);
+    if (profile?.major_id) redirectParams.set("major", profile.major_id);
 
-    if (redirectParams.toString()) {
+    if (redirectParams.size > 0) {
       redirect(`/data?${redirectParams.toString()}`);
     }
   }

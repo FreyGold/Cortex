@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useEditorRef } from 'platejs/react';
 
+import { useCurrentProfile } from '@/hooks/use-profile';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -213,16 +214,41 @@ export const models: Model[] = [
   { label: 'GLM 4.5', value: 'zai/glm-4.5' },
   { label: 'GLM 4.5 Air', value: 'zai/glm-4.5-air' },
   { label: 'GLM 4.5V', value: 'zai/glm-4.5v' },
+
+  // Groq Models
+  { label: 'Llama 3.3 70B (Groq)', value: 'groq/llama-3.3-70b-versatile' },
+  { label: 'Llama 3.1 8B (Groq)', value: 'groq/llama-3.1-8b-instant' },
+  { label: 'Mixtral 8x7B (Groq)', value: 'groq/mixtral-8x7b-32768' },
+  { label: 'Gemma 2 9B (Groq)', value: 'groq/gemma2-9b-it' },
 ];
 
 export function SettingsDialog() {
   const editor = useEditorRef();
+  const { data: profileData } = useCurrentProfile();
+  const profile = profileData?.profile;
 
   const [tempModel, setTempModel] = React.useState(models[7]);
   const [tempKeys, setTempKeys] = React.useState<Record<string, string>>({
     aiGatewayApiKey: '',
     uploadthing: '',
   });
+
+  // Initialize from profile
+  React.useEffect(() => {
+    if (profile) {
+      if (profile.ai_model) {
+        const m = models.find((m) => m.value === profile.ai_model);
+        if (m) setTempModel(m);
+      }
+      if (profile.ai_api_key) {
+        setTempKeys((prev) => ({
+          ...prev,
+          aiGatewayApiKey: profile.ai_api_key,
+        }));
+      }
+    }
+  }, [profile]);
+
   const [showKey, setShowKey] = React.useState<Record<string, boolean>>({});
   const [open, setOpen] = React.useState(false);
   const [openModel, setOpenModel] = React.useState(false);

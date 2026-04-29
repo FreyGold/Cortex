@@ -4,10 +4,11 @@ import { AppShell } from "@/components/app-shell";
 import { ProfileSetupForm } from "@/components/profile/profile-setup-form";
 import { ProfileStatusCard } from "@/components/profile/profile-status-card";
 import { WorkspaceTeam } from "@/components/settings/workspace-team";
+import { AIIntegrationForm } from "@/components/settings/ai-integration-form";
 import { getCatalogData } from "@/lib/data/catalog";
 import { getServerSession } from "@/lib/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, GraduationCap, Settings2, Globe, Moon, Users } from "lucide-react";
+import { User, GraduationCap, Settings2, Globe, Moon, Users, Wand2 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
@@ -47,6 +48,10 @@ export default async function SettingsPage(props: {
                 <Users className="size-4" />
                 <span className="font-medium text-[15px]">Workspace & Team</span>
               </TabsTrigger>
+              <TabsTrigger value="ai" className="w-auto md:w-full justify-start gap-3 py-3 px-4 rounded-xl transition-all">
+                <Wand2 className="size-4" />
+                <span className="font-medium text-[15px]">AI Integration</span>
+              </TabsTrigger>
               <TabsTrigger value="academic" className="w-auto md:w-full justify-start gap-3 py-3 px-4 rounded-xl transition-all">
                 <GraduationCap className="size-4" />
                 <span className="font-medium text-[15px]">{t("tabs.academic")}</span>
@@ -76,6 +81,22 @@ export default async function SettingsPage(props: {
                   <p className="text-sm text-muted-foreground">Organize your study groups and invite collaborators to your workspaces.</p>
                 </div>
                 <WorkspaceTeam />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="ai" className="mt-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-semibold tracking-tight mb-1">AI Integration</h2>
+                  <p className="text-sm text-muted-foreground">Customize your AI experience and manage your personal API keys.</p>
+                </div>
+                <AIIntegrationForm
+                  initialValues={{
+                    aiApiKey: profile?.ai_api_key ?? null,
+                    aiModel: profile?.ai_model ?? null,
+                    aiProvider: profile?.ai_provider ?? null,
+                  }}
+                />
               </div>
             </TabsContent>
 
