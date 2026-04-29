@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useEditorRef } from 'platejs/react';
 
-import { useCurrentProfile } from '@/hooks/use-profile';
+import { useAISettings } from '@/hooks/use-ai-settings';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -224,8 +224,7 @@ export const models: Model[] = [
 
 export function SettingsDialog() {
   const editor = useEditorRef();
-  const { data: profileData } = useCurrentProfile();
-  const profile = profileData?.profile;
+  const { settings, updateSettings } = useAISettings();
 
   const [tempModel, setTempModel] = React.useState(models[7]);
   const [tempKeys, setTempKeys] = React.useState<Record<string, string>>({
@@ -233,21 +232,19 @@ export function SettingsDialog() {
     uploadthing: '',
   });
 
-  // Initialize from profile
+  // Initialize from local storage
   React.useEffect(() => {
-    if (profile) {
-      if (profile.ai_model) {
-        const m = models.find((m) => m.value === profile.ai_model);
-        if (m) setTempModel(m);
-      }
-      if (profile.ai_api_key) {
-        setTempKeys((prev) => ({
-          ...prev,
-          aiGatewayApiKey: profile.ai_api_key,
-        }));
-      }
+    if (settings.aiModel) {
+      const m = models.find((m) => m.value === settings.aiModel);
+      if (m) setTempModel(m);
     }
-  }, [profile]);
+    if (settings.aiApiKey) {
+      setTempKeys((prev) => ({
+        ...prev,
+        aiGatewayApiKey: settings.aiApiKey!,
+      }));
+    }
+  }, [settings]);
 
   const [showKey, setShowKey] = React.useState<Record<string, boolean>>({});
   const [open, setOpen] = React.useState(false);
@@ -255,6 +252,12 @@ export function SettingsDialog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Save locally
+    updateSettings({
+      aiApiKey: tempKeys.aiGatewayApiKey,
+      aiModel: tempModel.value,
+    });
 
     // Update AI chat options
     const chatOptions = editor.getOptions(aiChatPlugin).chatOptions ?? {};

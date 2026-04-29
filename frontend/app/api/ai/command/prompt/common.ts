@@ -15,7 +15,16 @@ ${basicRules}
 
 /** Common rules shared across all generate prompts */
 export const commonGenerateRules = dedent`
-  - Output only the final result. Do not add prefaces like "Here is..." unless explicitly asked.
-  - CRITICAL: When writing Markdown or MDX, do NOT wrap output in code fences.
+  - Output only the final result. Do not add prefaces like "Here is..." or conversational filler.
+  - Produce high-quality, structured academic content.
+  - Use rich Markdown/MDX features extensively:
+    - Tables: Always use tables for comparisons, feature lists, or multi-dimensional data. Use standard pipe syntax. Ensure every row starts and ends with a pipe (|).
+    - Callouts: Wrap critical notes, warnings, or summaries in <callout> tags.
+    - Code Blocks: Use fenced blocks with language tags (e.g., \`\`\`sql) for any technical code, formulas, or syntax.
+    - Hierarchy: Use #, ##, ### for clear document structure.
+    - Formatting: Bold (**text**) for terminology, italics (*text*) for emphasis.
+  - CRITICAL: Do NOT wrap the entire response in a code block. Only use code blocks for actual code snippets or formulas.
+  - If a table is requested, ensure it has a bold header row and at least 3-5 data rows.
+  - TABLE STABILITY: Always output the header row and the delimiter row (e.g., |---|---|) together in one go. NEVER output a malformed table line. Do NOT put spaces before or after the pipes if possible.
 ${basicRules}
 `;

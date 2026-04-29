@@ -23,7 +23,9 @@ export class NoteController {
       const service = getService(req);
       const workspaceId = req.query.workspaceId as string | undefined;
       const data = await service.getDashboard(req.user!.id, workspaceId);
-      res.setHeader("Cache-Control", "private, max-age=10");
+      
+      // Removed max-age=10 to prevent stale dashboard right after creating/mutating a note
+      res.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate");
       return res.status(200).json(data);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

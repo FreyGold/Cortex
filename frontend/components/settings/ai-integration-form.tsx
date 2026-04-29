@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Check, Loader2, Eye, EyeOff, Wand2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,47 +14,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateAISettings } from "@/lib/api/profile";
-import { getAccessToken } from "@/lib/supabase/client";
+import { useAISettings } from "@/hooks/use-ai-settings";
 import { models } from "@/components/editor/settings-dialog";
 import { toast } from "sonner";
 
-type AIIntegrationFormProps = {
-  initialValues: {
-    aiApiKey: string | null;
-    aiModel: string | null;
-    aiProvider: string | null;
-  };
-};
-
-export function AIIntegrationForm({ initialValues }: AIIntegrationFormProps) {
-  const [aiApiKey, setAiApiKey] = useState(initialValues.aiApiKey ?? "");
-  const [aiModel, setAiModel] = useState(initialValues.aiModel ?? "google/gemini-2.5-flash");
-  const [aiProvider, setAiProvider] = useState(initialValues.aiProvider ?? "openai");
+export function AIIntegrationForm() {
+  const { settings, updateSettings, isLoaded } = useAISettings();
+  const [aiApiKey, setAiApiKey] = useState("");
+  const [aiModel, setAiModel] = useState("google/gemini-2.5-flash");
+  const [aiProvider, setAiProvider] = useState("openai");
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded) {
+      setAiApiKey(settings.aiApiKey ?? "");
+      setAiModel(settings.aiModel ?? "google/gemini-2.5-flash");
+      setAiProvider(settings.aiProvider ?? "openai");
+    }
+  }, [isLoaded, settings]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
     try {
-      const accessToken = await getAccessToken();
-      if (!accessToken) throw new Error("Not authenticated");
-
-      await updateAISettings(accessToken, {
+      updateSettings({
         aiApiKey: aiApiKey || null,
         aiModel: aiModel || null,
         aiProvider: aiProvider || 'openai',
       });
 
-      toast.success("AI settings updated successfully");
+      toast.success("AI settings updated locally on this machine");
     } catch (err: any) {
       toast.error(err.message || "Failed to update AI settings");
     } finally {
       setSaving(false);
     }
   };
+
+  if (!isLoaded) {
+    return <div className="p-8 text-center text-muted-foreground">Loading settings...</div>;
+  }
 
   return (
     <Card className="shadow-none border-border/60">
@@ -66,7 +67,7 @@ export function AIIntegrationForm({ initialValues }: AIIntegrationFormProps) {
           <CardTitle>AI Integration</CardTitle>
         </div>
         <CardDescription>
-          Configure your personal AI keys and preferred models. These will be used across the application.
+          Configure your personal AI keys and preferred models. These are stored **locally on your machine** and not in our database.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -94,7 +95,7 @@ export function AIIntegrationForm({ initialValues }: AIIntegrationFormProps) {
                 </Button>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Your key is stored securely and used only for your AI requests. Supports Groq (starting with gsk_), OpenAI, and more.
+                Your key is stored in your browser's local storage. Supports Groq (gsk_), OpenAI, and more.
               </p>
             </div>
 
@@ -133,7 +134,7 @@ export function AIIntegrationForm({ initialValues }: AIIntegrationFormProps) {
           <div className="flex justify-end pt-2">
             <Button type="submit" disabled={saving}>
               {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
-              Save AI Settings
+              Save AI Settings Locally
             </Button>
           </div>
         </form>

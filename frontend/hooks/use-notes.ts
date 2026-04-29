@@ -74,38 +74,62 @@ export function useCreateNote() {
     },
     onMutate: async (newNote) => {
       const workspaceId = newNote.workspaceId || undefined;
-      await queryClient.cancelQueries({ queryKey: ["notes-dashboard", workspaceId] });
-      const previousDashboard = queryClient.getQueryData(["notes-dashboard", workspaceId]);
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
 
-      if (previousDashboard) {
-        queryClient.setQueryData(["notes-dashboard", workspaceId], (old: any) => {
-          if (!old) return old;
-          const tempNote = {
-            id: `temp-${Math.random()}`,
-            title: newNote.title || "Untitled note",
-            folder_id: newNote.folderId || null,
-            workspace_id: newNote.workspaceId || null,
-            updated_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            is_optimistic: true,
-            note_tags: [],
-          };
-          return {
-            ...old,
-            notes: [tempNote, ...(old.notes || [])],
-          };
-        });
-      }
+      const tempNote = {
+        id: `temp-${Math.random()}`,
+        title: newNote.title || "Untitled note",
+        folder_id: newNote.folderId || null,
+        workspace_id: newNote.workspaceId || null,
+        updated_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        is_optimistic: true,
+        note_tags: [],
+      };
 
-      return { previousDashboard, workspaceId };
+      // Correct way to update multiple specific queries in v5
+      queryClient.getQueryCache().findAll({ queryKey: ["notes-dashboard"] }).forEach(query => {
+        const queryWorkspaceId = query.queryKey[1];
+        if (workspaceId === (queryWorkspaceId || undefined)) {
+          queryClient.setQueryData(query.queryKey, (old: any) => {
+            if (!old) return old;
+            return {
+              ...old,
+              notes: [tempNote, ...(old.notes || [])],
+            };
+          });
+        }
+      });
+
+      return { previousDashboards };
+    },
+    onSuccess: (data) => {
+      // Correct way to update multiple specific queries in v5
+      queryClient.getQueryCache().findAll({ queryKey: ["notes-dashboard"] }).forEach(query => {
+        const queryWorkspaceId = query.queryKey[1];
+        if (data.workspace_id === (queryWorkspaceId || null)) {
+          queryClient.setQueryData(query.queryKey, (old: any) => {
+            if (!old) return old;
+            const filteredNotes = old.notes?.filter((n: any) => !n.is_optimistic && n.id !== data.id) || [];
+            return {
+              ...old,
+              notes: [{ ...data, note_tags: [] }, ...filteredNotes],
+            };
+          });
+        }
+      });
     },
     onError: (err, newNote, context) => {
-      if (context?.previousDashboard) {
-        queryClient.setQueryData(["notes-dashboard", context.workspaceId], context.previousDashboard);
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
     },
-    onSettled: (_, __, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["notes-dashboard", variables.workspaceId || undefined] });
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
     },
   });
 }
@@ -119,44 +143,64 @@ export function useCreateFolder() {
       const workspaceId = typeof input === "string" ? undefined : input.workspaceId;
       const parentId = typeof input === "string" ? undefined : input.parentId;
       const accessToken = await getAccessToken();
-      await createFolder(accessToken, name, workspaceId, parentId);
+      return createFolder(accessToken, name, workspaceId, parentId);
     },
     onMutate: async (input) => {
       const name = typeof input === "string" ? input : input.name;
       const workspaceId = typeof input === "string" ? undefined : input.workspaceId;
       const parentId = typeof input === "string" ? undefined : input.parentId;
 
-      await queryClient.cancelQueries({ queryKey: ["notes-dashboard", workspaceId] });
-      const previousDashboard = queryClient.getQueryData(["notes-dashboard", workspaceId]);
+      await queryClient.cancelQueries({ queryKey: ["notes-dashboard"] });
+      const previousDashboards = queryClient.getQueriesData({ queryKey: ["notes-dashboard"] });
 
-      if (previousDashboard) {
-        queryClient.setQueryData(["notes-dashboard", workspaceId], (old: any) => {
-          if (!old) return old;
-          const tempFolder = {
-            id: `temp-${Math.random()}`,
-            name: name,
-            parent_id: parentId || null,
-            workspace_id: workspaceId || null,
-            is_optimistic: true,
-            color: null,
-          };
-          return {
-            ...old,
-            folders: [tempFolder, ...(old.folders || [])],
-          };
-        });
-      }
+      const tempFolder = {
+        id: `temp-${Math.random()}`,
+        name: name,
+        parent_id: parentId || null,
+        workspace_id: workspaceId || null,
+        is_optimistic: true,
+        color: null,
+      };
 
-      return { previousDashboard, workspaceId };
+      queryClient.getQueryCache().findAll({ queryKey: ["notes-dashboard"] }).forEach(query => {
+        const queryWorkspaceId = query.queryKey[1];
+        if (workspaceId === (queryWorkspaceId || undefined)) {
+          queryClient.setQueryData(query.queryKey, (old: any) => {
+            if (!old) return old;
+            return {
+              ...old,
+              folders: [tempFolder, ...(old.folders || [])],
+            };
+          });
+        }
+      });
+
+      return { previousDashboards };
+    },
+    onSuccess: (data) => {
+       queryClient.getQueryCache().findAll({ queryKey: ["notes-dashboard"] }).forEach(query => {
+         const queryWorkspaceId = query.queryKey[1];
+         if (data.workspace_id === (queryWorkspaceId || null)) {
+           queryClient.setQueryData(query.queryKey, (old: any) => {
+             if (!old) return old;
+             const filteredFolders = old.folders?.filter((f: any) => !f.is_optimistic && f.id !== data.id) || [];
+             return {
+               ...old,
+               folders: [data, ...filteredFolders]
+             };
+           });
+         }
+       });
     },
     onError: (err, variables, context) => {
-      if (context?.previousDashboard) {
-        queryClient.setQueryData(["notes-dashboard", context.workspaceId], context.previousDashboard);
+      if (context?.previousDashboards) {
+        context.previousDashboards.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
     },
-    onSettled: (_, __, input) => {
-      const workspaceId = typeof input === "string" ? undefined : input.workspaceId;
-      queryClient.invalidateQueries({ queryKey: ["notes-dashboard", workspaceId] });
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes-dashboard"] });
     },
   });
 }

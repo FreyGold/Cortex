@@ -39,7 +39,6 @@ import {
 } from 'platejs';
 import {
   useEditorPlugin,
-  useFocusedLast,
   useHotkeys,
   usePluginOption,
 } from 'platejs/react';
@@ -69,13 +68,12 @@ export function AIMenu() {
 
   const streaming = usePluginOption(AIChatPlugin, 'streaming');
   const isSelecting = useIsSelecting();
-  const isFocusedLast = useFocusedLast();
-  const open = usePluginOption(AIChatPlugin, 'open') && isFocusedLast;
+  const open = usePluginOption(AIChatPlugin, 'open');
   const [value, setValue] = React.useState('');
 
   const [input, setInput] = React.useState('');
 
-  const chat = usePluginOption(AIChatPlugin, 'chat');
+  const chat = usePluginOption(AIChatPlugin, 'chat') || { messages: [], status: 'ready' };
 
   const { messages, status } = chat;
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(
@@ -193,6 +191,12 @@ export function AIMenu() {
           e.preventDefault();
 
           api.aiChat.hide();
+        }}
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+        }}
+        onInteractOutside={(e) => {
+          e.preventDefault();
         }}
         align="center"
         side="bottom"
@@ -574,7 +578,8 @@ export const AIMenuItems = ({
   setValue: (value: string) => void;
 }) => {
   const editor = useEditorRef();
-  const { messages } = usePluginOption(AIChatPlugin, 'chat');
+  const chat = usePluginOption(AIChatPlugin, 'chat') || { messages: [] };
+  const messages = chat.messages || [];
   const aiEditor = usePluginOption(AIChatPlugin, 'aiEditor')!;
   const isSelecting = useIsSelecting();
 
@@ -630,7 +635,7 @@ export function AILoadingBar() {
   const editor = useEditorRef();
 
   const toolName = usePluginOption(AIChatPlugin, 'toolName');
-  const chat = usePluginOption(AIChatPlugin, 'chat');
+  const chat = usePluginOption(AIChatPlugin, 'chat') || { messages: [], status: 'ready' };
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
   const { status } = chat;

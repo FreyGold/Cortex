@@ -13,9 +13,6 @@ export type CurrentProfile = {
   college_id: string | null;
   major_id: string | null;
   year_level_id: string | null;
-  ai_api_key?: string | null;
-  ai_model?: string | null;
-  ai_provider?: string | null;
 };
 
 export function getCurrentProfile(accessToken: string) {
@@ -37,23 +34,6 @@ export function setupProfile(
   }
 ) {
   return apiRequest<{ success: boolean }>("/api/profile/setup", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: payload,
-  });
-}
-
-export function updateAISettings(
-  accessToken: string,
-  payload: {
-    aiApiKey: string | null;
-    aiModel: string | null;
-    aiProvider: string | null;
-  }
-) {
-  return apiRequest<{ success: boolean }>("/api/profile/ai", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,

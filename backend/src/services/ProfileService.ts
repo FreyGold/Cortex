@@ -26,16 +26,6 @@ export class ProfileService {
     });
   }
 
-  async updateAISettings(userId: string, data: any) {
-    const { aiApiKey, aiModel, aiProvider } = data;
-    await this.repo.updateProfile(userId, {
-      ai_api_key: aiApiKey || null,
-      ai_model: aiModel || null,
-      ai_provider: aiProvider || 'openai',
-      updated_at: new Date().toISOString(),
-    });
-  }
-
   async requestVerification(userId: string) {
     const profile = await this.repo.getVerificationStatus(userId);
     if (!profile) throw new Error("User profile not found.");

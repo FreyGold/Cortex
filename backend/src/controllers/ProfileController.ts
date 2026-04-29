@@ -31,16 +31,6 @@ export class ProfileController {
     }
   }
 
-  static async updateAI(req: Request, res: Response) {
-    try {
-      const service = getService(req);
-      await service.updateAISettings(req.user!.id, req.body);
-      return res.status(200).json({ success: true });
-    } catch (error: any) {
-      return res.status(500).json({ error: error.message });
-    }
-  }
-
   static async requestVerification(req: Request, res: Response) {
     try {
       const service = getService(req);

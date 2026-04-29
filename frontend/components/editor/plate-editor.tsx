@@ -9,6 +9,7 @@ import { EditorKit } from '@/components/editor/editor-kit';
 import { SettingsDialog } from '@/components/editor/settings-dialog';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { useCurrentProfile } from '@/hooks/use-profile';
+import { useAISettings } from '@/hooks/use-ai-settings';
 import { discussionPlugin } from '@/components/editor/plugins/discussion-kit';
 import { aiChatPlugin } from '@/components/editor/plugins/ai-kit';
 import { CopilotPlugin } from '@platejs/ai/react';
@@ -45,6 +46,7 @@ function PlateEditorInner({
   variant = 'demo',
   profile,
 }: PlateEditorProps & { profile?: any }) {
+  const { settings } = useAISettings();
   const initialValue = Array.isArray(content) && content.length > 0 ? content : value;
 
   const editor = usePlateEditor({
@@ -56,8 +58,8 @@ function PlateEditorInner({
           options: {
             chatOptions: {
               body: {
-                apiKey: profile?.ai_api_key,
-                model: profile?.ai_model,
+                apiKey: settings.aiApiKey,
+                model: settings.aiModel,
               },
             },
           },
@@ -66,8 +68,8 @@ function PlateEditorInner({
           options: {
             completeOptions: {
               body: {
-                apiKey: profile?.ai_api_key,
-                model: profile?.ai_model,
+                apiKey: settings.aiApiKey,
+                model: settings.aiModel,
               },
             },
           },
@@ -103,31 +105,33 @@ function PlateEditorInner({
           name: profile.name || 'Anonymous',
         }
       });
-
-      // Update AI settings if provided in profile
-      if (profile.ai_api_key || profile.ai_model) {
-        const chatOptions = editor.getOption(aiChatPlugin, 'chatOptions') || {};
-        editor.setOption(aiChatPlugin, 'chatOptions', {
-          ...chatOptions,
-          body: {
-            ...chatOptions?.body,
-            apiKey: profile.ai_api_key || chatOptions?.body?.apiKey,
-            model: profile.ai_model || chatOptions?.body?.model,
-          }
-        });
-
-        const completeOptions = editor.getOption(CopilotPlugin, 'completeOptions') || {};
-        editor.setOption(CopilotPlugin, 'completeOptions', {
-          ...completeOptions,
-          body: {
-            ...completeOptions?.body,
-            apiKey: profile.ai_api_key || completeOptions?.body?.apiKey,
-            model: profile.ai_model || completeOptions?.body?.model,
-          }
-        });
-      }
     }
   }, [profile, editor]);
+
+  // Update AI settings from local storage
+  React.useEffect(() => {
+    if (settings.aiApiKey || settings.aiModel) {
+      const chatOptions = editor.getOption(aiChatPlugin, 'chatOptions') || {};
+      editor.setOption(aiChatPlugin, 'chatOptions', {
+        ...chatOptions,
+        body: {
+          ...chatOptions?.body,
+          apiKey: settings.aiApiKey || chatOptions?.body?.apiKey,
+          model: settings.aiModel || chatOptions?.body?.model,
+        }
+      });
+
+      const completeOptions = editor.getOption(CopilotPlugin, 'completeOptions') || {};
+      editor.setOption(CopilotPlugin, 'completeOptions', {
+        ...completeOptions,
+        body: {
+          ...completeOptions?.body,
+          apiKey: settings.aiApiKey || completeOptions?.body?.apiKey,
+          model: settings.aiModel || completeOptions?.body?.model,
+        }
+      });
+    }
+  }, [settings, editor]);
 
   return (
     <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)} readOnly={readOnly}>

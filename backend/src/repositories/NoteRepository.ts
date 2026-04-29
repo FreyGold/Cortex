@@ -69,21 +69,25 @@ export class NoteRepository {
         content: { type: "doc", content: [] },
         content_text: "",
         updated_at: nowIso,
+        is_archived: false, // Explicitly set to false to prevent NULL default issues
       })
-      .select("id,title");
+      .select("id,title,folder_id,workspace_id,updated_at,created_at,is_pinned,is_published");
     if (error) throw error;
     if (!data || data.length === 0) throw new Error("Failed to create note.");
     return data[0];
   }
 
   async createFolder(userId: string, name: string, parentId?: string | null, workspaceId?: string) {
-    const { error } = await this.supabase.from("folders").insert({
+    const { data, error } = await this.supabase.from("folders").insert({
       user_id: userId,
       workspace_id: workspaceId || null,
       name,
       parent_id: parentId || null,
-    });
+      is_archived: false, // Explicitly set to false
+    }).select("id,name,parent_id,workspace_id,color");
     if (error) throw error;
+    if (!data || data.length === 0) throw new Error("Failed to create folder.");
+    return data[0];
   }
 
   async updateFolder(userId: string, folderId: string, updatePayload: Record<string, unknown>) {

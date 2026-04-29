@@ -17,7 +17,6 @@ import {
   ChevronRight,
   RefreshCw,
   AlignLeft,
-  Bot,
   PanelRightClose,
   X,
   GraduationCap
@@ -60,6 +59,17 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 
@@ -142,7 +152,7 @@ function SectionHeader({ label, expanded, setExpanded, action }: any) {
 function PropItem({ icon: Icon, label, value, onClick, children }: any) {
   const content = (
     <div 
-      className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all group select-none text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground cursor-pointer" 
+      className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] group select-none text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground cursor-pointer" 
       onClick={onClick}
     >
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -167,7 +177,7 @@ function ActionItem({ icon: Icon, label, onClick, destructive, disabled, isSpinn
       onClick={onClick}
       disabled={disabled || isSpinning}
       className={cn(
-        "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all group select-none overflow-hidden",
+        "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] group select-none overflow-hidden",
         destructive 
           ? "text-destructive/70 hover:bg-destructive/10 hover:text-destructive" 
           : "text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground",
@@ -600,7 +610,28 @@ export function NotePropertiesSidebar(props: NotePropertiesSidebarProps) {
 
           {/* Delete */}
           {handleArchive && (
-            <ActionItem icon={Trash2} label="Delete Note" destructive onClick={handleArchive} />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <div><ActionItem icon={Trash2} label="Delete Note" destructive /></div>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Archive Note</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to archive this note? It will be moved to the Trash where you can restore it or permanently delete it later.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    className="bg-destructive hover:bg-destructive/90 transition-all duration-150 active:scale-[0.98]"
+                    onClick={(e) => { e.stopPropagation(); handleArchive(); }}
+                  >
+                    Archive
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
 
@@ -717,7 +748,7 @@ export function NotePropertiesSidebar(props: NotePropertiesSidebarProps) {
           />
           <button 
             onClick={() => setAssistantOpen(true)}
-            className="absolute bottom-2 right-2 p-1.5 bg-primary text-primary-foreground rounded-lg shadow-sm hover:scale-105 transition-transform"
+            className="absolute bottom-2 right-2 p-1.5 bg-primary text-primary-foreground rounded-lg shadow-sm hover:scale-105 active:scale-[0.9] transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)]"
           >
             <Sparkles className="size-3" />
           </button>

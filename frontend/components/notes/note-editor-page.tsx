@@ -230,7 +230,6 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
   if (detailQuery.isError || !detailQuery.data) return <div className="p-8 text-destructive">Failed to load note context.</div>;
 
   const handleArchive = async () => {
-    if (!confirm("Are you sure you want to move this note to trash?")) return;
     await archiveNoteMutation.mutateAsync(noteId);
     router.push(`/notes${workspaceId ? `?workspaceId=${workspaceId}` : ""}`);
   };

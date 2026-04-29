@@ -34,6 +34,7 @@ export async function apiRequest<TResponse>(
       ...(options.headers ?? {}),
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
+    cache: "no-store", // Prevent aggressive Next.js caching
   });
 
   const payload = (await response.json().catch(() => null)) as

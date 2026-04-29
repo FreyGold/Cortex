@@ -7,7 +7,7 @@ export class ProfileRepository {
     const { data, error } = await this.supabase
       .from("profiles")
       .select(
-        "id,name,role,is_verified,verified_at,verification_requested_at,preferred_language,university_id,college_id,major_id,year_level_id,ai_api_key,ai_model,ai_provider",
+        "id,name,role,is_verified,verified_at,verification_requested_at,preferred_language,university_id,college_id,major_id,year_level_id",
       )
       .eq("id", userId)
       .maybeSingle();

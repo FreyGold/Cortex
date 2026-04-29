@@ -228,13 +228,13 @@ export function NotesDashboard() {
          <div className="flex items-center bg-muted/20 rounded-lg p-1 gap-1">
             <button 
                 onClick={() => setViewMode("grid")}
-                className={cn("p-1.5 rounded-md transition-all", viewMode === "grid" ? "bg-background text-primary shadow-sm" : "text-muted-foreground/40 hover:text-foreground")}
+                className={cn("p-1.5 rounded-md transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.95]", viewMode === "grid" ? "bg-background text-primary shadow-sm" : "text-muted-foreground/40 hover:text-foreground")}
             >
                 <LayoutGrid className="size-4" />
             </button>
             <button 
                 onClick={() => setViewMode("list")}
-                className={cn("p-1.5 rounded-md transition-all", viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground/40 hover:text-foreground")}
+                className={cn("p-1.5 rounded-md transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.95]", viewMode === "list" ? "bg-background text-primary shadow-sm" : "text-muted-foreground/40 hover:text-foreground")}
             >
                 <ListIcon className="size-4" />
             </button>
@@ -268,7 +268,7 @@ export function NotesDashboard() {
       ) : viewMode === "grid" ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {notes.map((note) => (
-            <Link key={note.id} href={`/notes/${note.id}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`} className="group block h-full">
+            <Link key={note.id} href={`/notes/${note.id}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`} className="group block h-full active:scale-[0.98] transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)]">
               <div className="flex flex-col h-full p-6 rounded-3xl border border-border/40 bg-card hover:border-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 relative overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                    <div className="size-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all">

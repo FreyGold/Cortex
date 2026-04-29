@@ -117,7 +117,7 @@ function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
         <Link 
           href={`/notes/${note.id}${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`} 
           className={cn(
-            "group flex items-center gap-2 py-1.5 px-3 rounded-md transition-all relative select-none",
+            "group flex items-center gap-2 py-1.5 px-3 rounded-md transition-all active:scale-[0.98] active:translate-y-px relative select-none",
             active ? "bg-accent/60 text-foreground" : "text-muted-foreground/70 hover:bg-accent/30 hover:text-foreground",
             isMenuOpen && "bg-accent/40 ring-1 ring-primary/10",
             note.is_optimistic && "opacity-50 animate-pulse pointer-events-none"
@@ -270,7 +270,7 @@ function FolderNode({ folder, allFolders, notes, depth, activeNoteId, onDrop, on
         <ContextMenuTrigger asChild>
           <div 
             className={cn(
-              "group flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-all select-none",
+              "group flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] select-none",
               isOver ? "bg-primary/5 ring-1 ring-primary/20" : "hover:bg-accent/30 text-muted-foreground/70 hover:text-foreground",
               isMenuOpen && "bg-accent/40 ring-1 ring-primary/10",
               folder.is_optimistic && "opacity-50 animate-pulse pointer-events-none"

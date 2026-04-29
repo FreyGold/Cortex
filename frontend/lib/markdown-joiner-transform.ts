@@ -1,10 +1,8 @@
 import type { TextStreamPart, ToolSet } from 'ai';
 
 /**
- * Transform chunks like [**,bold,**] to [**bold**] make the md deserializer
- * happy.
- *
- * @experimental
+ * Transform chunks to ensure valid Markdown reaches the editor.
+ * Line-buffers all content. Tables are buffered completely.
  */
 export const markdownJoinerTransform =
   <TOOLS extends ToolSet>() =>
@@ -15,7 +13,6 @@ export const markdownJoinerTransform =
 
     return new TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>>({
       async flush(controller) {
-        // Only flush if we haven't seen text-end yet
         if (!textStreamEnded) {
           const remaining = joiner.flush();
           if (remaining && lastTextDeltaId) {
@@ -36,10 +33,10 @@ export const markdownJoinerTransform =
               ...chunk,
               text: processedText,
             });
-            await delay(joiner.delayInMs);
+            // Give Plate time to handle the new line
+            await new Promise((resolve) => setTimeout(resolve, 30));
           }
         } else if (chunk.type === 'text-end') {
-          // Flush any remaining buffer before text-end
           const remaining = joiner.flush();
           if (remaining && lastTextDeltaId) {
             controller.enqueue({
@@ -57,183 +54,61 @@ export const markdownJoinerTransform =
     });
   };
 
-const DEFAULT_DELAY_IN_MS = 10;
-const NEST_BLOCK_DELAY_IN_MS = 100;
-
-const BOLD_PATTERN = /\*\*.*?\*\*/;
-const CODE_LINE_PATTERN = /```[^\s]+/;
-const LINK_PATTERN = /^\[.*?\]\(.*?\)$/;
-const UNORDERED_LIST_PATTERN = /^[*-]\s+.+/;
-const TODO_LIST_PATTERN = /^[*-]\s+\[[ xX]\]\s+.+/;
-const ORDERED_LIST_PATTERN = /^\d+\.\s+.+/;
-const MDX_TAG_PATTERN = /<([A-Za-z][A-Za-z0-9\-_]*)>/;
-const DIGIT_PATTERN = /^[0-9]$/;
-
 export class MarkdownJoiner {
-  delayInMs = DEFAULT_DELAY_IN_MS;
+  private lineBuffer = '';
+  private tableBuffer: string[] = [];
+  private isBufferingTable = false;
 
-  private buffer = '';
-  private documentCharacterCount = 0;
-  private isBuffering = false;
-  private streamingCodeBlock = false;
-  private streamingLargeDocument = false;
-  private streamingTable = false;
-
-  private clearBuffer(): void {
-    this.buffer = '';
-    this.isBuffering = false;
-  }
-  private isCompleteBold(): boolean {
-    return BOLD_PATTERN.test(this.buffer);
-  }
-
-  private isCompleteCodeBlockEnd(): boolean {
-    return this.buffer.trimEnd() === '```';
-  }
-
-  private isCompleteCodeBlockStart(): boolean {
-    return CODE_LINE_PATTERN.test(this.buffer);
-  }
-
-  private isCompleteLink(): boolean {
-    return LINK_PATTERN.test(this.buffer);
-  }
-
-  private isCompleteList(): boolean {
-    if (UNORDERED_LIST_PATTERN.test(this.buffer) && this.buffer.includes('['))
-      return TODO_LIST_PATTERN.test(this.buffer);
-
-    return (
-      UNORDERED_LIST_PATTERN.test(this.buffer) ||
-      ORDERED_LIST_PATTERN.test(this.buffer) ||
-      TODO_LIST_PATTERN.test(this.buffer)
-    );
-  }
-
-  private isCompleteMdxTag(): boolean {
-    return MDX_TAG_PATTERN.test(this.buffer);
-  }
-
-  private isCompleteTableStart(): boolean {
-    return this.buffer.startsWith('|') && this.buffer.endsWith('|');
-  }
-
-  private isFalsePositive(char: string): boolean {
-    // when link is not complete, even if ths buffer is more than 30 characters, it is not a false positive
-    if (this.buffer.startsWith('[') && this.buffer.includes('http')) {
-      return false;
-    }
-
-    return char === '\n' || this.buffer.length > 30;
-  }
-
-  private isLargeDocumentStart(): boolean {
-    return this.documentCharacterCount > 2500;
-  }
-
-  private isListStartChar(char: string): boolean {
-    return char === '-' || char === '*' || DIGIT_PATTERN.test(char);
-  }
-
-  private isTableExisted(): boolean {
-    return this.buffer.length > 10 && !this.buffer.includes('|');
-  }
-
-  flush(): string {
-    const remaining = this.buffer;
-    this.clearBuffer();
-    return remaining;
-  }
-
+  /**
+   * Always buffers until a full line (\n) is received.
+   * If the line is a table row, it buffers the entire table.
+   */
   processText(text: string): string {
+    this.lineBuffer += text;
     let output = '';
 
-    for (const char of text) {
-      if (
-        this.streamingCodeBlock ||
-        this.streamingTable ||
-        this.streamingLargeDocument
-      ) {
-        this.buffer += char;
+    while (this.lineBuffer.includes('\n')) {
+      const newlineIndex = this.lineBuffer.indexOf('\n');
+      const line = this.lineBuffer.slice(0, newlineIndex + 1);
+      this.lineBuffer = this.lineBuffer.slice(newlineIndex + 1);
 
-        if (char === '\n') {
-          output += this.buffer;
-          this.clearBuffer();
-        }
+      const trimmed = line.trim();
+      const isTableRow = trimmed.startsWith('|');
 
-        if (this.isCompleteCodeBlockEnd() && this.streamingCodeBlock) {
-          this.streamingCodeBlock = false;
-          this.delayInMs = DEFAULT_DELAY_IN_MS;
-
-          output += this.buffer;
-          this.clearBuffer();
-        }
-
-        if (this.isTableExisted() && this.streamingTable) {
-          this.streamingTable = false;
-          this.delayInMs = DEFAULT_DELAY_IN_MS;
-
-          output += this.buffer;
-          this.clearBuffer();
-        }
-      } else if (this.isBuffering) {
-        this.buffer += char;
-
-        if (this.isCompleteCodeBlockStart()) {
-          this.delayInMs = NEST_BLOCK_DELAY_IN_MS;
-          this.streamingCodeBlock = true;
-          continue;
-        }
-
-        if (this.isCompleteTableStart()) {
-          this.delayInMs = NEST_BLOCK_DELAY_IN_MS;
-          this.streamingTable = true;
-          continue;
-        }
-
-        if (this.isLargeDocumentStart()) {
-          this.delayInMs = NEST_BLOCK_DELAY_IN_MS;
-          this.streamingLargeDocument = true;
-          continue;
-        }
-
-        if (
-          this.isCompleteBold() ||
-          this.isCompleteMdxTag() ||
-          this.isCompleteList() ||
-          this.isCompleteLink()
-        ) {
-          output += this.buffer;
-          this.clearBuffer();
-        } else if (this.isFalsePositive(char)) {
-          // False positive - flush buffer as raw text
-          output += this.buffer;
-          this.clearBuffer();
-        }
-        // Check if we should start buffering
-      } else if (
-        char === '*' ||
-        char === '<' ||
-        char === '`' ||
-        char === '|' ||
-        char === '[' ||
-        this.isListStartChar(char)
-      ) {
-        this.buffer = char;
-        this.isBuffering = true;
+      if (isTableRow) {
+        this.isBufferingTable = true;
+        this.tableBuffer.push(line);
       } else {
-        // Pass through character directly
-        output += char;
+        // Line is NOT a table row. If we were buffering a table, it's over.
+        if (this.isBufferingTable) {
+          // Force Slate to treat this as an isolated block
+          output += '\n\n' + this.tableBuffer.join('') + '\n\n';
+          this.tableBuffer = [];
+          this.isBufferingTable = false;
+        }
+        output += line;
       }
     }
 
-    this.documentCharacterCount += text.length;
     return output;
   }
-}
 
-async function delay(delayInMs?: number | null): Promise<void> {
-  return delayInMs == null
-    ? Promise.resolve()
-    : new Promise((resolve) => setTimeout(resolve, delayInMs));
+  /**
+   * Final flush of all buffers.
+   */
+  flush(): string {
+    let output = '';
+    
+    if (this.tableBuffer.length > 0) {
+      output += '\n\n' + this.tableBuffer.join('') + '\n\n';
+      this.tableBuffer = [];
+    }
+    
+    if (this.lineBuffer) {
+      output += this.lineBuffer;
+      this.lineBuffer = '';
+    }
+    
+    return output;
+  }
 }

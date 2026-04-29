@@ -45,6 +45,42 @@ function buildGenerateFreeformPrompt(messages: ChatMessage[]) {
         Machine learning is a subset of AI where algorithms learn patterns from data. Deep learning uses neural networks with many layers to automatically learn complex features from raw data.
         </output>
       `,
+      dedent`
+        <instruction>
+        Generate a comparison table of sharding vs partitioning
+        </instruction>
+
+        <output>
+        ### Data Distribution Comparison
+
+        | Feature | Sharding | Partitioning |
+        |---------|----------|--------------|
+        | **Level** | Database / Instance level | Table level |
+        | **Scalability** | Horizontal (multiple servers) | Vertical (single server) |
+        | **Complexity** | High (requires middleware) | Low (native to DB) |
+        | **Performance** | Best for large data across nodes | Best for managing large local tables |
+
+        <callout>
+        **Note:** Sharding is typically preferred for planetary-scale applications, while partitioning is a great first step for optimizing local performance.
+        </callout>
+        </output>
+      `,
+      dedent`
+        <instruction>
+        Create a study plan for learning sharding
+        </instruction>
+
+        <output>
+        ### Sharding Learning Path
+
+        - [ ] **Phase 1:** Understand Horizontal vs Vertical Scaling
+        - [ ] **Phase 2:** Learn Sharding Keys and Partitioning Strategies
+        - [ ] **Phase 3:** Explore Consistent Hashing
+        - [ ] **Phase 4:** Hands-on with Citus (Postgres) or MongoDB Sharding
+
+        > **Tip:** Start with the theoretical concepts of CAP theorem before diving into implementation.
+        </output>
+      `,
     ],
     history: formatTextFromMessages(messages),
     instruction: getLastUserInstruction(messages),

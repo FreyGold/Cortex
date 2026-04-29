@@ -47,7 +47,10 @@ export type NoteShareItem = {
 };
 
 export function getDashboardNotes(accessToken: string, workspaceId?: string) {
-  const url = workspaceId ? `/api/notes/dashboard?workspaceId=${workspaceId}` : "/api/notes/dashboard";
+  const ts = Date.now();
+  const url = workspaceId 
+    ? `/api/notes/dashboard?workspaceId=${workspaceId}&_t=${ts}` 
+    : `/api/notes/dashboard?_t=${ts}`;
   return apiRequest<{
     notes: NoteListItem[];
     sharedNotes: NoteListItem[];

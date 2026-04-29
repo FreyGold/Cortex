@@ -87,7 +87,7 @@ export function AppShell({ children }: AppShellProps) {
                     key={item.href}
                     href={href}
                     className={cn(
-                      "flex flex-col items-center gap-0.5 rounded-md px-2 py-2 text-xs font-medium transition-colors",
+                      "flex flex-col items-center gap-0.5 rounded-md px-2 py-2 text-xs font-medium transition-all active:scale-[0.96] active:translate-y-px",
                       active
                         ? "bg-accent text-accent-foreground"
                         : "text-muted-foreground",

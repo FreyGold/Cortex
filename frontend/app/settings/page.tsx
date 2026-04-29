@@ -90,13 +90,7 @@ export default async function SettingsPage(props: {
                   <h2 className="text-2xl font-semibold tracking-tight mb-1">AI Integration</h2>
                   <p className="text-sm text-muted-foreground">Customize your AI experience and manage your personal API keys.</p>
                 </div>
-                <AIIntegrationForm
-                  initialValues={{
-                    aiApiKey: profile?.ai_api_key ?? null,
-                    aiModel: profile?.ai_model ?? null,
-                    aiProvider: profile?.ai_provider ?? null,
-                  }}
-                />
+                <AIIntegrationForm />
               </div>
             </TabsContent>
 
