@@ -154,20 +154,17 @@ export function FixedToolbarButtons() {
 
       <div className="grow" />
 
-      {!readOnly && (
-        <>
-          <ToolbarGroup>
+      <ToolbarGroup>
+        {!readOnly && (
+          <>
             <MarkToolbarButton nodeType={KEYS.highlight} tooltip="Highlight">
               <HighlighterIcon />
             </MarkToolbarButton>
             <CommentToolbarButton />
-          </ToolbarGroup>
-
-          <ToolbarGroup>
-            <ModeToolbarButton />
-          </ToolbarGroup>
-        </>
-      )}
+          </>
+        )}
+        <ModeToolbarButton />
+      </ToolbarGroup>
     </div>
   );
 }

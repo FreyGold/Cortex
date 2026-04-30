@@ -511,7 +511,16 @@ function useTableResizeController({
           direction === 'bottom'
             ? rowHeight
             : (effectiveColSizesRef.current[colIndex] ??
-              TABLE_DEFAULT_COLUMN_WIDTH),
+              (() => {
+                const table = tableRef.current;
+                if (!table || table.rows.length === 0) return TABLE_DEFAULT_COLUMN_WIDTH;
+                const firstRow = table.rows[0];
+                const hasControlCell = firstRow.cells.length > (table.querySelector('colgroup')?.children.length || 0) - 1 && firstRow.cells[0].classList.contains('slate-table-control-cell'); // Plate usually uses specific classes, but we can just check if cells > cols
+                const isFirstColControl = table.querySelector('col')?.style.width === `${TABLE_CONTROL_COLUMN_WIDTH}px`;
+                const targetColIndex = isFirstColControl ? colIndex + 1 : colIndex;
+                const cell = firstRow.cells[targetColIndex];
+                return cell ? cell.getBoundingClientRect().width : TABLE_DEFAULT_COLUMN_WIDTH;
+              })()),
         marginLeft: marginLeftRef.current,
         rowIndex,
       };
@@ -663,13 +672,15 @@ export const TableElement = withHOC(
     }, [resolvedColSizes]);
     const tableStyle = React.useMemo(
       () =>
-        ({
-          width: `${
-            resolvedColSizes.reduce((total, colSize) => total + colSize, 0) +
-            controlColumnWidth
-          }px`,
-        }) as React.CSSProperties,
-      [controlColumnWidth, resolvedColSizes]
+        colSizes.length === 0
+          ? ({ width: '100%' } as React.CSSProperties)
+          : ({
+              width: `${
+                resolvedColSizes.reduce((total, colSize) => total + colSize, 0) +
+                controlColumnWidth
+              }px`,
+            } as React.CSSProperties),
+      [controlColumnWidth, resolvedColSizes, colSizes.length]
     );
 
     const isSelectingTable = useBlockSelected(props.element.id as string);
@@ -726,11 +737,15 @@ export const TableElement = withHOC(
                   {resolvedColSizes.map((colSize, index) => (
                     <col
                       key={index}
-                      style={{
-                        maxWidth: colSize,
-                        minWidth: colSize,
-                        width: colSize,
-                      }}
+                      style={
+                        colSizes.length === 0
+                          ? {}
+                          : {
+                              maxWidth: colSize,
+                              minWidth: colSize,
+                              width: colSize,
+                            }
+                      }
                     />
                   ))}
                 </colgroup>

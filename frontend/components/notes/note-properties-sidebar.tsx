@@ -739,19 +739,34 @@ export function NotePropertiesSidebar(props: NotePropertiesSidebarProps) {
           </div>
         )}
 
-        <div className="relative group/input mt-4">
+        <div className="flex flex-col gap-2 mt-4">
           <Textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Ask anything about this note…"
-            className="min-h-[70px] w-full resize-none text-[12px] bg-background border border-border/10 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/30 py-2.5 px-3 pr-10 shadow-sm"
+            className="min-h-[70px] w-full resize-none text-[12px] bg-background border border-border/10 rounded-xl focus-visible:ring-1 focus-visible:ring-primary/20 placeholder:text-muted-foreground/30 py-2.5 px-3 shadow-sm"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                setAssistantOpen(true);
+                if (question.trim()) {
+                  setTimeout(() => setQuestion(""), 100);
+                }
+              }
+            }}
           />
-          <button 
-            onClick={() => setAssistantOpen(true)}
-            className="absolute bottom-2 right-2 p-1.5 bg-primary text-primary-foreground rounded-lg shadow-sm hover:scale-105 active:scale-[0.9] transition-all duration-150 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          <Button 
+            onClick={() => {
+              setAssistantOpen(true);
+              if (question.trim()) {
+                setTimeout(() => setQuestion(""), 100);
+              }
+            }}
+            className="w-full h-9 text-xs shadow-sm"
           >
-            <Sparkles className="size-3" />
-          </button>
+            <Sparkles className="size-3.5 mr-2" />
+            {question.trim() ? "Ask AI" : "New Chat"}
+          </Button>
         </div>
       </div>
     </div>

@@ -260,12 +260,12 @@ export function GlobalAssistantModal({
     if (isOpen) {
       refreshHistory();
       
-      // Auto-load latest session for this note if we just opened it and no session is active
-      if (noteId && !activeId) {
-        if (latestNoteSessionId) {
-          loadSession(latestNoteSessionId);
-        }
-      }
+      // We no longer auto-load the latest session so that the user gets an empty chat by default.
+      // if (noteId && !activeId) {
+      //   if (latestNoteSessionId) {
+      //     loadSession(latestNoteSessionId);
+      //   }
+      // }
 
       if (initialQuestion && !hasAutoSubmittedRef.current) {
         setText(initialQuestion);
