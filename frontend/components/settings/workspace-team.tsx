@@ -10,15 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useWorkspaceMembers, useAddWorkspaceMember, useDeleteWorkspaceMember, useUpdateWorkspaceMemberRole, useWorkspaces, useCreateWorkspace } from "@/hooks/use-workspace";
-import { Trash2, Shield, Users, Mail, Plus } from "lucide-react";
+import { useWorkspaceMembers, useAddWorkspaceMember, useDeleteWorkspaceMember, useUpdateWorkspaceMemberRole, useWorkspaces, useCreateWorkspace, useDeleteWorkspace } from "@/hooks/use-workspace";
+import { Trash2, Shield, Users, Mail, Plus, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/use-auth";
 
 export function WorkspaceTeam() {
   const { data: workspaces, isLoading: isLoadingWorkspaces } = useWorkspaces();
   const createWorkspace = useCreateWorkspace();
+  const deleteWorkspace = useDeleteWorkspace();
+  const { data: user } = useAuth();
   
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
   const [newWorkspaceName, setNewWorkspaceName] = useState("");
@@ -43,6 +46,25 @@ export function WorkspaceTeam() {
       toast.success("Workspace created");
     } catch (error: any) {
       toast.error("Failed to create workspace");
+    }
+  };
+
+  const handleDeleteWorkspace = async () => {
+    if (!selectedWorkspaceId) return;
+    
+    const ws = workspaces?.find((w: any) => w.id === selectedWorkspaceId);
+    if (!ws) return;
+
+    if (!window.confirm(`Are you sure you want to delete "${ws.name}"? This will permanently remove all associated notes and folders. This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await deleteWorkspace.mutateAsync(selectedWorkspaceId);
+      setSelectedWorkspaceId(null);
+      toast.success("Workspace deleted");
+    } catch (error: any) {
+      toast.error("Failed to delete workspace");
     }
   };
 
@@ -80,6 +102,7 @@ export function WorkspaceTeam() {
   };
 
   const selectedWorkspace = workspaces?.find((w: any) => w.id === selectedWorkspaceId);
+  const isOwner = selectedWorkspace?.owner_id === user?.id;
 
   return (
     <div className="space-y-6">
@@ -102,9 +125,23 @@ export function WorkspaceTeam() {
       </div>
 
       <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
-        <div className="flex items-center gap-2 text-primary">
-          <Users className="size-4" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">Select Workspace to Manage</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-primary">
+            <Users className="size-4" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Select Workspace to Manage</span>
+          </div>
+          {selectedWorkspaceId && isOwner && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive gap-2"
+              onClick={handleDeleteWorkspace}
+              disabled={deleteWorkspace.isPending}
+            >
+              <AlertTriangle className="size-3" />
+              <span className="text-xs">Delete Workspace</span>
+            </Button>
+          )}
         </div>
         <Select value={selectedWorkspaceId || ""} onValueChange={setSelectedWorkspaceId}>
             <SelectTrigger className="w-full">

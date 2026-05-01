@@ -44,6 +44,16 @@ const deepSanitizeNodes = (nodes: any[]): any[] => {
     } else if (type === 'table') {
       const hasRows = children.some((c: any) => c.type === 'tr');
       if (!hasRows) children = [{ type: 'tr', children: [{ type: 'td', children: [{ text: '' }] }] }];
+      
+      let maxCols = 0;
+      children.forEach((row: any) => {
+        if (row.type === 'tr' && Array.isArray(row.children)) {
+          maxCols = Math.max(maxCols, row.children.length);
+        }
+      });
+      if (maxCols > 0 && !node.colSizes) {
+        return { ...node, children, colSizes: Array(maxCols).fill(300) };
+      }
     } else if (children.length === 0) {
       children = [{ text: '' }];
     }

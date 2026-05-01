@@ -70,6 +70,52 @@ export function useCreateWorkspace() {
   });
 }
 
+export function useDeleteWorkspace() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("workspaces")
+        .delete()
+        .eq("id", id);
+        
+      if (error) throw error;
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["workspaces"] });
+      await queryClient.cancelQueries({ queryKey: ["joined-workspaces"] });
+      const previousWorkspaces = queryClient.getQueryData(["workspaces"]);
+      const previousJoined = queryClient.getQueryData(["joined-workspaces"]);
+
+      if (previousWorkspaces) {
+        queryClient.setQueryData(["workspaces"], (old: any) => 
+          (old || []).filter((w: any) => w.id !== id)
+        );
+      }
+      if (previousJoined) {
+        queryClient.setQueryData(["joined-workspaces"], (old: any) => 
+          (old || []).filter((w: any) => w.id !== id)
+        );
+      }
+
+      return { previousWorkspaces, previousJoined };
+    },
+    onError: (err, id, context) => {
+      if (context?.previousWorkspaces) {
+        queryClient.setQueryData(["workspaces"], context.previousWorkspaces);
+      }
+      if (context?.previousJoined) {
+        queryClient.setQueryData(["joined-workspaces"], context.previousJoined);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["joined-workspaces"] });
+    },
+  });
+}
+
 export function useWorkspaceMembers(workspaceId: string) {
   return useQuery({
     queryKey: ["workspace-members", workspaceId],

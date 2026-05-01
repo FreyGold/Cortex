@@ -13,6 +13,7 @@ import {
   type UIMessageStreamWriter,
   createUIMessageStream,
   createUIMessageStreamResponse,
+  generateObject,
   generateText,
   Output,
   streamText,
@@ -104,18 +105,22 @@ export async function POST(req: NextRequest) {
           const modelId = model || 'openai/gpt-4o-mini';
 
           try {
-            const { output: AIToolName } = await generateText({
+            const { object } = await generateObject({
               model: getModel(modelId),
-              output: Output.choice({ options: enumOptions }),
-              prompt,
+              schema: z.object({
+                toolName: z.enum(enumOptions as any),
+              }),
+              // @ts-ignore - mode might not be typed in this ai sdk version
+              mode: 'json',
+              prompt: prompt + `\n\nRespond with a JSON object containing a single key "toolName" with one of the following values: ${enumOptions.join(', ')}.`,
             });
 
             writer.write({
-              data: AIToolName as ToolName,
+              data: object.toolName as ToolName,
               type: 'data-toolName',
             });
 
-            toolName = AIToolName;
+            toolName = object.toolName;
           } catch (classifyError) {
             console.warn('[AI Command Route] Classification failed, defaulting to generate:', classifyError);
             toolName = 'generate';
