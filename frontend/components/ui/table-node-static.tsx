@@ -24,7 +24,7 @@ export function TableElementStatic({
       <div className="group/table relative w-fit">
         <table
           className="mr-0 ml-px table h-px table-fixed border-collapse"
-          style={{ borderCollapse: 'collapse', width: '100%' }}
+          style={{ width: '100%' }}
         >
           <tbody className="min-w-full">{children}</tbody>
         </table>

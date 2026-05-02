@@ -13,7 +13,11 @@ import {
 } from '@/components/ui/table-node-static';
 
 export const BaseTableKit = [
-  BaseTablePlugin.withComponent(TableElementStatic),
+  BaseTablePlugin.extend({
+    options: {
+      initialTableWidth: 0,
+    }
+  }).withComponent(TableElementStatic),
   BaseTableRowPlugin.withComponent(TableRowElementStatic),
   BaseTableCellPlugin.withComponent(TableCellElementStatic),
   BaseTableCellHeaderPlugin.withComponent(TableCellHeaderElementStatic),

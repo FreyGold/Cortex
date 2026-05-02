@@ -697,7 +697,7 @@ export const TableElement = withHOC(
         <TableResizeContext.Provider value={resizeController}>
           <div
             ref={wrapperRef}
-            className="group/table relative w-fit"
+            className={cn("group/table relative", colSizes.length > 0 ? 'w-fit' : 'w-full')}
             style={tableVariableStyle}
           >
             <div

@@ -17,6 +17,9 @@ import {
 
 export const TableKit = [
   TablePlugin.extend({
+    options: {
+      initialTableWidth: 0,
+    },
     withOverrides: (editor) => {
       const { normalizeNode } = editor;
 
