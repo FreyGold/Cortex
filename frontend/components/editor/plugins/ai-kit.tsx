@@ -119,7 +119,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
     chat: {
       messages: [],
       status: 'ready',
-    },
+    } as any,
   },
   handlers: {
     onBlur: ({ editor }) => {
@@ -185,12 +185,12 @@ export const aiChatPlugin = AIChatPlugin.extend({
                 editor.tf.insertNodes(newNodes, { at: targetPath, select: true });
                 // Update length for the next chunk
                 lastInsertedLength = newNodes.length;
-                editor.setOption(AIChatPlugin, '_lastInsertedLength', lastInsertedLength);
+                editor.setOption(AIChatPlugin, '_lastInsertedLength' as any, lastInsertedLength);
               } else {
                  // Keep the placeholder alive if deserialization yielded nothing
                  editor.tf.insertNodes({ children: [{ text: '' }], type: getPluginType(editor, KEYS.aiChat), [getPluginType(editor, KEYS.ai)]: true }, { at: targetPath, select: true });
                  lastInsertedLength = 1;
-                 editor.setOption(AIChatPlugin, '_lastInsertedLength', 1);
+                 editor.setOption(AIChatPlugin, '_lastInsertedLength' as any, 1);
               }
             }
           });
@@ -203,8 +203,8 @@ export const aiChatPlugin = AIChatPlugin.extend({
         
         if (isFirst && mode === 'insert') {
           rawMarkdown = '';
-          editor.setOption(AIChatPlugin, '_rawMarkdown', '');
-          editor.setOption(AIChatPlugin, '_lastInsertedLength', 1);
+          editor.setOption(AIChatPlugin, '_rawMarkdown' as any, '');
+          editor.setOption(AIChatPlugin, '_lastInsertedLength' as any, 1);
 
           
           const { startBlock, startInEmptyParagraph } =
@@ -241,7 +241,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           // 1. Accumulate raw markdown
           const newMarkdown = rawMarkdown + chunk;
           rawMarkdown = newMarkdown;
-          editor.setOption(AIChatPlugin, '_rawMarkdown', newMarkdown);
+          editor.setOption(AIChatPlugin, '_rawMarkdown' as any, newMarkdown);
           
           const now = Date.now();
           // Throttle updates to every 100ms to prevent main thread freezing
@@ -275,8 +275,8 @@ export const aiChatPlugin = AIChatPlugin.extend({
         editor.setOption(AIChatPlugin, '_blockChunks', '');
         editor.setOption(AIChatPlugin, '_blockPath' as any, null);
         editor.setOption(AIChatPlugin, '_mdxName', null);
-        editor.setOption(AIChatPlugin, '_rawMarkdown', '');
-        editor.setOption(AIChatPlugin, '_lastInsertedLength', 1);
+        editor.setOption(AIChatPlugin, '_rawMarkdown' as any, '');
+        editor.setOption(AIChatPlugin, '_lastInsertedLength' as any, 1);
         editor.setOption(AIChatPlugin, '_lastRenderTime' as any, 0);
       },
     });

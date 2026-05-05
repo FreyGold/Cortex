@@ -109,7 +109,7 @@ export function useCreateNote() {
       // Correct way to update multiple specific queries in v5
       queryClient.getQueryCache().findAll({ queryKey: ["notes-dashboard"] }).forEach(query => {
         const queryWorkspaceId = query.queryKey[1];
-        if (data.workspace_id === (queryWorkspaceId || null)) {
+        if ((data as any).workspace_id === (queryWorkspaceId || null)) {
           queryClient.setQueryData(query.queryKey, (old: any) => {
             if (!old) return old;
             const filteredNotes = old.notes?.filter((n: any) => !n.is_optimistic && n.id !== data.id) || [];
@@ -180,10 +180,10 @@ export function useCreateFolder() {
     onSuccess: (data) => {
        queryClient.getQueryCache().findAll({ queryKey: ["notes-dashboard"] }).forEach(query => {
          const queryWorkspaceId = query.queryKey[1];
-         if (data.workspace_id === (queryWorkspaceId || null)) {
+         if ((data as any).workspace_id === (queryWorkspaceId || null)) {
            queryClient.setQueryData(query.queryKey, (old: any) => {
              if (!old) return old;
-             const filteredFolders = old.folders?.filter((f: any) => !f.is_optimistic && f.id !== data.id) || [];
+             const filteredFolders = old.folders?.filter((f: any) => !f.is_optimistic && f.id !== (data as any).id) || [];
              return {
                ...old,
                folders: [data, ...filteredFolders]

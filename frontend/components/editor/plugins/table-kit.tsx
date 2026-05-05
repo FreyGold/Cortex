@@ -20,10 +20,11 @@ export const TableKit = [
     options: {
       initialTableWidth: 0,
     },
-    withOverrides: (editor) => {
+    // @ts-ignore - Plate types might not include withOverrides directly in extend
+    withOverrides: (editor: any) => {
       const { normalizeNode } = editor;
 
-      editor.normalizeNode = (entry) => {
+      editor.normalizeNode = (entry: any) => {
         const [node, path] = entry;
 
         const trType = editor.getType(KEYS.tr);

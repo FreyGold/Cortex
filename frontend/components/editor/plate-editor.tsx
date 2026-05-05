@@ -116,8 +116,8 @@ function PlateEditorInner({
         ...chatOptions,
         body: {
           ...chatOptions?.body,
-          apiKey: settings.aiApiKey || chatOptions?.body?.apiKey,
-          model: settings.aiModel || chatOptions?.body?.model,
+          apiKey: settings.aiApiKey || (chatOptions?.body as Record<string, any>)?.apiKey,
+          model: settings.aiModel || (chatOptions?.body as Record<string, any>)?.model,
         }
       });
 
@@ -126,8 +126,8 @@ function PlateEditorInner({
         ...completeOptions,
         body: {
           ...completeOptions?.body,
-          apiKey: settings.aiApiKey || completeOptions?.body?.apiKey,
-          model: settings.aiModel || completeOptions?.body?.model,
+          apiKey: settings.aiApiKey || (completeOptions?.body as Record<string, any>)?.apiKey,
+          model: settings.aiModel || (completeOptions?.body as Record<string, any>)?.model,
         }
       });
     }
