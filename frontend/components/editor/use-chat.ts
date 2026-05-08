@@ -50,11 +50,14 @@ export type Chat = UseChatHelpers<ChatMessage>;
 
 export type ChatMessage = UIMessage<{}, MessageDataPart>;
 
+// The fake stream logic was causing artificial delays. It should be fully removed or bypassed
+// if it's intercepting the real API response. If we are using real API calls via the Vercel AI SDK
+// (which we are), we don't need this throttling at all.
+
 export const useChat = () => {
   const editor = useEditorRef();
   const options = usePluginOption(aiChatPlugin, 'chatOptions');
 
-  // remove when you implement the route /api/ai/command
   const abortControllerRef = React.useRef<AbortController | null>(null);
   const _abortFakeStream = () => {
     if (abortControllerRef.current) {
@@ -69,7 +72,6 @@ export const useChat = () => {
       api: options.api || '/api/ai/command',
       fetch: (async (input, init) => {
         const bodyOptions = editor.getOptions(aiChatPlugin).chatOptions?.body;
-
         const initBody = JSON.parse(init?.body as string);
 
         const body = {
@@ -93,16 +95,12 @@ export const useChat = () => {
 
         if (tableData.status === 'finished') {
           const chatSelection = editor.getOption(AIChatPlugin, 'chatSelection');
-
           if (!chatSelection) return;
-
           editor.tf.setSelection(chatSelection);
-
           return;
         }
 
         const cellUpdate = tableData.cellUpdate!;
-
         withAIBatch(editor, () => {
           applyTableCellSuggestion(editor, cellUpdate);
         });
@@ -113,7 +111,6 @@ export const useChat = () => {
 
         if (commentData.status === 'finished') {
           editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
-
           return;
         }
 
@@ -125,10 +122,8 @@ export const useChat = () => {
         const discussions =
           editor.getOption(discussionPlugin, 'discussions') || [];
 
-        // Generate a new discussion ID
         const discussionId = nanoid();
 
-        // Create a new comment
         const newComment = {
           id: nanoid(),
           contentRich: [{ children: [{ text: aiComment.comment }], type: 'p' }],
@@ -138,7 +133,6 @@ export const useChat = () => {
           userId: editor.getOption(discussionPlugin, 'currentUserId'),
         };
 
-        // Create a new discussion
         const newDiscussion = {
           id: discussionId,
           comments: [newComment],
@@ -150,11 +144,9 @@ export const useChat = () => {
           userId: editor.getOption(discussionPlugin, 'currentUserId'),
         };
 
-        // Update discussions
         const updatedDiscussions = [...discussions, newDiscussion];
         editor.setOption(discussionPlugin, 'discussions', updatedDiscussions);
 
-        // Apply comment marks to the editor
         editor.tf.withMerging(() => {
           editor.tf.setNodes(
             {
@@ -171,7 +163,6 @@ export const useChat = () => {
         });
       }
     },
-
     ...options,
   });
 
@@ -181,12 +172,17 @@ export const useChat = () => {
   };
 
   React.useEffect(() => {
-    editor.setOption(AIChatPlugin, 'chat', chat as any);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.status, chat.messages, chat.error]);
+    // Only update the plugin state when the stream finishes or status changes
+    // to prevent excessive re-renders during high-frequency token streams.
+    // The `useChatChunk` hook handles the actual content insertion.
+    if (chat.status !== 'streaming') {
+      editor.setOption(AIChatPlugin, 'chat', chat as any);
+    }
+  }, [chat.status]);
 
   return chat;
 };
+
 
 // Used for testing. Remove it after implementing useChat api.
 const fakeStreamText = ({

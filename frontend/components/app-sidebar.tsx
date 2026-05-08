@@ -16,7 +16,11 @@ import {
   SquarePen as NotePencil,
   ShieldCheck,
   History,
-  ArrowLeft
+  ArrowLeft,
+  Users,
+  Wand2,
+  GraduationCap,
+  Settings2
 } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import React, { useState, useMemo } from "react";
@@ -45,6 +49,9 @@ export function AppSidebar({ onToggle, activeDailyTab, onDailyTabChange, isOpen 
   const pathname = usePathname();
 
   const isDailyPage = pathname.startsWith("/daily");
+  const isSettingsPage = pathname.startsWith("/settings");
+  const currentTab = searchParams.get("tab") || "profile";
+
   const currentWorkspaceId = searchParams.get("workspaceId") || undefined;
   const { data: profileData } = useCurrentProfile();
   const { data: joinedWorkspaces } = useJoinedWorkspaces();
@@ -70,7 +77,7 @@ export function AppSidebar({ onToggle, activeDailyTab, onDailyTabChange, isOpen 
     router.replace(newUrl);
   };
 
-  const NavButton = ({ icon: Icon, label, onClick, active, variant = "default" }: any) => (
+  const NavButton = ({ icon: Icon, label, onClick, active, variant = "default", className }: any) => (
     <button 
         onClick={onClick}
         className={cn(
@@ -79,7 +86,8 @@ export function AppSidebar({ onToggle, activeDailyTab, onDailyTabChange, isOpen 
               ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
               : variant === "ghost" 
                 ? "text-muted-foreground/50 hover:text-foreground hover:bg-accent/40"
-                : "text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground"
+                : "text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground",
+            className
         )}
     >
         <Icon className={cn("size-4 shrink-0 transition-colors", active ? "text-primary-foreground" : "text-muted-foreground/40 group-hover:text-muted-foreground")} />
@@ -87,9 +95,17 @@ export function AppSidebar({ onToggle, activeDailyTab, onDailyTabChange, isOpen 
     </button>
   );
 
-  const navigateTo = (path: string) => {
+  const navigateTo = (path: string, tab?: string) => {
     const workspaceId = searchParams.get("workspaceId");
-    router.push(`${path}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`);
+    let url = path;
+    const params = new URLSearchParams();
+    if (workspaceId) params.set("workspaceId", workspaceId);
+    if (tab) params.set("tab", tab);
+    
+    const queryString = params.toString();
+    if (queryString) url += `?${queryString}`;
+    
+    router.push(url);
   };
 
   return (
@@ -157,6 +173,46 @@ export function AppSidebar({ onToggle, activeDailyTab, onDailyTabChange, isOpen 
                <div className="pt-4 mt-4 border-t border-border/5">
                  <NavButton icon={Sparkles} label="Daily Assistant" onClick={() => onDailyTabChange?.("assistant")} active={false} />
                </div>
+            </div>
+          ) : isSettingsPage ? (
+            <div className="space-y-1 animate-in fade-in slide-in-from-left-4 duration-300">
+                <NavButton 
+                  variant="ghost" 
+                  icon={ArrowLeft} 
+                  label="Back to Hub" 
+                  onClick={() => navigateTo("/notes")} 
+                />
+                <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">Configuration</div>
+                <NavButton 
+                  icon={UserCircle} 
+                  label="Profile Settings" 
+                  onClick={() => navigateTo("/settings", "profile")} 
+                  active={currentTab === "profile"} 
+                />
+                <NavButton 
+                  icon={Users} 
+                  label="Workspace & Team" 
+                  onClick={() => navigateTo("/settings", "team")} 
+                  active={currentTab === "team"} 
+                />
+                <NavButton 
+                  icon={Wand2} 
+                  label="AI Integration" 
+                  onClick={() => navigateTo("/settings", "ai")} 
+                  active={currentTab === "ai"} 
+                />
+                <NavButton 
+                  icon={GraduationCap} 
+                  label="Academic Path" 
+                  onClick={() => navigateTo("/settings", "academic")} 
+                  active={currentTab === "academic"} 
+                />
+                <NavButton 
+                  icon={Settings2} 
+                  label="Preferences" 
+                  onClick={() => navigateTo("/settings", "preferences")} 
+                  active={currentTab === "preferences"} 
+                />
             </div>
           ) : (
             <div className="space-y-1 animate-in fade-in duration-300">

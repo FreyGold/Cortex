@@ -43,7 +43,7 @@ function PlateEditorInner({
   className,
   editorClassName,
   readOnly = false,
-  variant = 'demo',
+  variant = 'default',
   profile,
 }: PlateEditorProps & { profile?: any }) {
   const { settings, isLoaded } = useAISettings();
@@ -111,16 +111,19 @@ function PlateEditorInner({
   // Update AI settings from local storage
   React.useEffect(() => {
     if (isLoaded) {
+      // The inline AI Commands (aiChatPlugin) should use the EDITOR settings
       const chatOptions = editor.getOption(aiChatPlugin, 'chatOptions') || {};
       editor.setOption(aiChatPlugin, 'chatOptions', {
         ...chatOptions,
         body: {
           ...chatOptions?.body,
-          apiKey: settings.assistantApiKey || settings.aiApiKey || (chatOptions?.body as Record<string, any>)?.apiKey,
-          model: settings.assistantModel || settings.aiModel || (chatOptions?.body as Record<string, any>)?.model,
+          apiKey: settings.editorApiKey || settings.aiApiKey || (chatOptions?.body as Record<string, any>)?.apiKey,
+          model: settings.editorModel || settings.aiModel || (chatOptions?.body as Record<string, any>)?.model,
+          provider: settings.editorProvider || settings.aiProvider || (chatOptions?.body as Record<string, any>)?.provider,
         }
       });
 
+      // Copilot autocomplete also uses EDITOR settings
       const completeOptions = editor.getOption(CopilotPlugin, 'completeOptions') || {};
       editor.setOption(CopilotPlugin, 'completeOptions', {
         ...completeOptions,
@@ -128,6 +131,7 @@ function PlateEditorInner({
           ...completeOptions?.body,
           apiKey: settings.editorApiKey || settings.aiApiKey || (completeOptions?.body as Record<string, any>)?.apiKey,
           model: settings.editorModel || settings.aiModel || (completeOptions?.body as Record<string, any>)?.model,
+          provider: settings.editorProvider || settings.aiProvider || (completeOptions?.body as Record<string, any>)?.provider,
         }
       });
     }

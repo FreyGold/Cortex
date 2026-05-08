@@ -1,18 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, Loader2, Eye, EyeOff, Wand2Icon, Bot, Cpu } from "lucide-react";
+import { Check, Loader2, Eye, EyeOff, Wand2Icon, Bot, Cpu, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useAISettings } from "@/hooks/use-ai-settings";
 import { models } from "@/components/editor/settings-dialog";
 import { toast } from "sonner";
@@ -25,14 +32,18 @@ export function AIIntegrationForm() {
   const [editorModel, setEditorModel] = useState("google/gemini-2.0-flash");
   const [editorProvider, setEditorProvider] = useState("google");
   const [showEditorKey, setShowEditorKey] = useState(false);
+  const [openEditorModel, setOpenEditorModel] = useState(false);
 
   // Assistant Settings
   const [assistantApiKey, setAssistantApiKey] = useState("");
   const [assistantModel, setAssistantModel] = useState("google/gemini-2.0-flash");
   const [assistantProvider, setAssistantProvider] = useState("google");
   const [showAssistantKey, setShowAssistantKey] = useState(false);
+  const [openAssistantModel, setOpenAssistantModel] = useState(false);
 
   const [saving, setSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     if (isLoaded) {
@@ -51,6 +62,9 @@ export function AIIntegrationForm() {
     setSaving(true);
 
     try {
+      // Simulate a small delay for better UX feel
+      await new Promise(resolve => setTimeout(resolve, 600));
+
       updateSettings({
         editorApiKey: editorApiKey || null,
         editorModel: editorModel || null,
@@ -60,7 +74,11 @@ export function AIIntegrationForm() {
         assistantProvider: assistantProvider,
       });
 
+      setLastSaved(new Date());
+      setShowSuccess(true);
       toast.success("AI settings updated locally on this machine");
+      
+      setTimeout(() => setShowSuccess(false), 2500);
     } catch (err: any) {
       toast.error(err.message || "Failed to update AI settings");
     } finally {
@@ -71,6 +89,109 @@ export function AIIntegrationForm() {
   if (!isLoaded) {
     return <div className="p-8 text-center text-muted-foreground">Loading settings...</div>;
   }
+
+  const renderModelSelector = (
+    value: string, 
+    onValueChange: (val: string) => void, 
+    open: boolean, 
+    setOpen: (open: boolean) => void,
+    id: string
+  ) => {
+    const selectedModel = models.find((m) => m.value === value) || models[0];
+
+    return (
+      <div className="group relative">
+        <Label htmlFor={id} className="mb-2 block">Model</Label>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger id={id} asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-full justify-between font-normal"
+            >
+              <span className="truncate">
+                {selectedModel ? selectedModel.label : "Select model..."}
+              </span>
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+            <Command>
+              <CommandInput placeholder="Search model..." />
+              <CommandEmpty>No model found.</CommandEmpty>
+              <CommandList>
+                <CommandGroup>
+                  {models.map((m) => (
+                    <CommandItem
+                      key={m.value}
+                      value={m.value}
+                      onSelect={() => {
+                        onValueChange(m.value);
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === m.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {m.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  };
+
+  const renderProviderSelector = (value: string, onValueChange: (val: string) => void, id: string) => {
+    // Keeping this as a standard Select as it has few items
+    const providers = [
+      { value: "google", label: "Google Gemini" },
+      { value: "openai", label: "OpenAI / Compatible" },
+      { value: "anthropic", label: "Anthropic Claude" },
+      { value: "groq", label: "Groq (Ultra Fast)" },
+    ];
+    
+    const selectedLabel = providers.find(p => p.value === value)?.label;
+
+    return (
+      <div className="space-y-2">
+        <Label htmlFor={id}>Provider</Label>
+        <Popover>
+          <PopoverTrigger id={id} asChild>
+            <Button variant="outline" className="w-full justify-between font-normal">
+              {selectedLabel}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+             <div className="p-1">
+               {providers.map((p) => (
+                 <Button
+                  key={p.value}
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start font-normal",
+                    value === p.value && "bg-accent"
+                  )}
+                  onClick={() => onValueChange(p.value)}
+                 >
+                   <Check className={cn("mr-2 h-4 w-4", value === p.value ? "opacity-100" : "opacity-0")} />
+                   {p.label}
+                 </Button>
+               ))}
+             </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -96,36 +217,8 @@ export function AIIntegrationForm() {
               </div>
               
               <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="editor-provider">Provider</Label>
-                  <Select value={editorProvider} onValueChange={setEditorProvider}>
-                    <SelectTrigger id="editor-provider">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="google">Google Gemini</SelectItem>
-                      <SelectItem value="openai">OpenAI / Compatible</SelectItem>
-                      <SelectItem value="anthropic">Anthropic Claude</SelectItem>
-                      <SelectItem value="groq">Groq (Ultra Fast)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="editor-model">Model</Label>
-                  <Select value={editorModel} onValueChange={setEditorModel}>
-                    <SelectTrigger id="editor-model">
-                      <SelectValue placeholder="Select a model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {models.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>
-                          {m.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {renderProviderSelector(editorProvider, setEditorProvider, "editor-provider")}
+                {renderModelSelector(editorModel, setEditorModel, openEditorModel, setOpenEditorModel, "editor-model")}
               </div>
 
               <div className="space-y-2">
@@ -160,36 +253,8 @@ export function AIIntegrationForm() {
               </div>
               
               <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="assistant-provider">Provider</Label>
-                  <Select value={assistantProvider} onValueChange={setAssistantProvider}>
-                    <SelectTrigger id="assistant-provider">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="google">Google Gemini</SelectItem>
-                      <SelectItem value="openai">OpenAI / Compatible</SelectItem>
-                      <SelectItem value="anthropic">Anthropic Claude</SelectItem>
-                      <SelectItem value="groq">Groq (Ultra Fast)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="assistant-model">Model</Label>
-                  <Select value={assistantModel} onValueChange={setAssistantModel}>
-                    <SelectTrigger id="assistant-model">
-                      <SelectValue placeholder="Select a model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {models.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>
-                          {m.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {renderProviderSelector(assistantProvider, setAssistantProvider, "assistant-provider")}
+                {renderModelSelector(assistantModel, setAssistantModel, openAssistantModel, setOpenAssistantModel, "assistant-model")}
               </div>
 
               <div className="space-y-2">
@@ -216,10 +281,27 @@ export function AIIntegrationForm() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={saving} size="lg">
-                {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Save All AI Settings
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
+              {lastSaved && !saving && (
+                <span className="text-xs text-muted-foreground italic">
+                  Last saved: {lastSaved.toLocaleTimeString()}
+                </span>
+              )}
+              <Button 
+                type="submit" 
+                disabled={saving} 
+                size="lg"
+                className={cn(
+                  "min-w-[160px] transition-all duration-300",
+                  showSuccess && "bg-green-600 hover:bg-green-700 text-white"
+                )}
+              >
+                {saving ? (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                ) : showSuccess ? (
+                  <Check className="mr-2 size-4" />
+                ) : null}
+                {saving ? "Saving..." : showSuccess ? "Saved!" : "Save All AI Settings"}
               </Button>
             </div>
           </form>

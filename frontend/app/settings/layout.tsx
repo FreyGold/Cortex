@@ -1,5 +1,5 @@
 import { AppShell } from "@/components/app-shell";
-import { NotesLayoutClient } from "@/components/notes/notes-layout-client";
+import { SettingsLayoutClient } from "@/components/settings/settings-layout-client";
 
 export default function SettingsLayout({
   children,
@@ -8,7 +8,7 @@ export default function SettingsLayout({
 }) {
   return (
     <AppShell>
-      <NotesLayoutClient>{children}</NotesLayoutClient>
+      <SettingsLayoutClient>{children}</SettingsLayoutClient>
     </AppShell>
   );
 }
