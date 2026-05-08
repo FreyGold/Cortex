@@ -32,12 +32,14 @@ const INTRO_NOTE_CONTENT = [
   { type: "h1", children: [{ text: "Welcome to Cortex!" }] },
   { type: "p", children: [{ text: "This is your personal academic workspace. Use this space to capture lectures, synthesize research, and organize your studies." }] },
   { type: "h2", children: [{ text: "Features" }] },
-  { type: "ul", children: [
-    { type: "li", children: [{ text: "Rich-text editing with Plate" }] },
-    { type: "li", children: [{ text: "AI-powered summaries and tag suggestions" }] },
-    { type: "li", children: [{ text: "Folder-based organization" }] },
-    { type: "li", children: [{ text: "Global search and assistant" }] }
-  ]},
+  {
+    type: "ul", children: [
+      { type: "li", children: [{ text: "Rich-text editing with Plate" }] },
+      { type: "li", children: [{ text: "AI-powered summaries and tag suggestions" }] },
+      { type: "li", children: [{ text: "Folder-based organization" }] },
+      { type: "li", children: [{ text: "Global search and assistant" }] }
+    ]
+  },
   { type: "p", children: [{ text: "Feel free to edit this note to try out the editor features. Note that changes to this introduction will not be saved." }] }
 ];
 
@@ -48,9 +50,9 @@ function NoteEditorSkeleton() {
         {/* Toolbar Skeleton */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/5">
           <div className="flex items-center gap-3">
-             <Skeleton className="h-3 w-12 rounded opacity-40" />
-             <span className="text-muted-foreground/20">/</span>
-             <Skeleton className="h-4 w-32 rounded" />
+            <Skeleton className="h-3 w-12 rounded opacity-40" />
+            <span className="text-muted-foreground/20">/</span>
+            <Skeleton className="h-4 w-32 rounded" />
           </div>
           <div className="flex items-center gap-2">
             <Skeleton className="size-8 rounded-lg" />
@@ -66,11 +68,11 @@ function NoteEditorSkeleton() {
             <Skeleton className="h-4 w-[90%] rounded" />
             <Skeleton className="h-4 w-[95%] rounded" />
             <Skeleton className="h-4 w-[40%] rounded" />
-            
+
             <div className="pt-8 space-y-4">
-                <Skeleton className="h-8 w-1/3 rounded-lg opacity-60" />
-                <Skeleton className="h-4 w-full rounded" />
-                <Skeleton className="h-4 w-[85%] rounded" />
+              <Skeleton className="h-8 w-1/3 rounded-lg opacity-60" />
+              <Skeleton className="h-4 w-full rounded" />
+              <Skeleton className="h-4 w-[85%] rounded" />
             </div>
           </div>
         </div>
@@ -84,8 +86,8 @@ function NoteEditorSkeleton() {
             <Skeleton className="h-8 w-full rounded-lg" />
             <Skeleton className="h-20 w-full rounded-lg" />
             <div className="grid grid-cols-2 gap-2">
-                <Skeleton className="h-8 rounded-lg" />
-                <Skeleton className="h-8 rounded-lg" />
+              <Skeleton className="h-8 rounded-lg" />
+              <Skeleton className="h-8 rounded-lg" />
             </div>
           </div>
         </div>
@@ -109,7 +111,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
   const isMobile = useIsMobile();
   const isIntroRoute = noteId === "introduction";
   const fetchId = isIntroRoute ? "d538eda1-b07f-45f6-9353-aedefd89b61b" : noteId;
-  
+
   const detailQuery = useNoteDetail(fetchId);
   const sharesQuery = useNoteShares(fetchId);
   const catalogQuery = useCatalog();
@@ -181,7 +183,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
     const note = detailQuery.data?.note;
     if (!note) return;
     setTitle(note.title ?? "Untitled note");
-    
+
     const content = note.content;
     let initialContent: any[] = [];
     let initialText = "";
@@ -266,9 +268,9 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
         <div className="flex-1 min-w-0 h-full overflow-y-auto relative custom-scrollbar flex flex-col">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border/5 bg-background/50 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center gap-3">
-               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Private</span>
-               <span className="text-muted-foreground/20 text-lg">/</span>
-               <span className="text-sm font-semibold truncate max-w-[200px]">{title || "Untitled note"}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Private</span>
+              <span className="text-muted-foreground/20 text-lg">/</span>
+              <span className="text-sm font-semibold truncate max-w-[200px]">{title || "Untitled note"}</span>
             </div>
             <div className="flex items-center gap-1.5">
               {lastSavedAt && (
@@ -304,15 +306,15 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
                 placeholder="Untitled note"
                 className="w-full bg-transparent text-4xl md:text-5xl font-bold placeholder:text-muted-foreground/10 focus:outline-none tracking-tight leading-tight mb-8"
               />
-              
+
               <PlateEditor
                 content={editorContent}
-                onChange={(v) => { 
-                  setEditorContent(v); 
-                  setContentText(extractText(v)); 
-                  setDirty(true); 
+                onChange={(v) => {
+                  setEditorContent(v);
+                  setContentText(extractText(v));
+                  setDirty(true);
                 }}
-                className="w-full flex-1 pb-10"
+                className="w-full flex-1"
                 editorClassName="text-lg md:text-xl leading-relaxed outline-none"
               />
             </div>
@@ -330,7 +332,7 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
           "h-full overflow-y-auto overflow-x-hidden border-l border-border/30 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] bg-muted/5",
           sidebarOpen ? "w-[320px] opacity-100" : "w-0 opacity-0 pointer-events-none border-none"
         )}>
-          <NotePropertiesSidebar 
+          <NotePropertiesSidebar
             noteId={noteId}
             folderId={folderId}
             setFolderId={setFolderId}

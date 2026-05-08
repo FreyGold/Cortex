@@ -78,10 +78,10 @@ const editorVariants = cva(
           "max-h-[min(70vh,320px)] w-full overflow-y-auto px-3 py-2 text-base md:text-sm",
         comment: cn("rounded-none border-none bg-transparent text-sm"),
         default:
-          "min-h-[calc(65vh-100px)] flex-1 px-4 md:px-6 pt-4 pb-12 text-base bg-foreground/1 rounded-none",
-        demo: "min-h-[calc(65vh-100px)] flex-1 px-4 md:px-6 pt-4 pb-12 text-base bg-foreground/1 rounded-none",
+          "min-h-[calc(76vh-100px)] flex-1 px-4 md:px-6 pt-4 pb-4 text-base bg-foreground/1 rounded-none",
+        demo: "min-h-[calc(76vh-100px)] flex-1 px-4 md:px-6 pt-4 pb-4 text-base bg-foreground/1 rounded-none",
         fullWidth:
-          "min-h-[calc(65vh-100px)] flex-1 px-4 md:px-6 pt-4 pb-12 text-base bg-foreground/1 rounded-none",
+          "min-h-[calc(76vh-100px)] flex-1 px-4 md:px-6 pt-4 pb-4 text-base bg-foreground/1 rounded-none",
         none: "w-full h-auto text-base",
         select: "px-3 py-2 text-base data-readonly:w-fit",
       },
