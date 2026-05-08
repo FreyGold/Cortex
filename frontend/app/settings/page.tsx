@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { AppShell } from "@/components/app-shell";
 import { ProfileSetupForm } from "@/components/profile/profile-setup-form";
 import { ProfileStatusCard } from "@/components/profile/profile-status-card";
 import { WorkspaceTeam } from "@/components/settings/workspace-team";
@@ -28,8 +27,7 @@ export default async function SettingsPage(props: {
   const profile = session.profile;
 
   return (
-    <AppShell>
-      <main className="container mx-auto max-w-6xl px-4 py-8 md:py-16">
+      <main className="container mx-auto max-w-6xl px-4 py-8 md:py-16 flex-1 overflow-y-auto custom-scrollbar">
         <div className="mb-10 space-y-2">
           <h1 className="text-4xl font-bold tracking-tight text-foreground/90">{t("title")}</h1>
           <p className="text-base text-muted-foreground/80 max-w-2xl">
@@ -156,6 +154,5 @@ export default async function SettingsPage(props: {
           </div>
         </Tabs>
       </main>
-    </AppShell>
   );
 }

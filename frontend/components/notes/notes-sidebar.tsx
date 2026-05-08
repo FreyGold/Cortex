@@ -20,7 +20,9 @@ import {
   ShieldCheck,
   PanelLeftClose,
   ChevronDown,
-  Users
+  Users,
+  CalendarDays,
+  SquarePen as NotePencil
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -415,7 +417,6 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
   const { data: profileData } = useCurrentProfile();
   const { data: joinedWorkspaces } = useJoinedWorkspaces();
   const { data: ownedWorkspaces } = useWorkspaces();
-  const [workspacesExpanded, setWorkspacesExpanded] = useState(true);
   
   const dashboardQuery = useNotesDashboard(currentWorkspaceId);
   const archivedQuery = useArchivedItems();
@@ -460,6 +461,11 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
   const archivedFolders = archivedQuery.data?.folders ?? [];
 
   const profile = profileData?.profile;
+  const isNotesPage = pathname.startsWith("/notes");
+
+  const navigateTo = (path: string) => {
+    router.push(`${path}${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`);
+  };
 
   // Find active workspace name
   const activeWorkspaceName = useMemo(() => {
@@ -506,11 +512,27 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                         <UserCircle className="size-4" /> My Workspace
                     </DropdownMenuItem>
                     
-                    {joinedWorkspaces && joinedWorkspaces.length > 0 && (
+                    {ownedWorkspaces && ownedWorkspaces.length > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">My Workspaces</div>
+                        {ownedWorkspaces.map((w: any) => (
+                          <DropdownMenuItem key={w.id} className="text-xs gap-2" onClick={() => updateUrl({ workspaceId: w.id })}>
+                            <Avatar className="size-4 rounded-sm">
+                              <AvatarImage src={w.avatar_url || undefined} />
+                              <AvatarFallback className="text-[8px]">{w.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            {w.name}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
+
+                    {joinedWorkspaces && joinedWorkspaces.filter((jw: any) => !ownedWorkspaces?.find((ow: any) => ow.id === jw.id)).length > 0 && (
                       <>
                         <DropdownMenuSeparator />
                         <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Shared Workspaces</div>
-                        {joinedWorkspaces.map((w: any) => (
+                        {joinedWorkspaces.filter((jw: any) => !ownedWorkspaces?.find((ow: any) => ow.id === jw.id)).map((w: any) => (
                           <DropdownMenuItem key={w.id} className="text-xs gap-2" onClick={() => updateUrl({ workspaceId: w.id })}>
                             <Avatar className="size-4 rounded-sm">
                               <AvatarImage src={w.avatar_url || undefined} />
@@ -543,65 +565,35 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
             </button>
         </div>
 
-        {/* Global Action Shortcuts */}
-        <div className="space-y-0.5 mb-6">
-            <NavButton icon={BookOpen} label="Introduction" onClick={() => router.push(`/notes/introduction${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes/introduction"} />
+        {/* Main Navigation */}
+        <div className="space-y-0.5 mb-4">
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Main</div>
+            <NavButton icon={NotePencil} label="Notes" onClick={() => navigateTo("/notes")} active={pathname.startsWith("/notes")} />
+            <NavButton icon={Database} label="Data Hub" onClick={() => navigateTo("/data")} active={pathname.startsWith("/data")} />
+            <NavButton icon={CalendarDays} label="Daily Track" onClick={() => navigateTo("/daily")} active={pathname.startsWith("/daily")} />
+            {profile?.role === "admin" && (
+              <NavButton icon={ShieldCheck} label="Admin" onClick={() => navigateTo("/admin")} active={pathname.startsWith("/admin")} />
+            )}
+            <NavButton icon={Settings} label="Settings" onClick={() => navigateTo("/settings")} active={pathname.startsWith("/settings")} />
+        </div>
+
+        {/* Notes Quick Actions - only on notes pages */}
+        {isNotesPage && (
+          <div className="space-y-0.5 mb-4 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Notes</div>
+            <NavButton icon={Star} label="Favorites" onClick={() => router.push(`/notes/favorites${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes/favorites"} />
             <NavButton icon={Search} label="Search" onClick={() => router.push(`/notes${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}${searchParams.get("q") ? `&q=${searchParams.get("q")}` : ""}` : (searchParams.get("q") ? `?q=${searchParams.get("q")}` : "")}`)} active={pathname === "/notes" && !!searchParams.get("q")} />
             <NavButton icon={Sparkles} label="Assistant" onClick={() => setGlobalAssistantOpen(true)} />
-            <NavButton icon={Settings} label="Settings" onClick={() => router.push(`/settings${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/settings"} />
             <NavButton icon={Clock} label="Recent" onClick={() => router.push(`/notes${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes" && !searchParams.get("q")} />
-        </div>
+          </div>
+        )}
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-10 space-y-6">
-        {/* WORKSPACES SECTION */}
-        <div className="space-y-1">
-          <button 
-            onClick={() => setWorkspacesExpanded(!workspacesExpanded)}
-            className="w-full flex items-center justify-between px-3 mb-2 group/section cursor-pointer hover:bg-accent/30 py-1 rounded-md transition-colors"
-          >
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 flex items-center gap-2">
-              <ChevronRight className={cn("size-3 transition-transform", workspacesExpanded && "rotate-90")} />
-              Workspaces
-            </span>
-            <div className="opacity-0 group-hover/section:opacity-100 transition-opacity">
-              <Plus className="size-3 text-muted-foreground/50 hover:text-foreground" onClick={(e) => { e.stopPropagation(); router.push("/settings?tab=team"); }} />
-            </div>
-          </button>
 
-          {workspacesExpanded && (
-            <div className="space-y-0.5 ml-1">
-               <NavButton 
-                  icon={UserCircle} 
-                  label="Home" 
-                  onClick={() => updateUrl({ workspaceId: undefined })} 
-                  active={!currentWorkspaceId} 
-               />
-               
-               {ownedWorkspaces?.map((w: any) => (
-                 <NavButton 
-                    key={w.id}
-                    icon={Users} 
-                    label={w.name} 
-                    onClick={() => updateUrl({ workspaceId: w.id })} 
-                    active={currentWorkspaceId === w.id} 
-                 />
-               ))}
 
-               {joinedWorkspaces?.filter((jw: any) => !ownedWorkspaces?.find((ow: any) => ow.id === jw.id)).map((w: any) => (
-                 <NavButton 
-                    key={w.id}
-                    icon={Users} 
-                    label={w.name} 
-                    onClick={() => updateUrl({ workspaceId: w.id })} 
-                    active={currentWorkspaceId === w.id} 
-                    className="opacity-80"
-                 />
-               ))}
-            </div>
-          )}
-        </div>
-
+        {/* === NOTES-SPECIFIC CONTENT === */}
+        {isNotesPage && (<>
         {/* FAVORITES */}
         {pinnedNotes.filter(n => n.title !== "Introduction").length > 0 && (
             <div className="space-y-1">
@@ -737,17 +729,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
             <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Archive</span>
             <NavButton icon={Trash2} label="Trash" onClick={() => router.push(`/notes/archive${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes/archive"} />
         </div>
-      </div>
-
-      {/* SYSTEM & GLOBAL NAV */}
-      <div className="p-2 border-t border-border/5 bg-[#fbfbfa] dark:bg-[#121212] shrink-0">
-          <div className="space-y-1">
-              <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Cortex</span>
-              <NavButton icon={Database} label="Data Browser" onClick={() => router.push("/data")} active={pathname === "/data" || pathname.startsWith("/data/")} />
-              {profile?.role === "admin" && (
-                  <NavButton icon={ShieldCheck} label="Admin Panel" onClick={() => router.push("/admin")} active={pathname === "/admin"} />
-              )}
-          </div>
+        </>)}
       </div>
 
       <GlobalAssistantModal isOpen={globalAssistantOpen} onOpenChange={setGlobalAssistantOpen} />

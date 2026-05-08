@@ -46,7 +46,7 @@ function PlateEditorInner({
   variant = 'demo',
   profile,
 }: PlateEditorProps & { profile?: any }) {
-  const { settings } = useAISettings();
+  const { settings, isLoaded } = useAISettings();
   const initialValue = Array.isArray(content) && content.length > 0 ? content : value;
 
   const editor = usePlateEditor({
@@ -110,14 +110,14 @@ function PlateEditorInner({
 
   // Update AI settings from local storage
   React.useEffect(() => {
-    if (settings.aiApiKey || settings.aiModel) {
+    if (isLoaded) {
       const chatOptions = editor.getOption(aiChatPlugin, 'chatOptions') || {};
       editor.setOption(aiChatPlugin, 'chatOptions', {
         ...chatOptions,
         body: {
           ...chatOptions?.body,
-          apiKey: settings.aiApiKey || (chatOptions?.body as Record<string, any>)?.apiKey,
-          model: settings.aiModel || (chatOptions?.body as Record<string, any>)?.model,
+          apiKey: settings.assistantApiKey || settings.aiApiKey || (chatOptions?.body as Record<string, any>)?.apiKey,
+          model: settings.assistantModel || settings.aiModel || (chatOptions?.body as Record<string, any>)?.model,
         }
       });
 
@@ -126,20 +126,18 @@ function PlateEditorInner({
         ...completeOptions,
         body: {
           ...completeOptions?.body,
-          apiKey: settings.aiApiKey || (completeOptions?.body as Record<string, any>)?.apiKey,
-          model: settings.aiModel || (completeOptions?.body as Record<string, any>)?.model,
+          apiKey: settings.editorApiKey || settings.aiApiKey || (completeOptions?.body as Record<string, any>)?.apiKey,
+          model: settings.editorModel || settings.aiModel || (completeOptions?.body as Record<string, any>)?.model,
         }
       });
     }
-  }, [settings, editor]);
+  }, [settings, editor, isLoaded]);
 
   return (
     <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)} readOnly={readOnly}>
       <EditorContainer className={className} variant={variant === 'demo' ? 'demo' : variant === 'none' ? 'none' : 'default'}>
         <Editor variant={variant} className={editorClassName} disabled={readOnly} />
       </EditorContainer>
-
-      <SettingsDialog />
     </Plate>
   );
 }

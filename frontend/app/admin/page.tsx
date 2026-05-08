@@ -1,6 +1,5 @@
 import { ArrowRight, Database, Users } from "lucide-react";
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
 import {
   Card,
   CardContent,

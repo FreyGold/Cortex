@@ -8,38 +8,33 @@ import {
   suggestTagsFromText 
 } from "../lib/ai-utils";
 
-type FeatureExtractor = (
-  input: string,
-  options: { pooling: "mean"; normalize: boolean },
-) => Promise<{ data: Float32Array | number[] }>;
+export async function embedText(text: string) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("Missing GEMINI_API_KEY for embeddings");
 
-let featureExtractorPromise: Promise<FeatureExtractor> | null = null;
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-goog-api-key": apiKey },
+      body: JSON.stringify({
+        model: "models/text-embedding-004",
+        content: { parts: [{ text }] },
+        outputDimensionality: 384,
+      }),
+    }
+  );
 
-async function getFeatureExtractor() {
-  if (!featureExtractorPromise) {
-    featureExtractorPromise = (async () => {
-      const { pipeline } = await import("@xenova/transformers");
-      const extractor = await pipeline(
-        "feature-extraction",
-        "Xenova/multilingual-e5-small",
-      );
-      return extractor as FeatureExtractor;
-    })();
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error?.message ?? "Gemini Embedding request failed.");
   }
-  return featureExtractorPromise;
-}
 
-async function embedText(text: string) {
-  const extractor = await getFeatureExtractor();
-  const result = await extractor(text, {
-    pooling: "mean",
-    normalize: true,
-  });
-  const data = Array.from(result.data);
-  if (data.length !== 384) {
-    throw new Error(`Embedding dimension mismatch. Expected 384, got ${data.length}`);
+  const embedding = payload.embedding?.values;
+  if (!embedding || embedding.length !== 384) {
+    throw new Error(`Embedding dimension mismatch. Expected 384, got ${embedding?.length}`);
   }
-  return data;
+  return embedding;
 }
 
 export class AIService {

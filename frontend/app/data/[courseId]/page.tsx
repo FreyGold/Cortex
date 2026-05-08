@@ -6,7 +6,6 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
 import { EditCourseDialog } from "@/components/data/edit-course-dialog";
 import { ResourceDialog } from "@/components/data/resource-dialog";
 import { ResourceList } from "@/components/data/resource-list";
@@ -56,8 +55,7 @@ export default async function CourseResourcesPage({
 
   if (!course) {
     return (
-      <AppShell>
-        <main className="container mx-auto flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 py-16 text-center">
+        <main className="container mx-auto flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 py-16 text-center flex-1">
           <Ghost
             className="mb-4 size-12 text-muted-foreground/50"
           />
@@ -74,7 +72,6 @@ export default async function CourseResourcesPage({
             </Link>
           </Button>
         </main>
-      </AppShell>
     );
   }
 

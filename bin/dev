@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Kill background processes on exit
+trap "kill 0" EXIT
+
+echo "🚀 Starting College Knowledge Hub in Development Mode..."
+
+# Start Backend
+echo "📡 Starting Backend..."
+(cd "$ROOT_DIR/backend" && pnpm dev) &
+
+# Start Frontend
+echo "💻 Starting Frontend..."
+(cd "$ROOT_DIR/frontend" && pnpm dev) &
+
+# Wait for all background processes
+wait

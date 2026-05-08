@@ -12,6 +12,7 @@ import { healthRouter } from "./routes/health";
 import { profileRouter } from "./routes/profile";
 import { dataRouter } from "./routes/data";
 import { notesRouter } from "./routes/notes";
+import { dailyRouter } from "./routes/daily";
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/data", dataRouter);
 app.use("/api/notes", notesRouter);
+app.use("/api/daily", dailyRouter);
 
 const port = Number(process.env.PORT ?? 4000);
 

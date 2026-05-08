@@ -49,7 +49,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir={getDirection(locale)}
-      className={cn(inter.variable, geist.variable, "font-mono", geistMono.variable, geistHeading.variable, "dark")}
+      className={cn(inter.variable, geist.variable, geistMono.variable, geistHeading.variable, "dark")}
       style={{ fontFamily: "var(--font-sans)" }}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
