@@ -494,7 +494,13 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Try again',
     value: 'tryAgain',
     onSelect: ({ editor }) => {
-      void editor.getApi(AIChatPlugin).aiChat.reload();
+      const chat = editor.getOptions(AIChatPlugin).chat;
+      if (chat?.messages?.length > 0) {
+        void editor.getApi(AIChatPlugin).aiChat.reload();
+      } else {
+        // Fallback: if no messages to reload, just hide and let user restart
+        editor.getApi(AIChatPlugin).aiChat.hide();
+      }
     },
   },
 } satisfies Record<

@@ -23,7 +23,7 @@ export interface PlateEditorProps {
   variant?: 'default' | 'demo' | 'fullWidth' | 'none';
 }
 
-export function PlateEditor(props: PlateEditorProps) {
+export const PlateEditor = React.memo(function PlateEditor(props: PlateEditorProps) {
   const { data: profileData, isLoading } = useCurrentProfile();
 
   if (isLoading) {
@@ -35,7 +35,7 @@ export function PlateEditor(props: PlateEditorProps) {
   }
 
   return <PlateEditorInner {...props} profile={profileData?.profile} />;
-}
+});
 
 function PlateEditorInner({
   content,

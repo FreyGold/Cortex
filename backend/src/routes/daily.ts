@@ -6,14 +6,6 @@ export const dailyRouter = Router();
 
 dailyRouter.use(authMiddleware);
 
-dailyRouter.get("/", DailyController.getDailyLogs);
-dailyRouter.post("/", DailyController.createDailyLog);
-dailyRouter.get("/:date", DailyController.getDailyLogDetail);
-dailyRouter.put("/logs/:logId", DailyController.updateDailyLog);
-dailyRouter.post("/tasks", DailyController.createDailyTask);
-dailyRouter.put("/tasks/:taskId", DailyController.updateDailyTask);
-dailyRouter.delete("/tasks/:taskId", DailyController.deleteDailyTask);
-
 // Habits
 dailyRouter.get("/habits", DailyController.getHabits);
 dailyRouter.post("/habits", DailyController.createHabit);
@@ -29,3 +21,11 @@ dailyRouter.get("/stats", DailyController.getDailyStats);
 
 // AI Features
 dailyRouter.post("/search", DailyController.searchDailyLogs);
+
+dailyRouter.get("/", DailyController.getDailyLogs);
+dailyRouter.post("/", DailyController.createDailyLog);
+dailyRouter.get("/:date", DailyController.getDailyLogDetail);
+dailyRouter.put("/logs/:logId", DailyController.updateDailyLog);
+dailyRouter.post("/tasks", DailyController.createDailyTask);
+dailyRouter.put("/tasks/:taskId", DailyController.updateDailyTask);
+dailyRouter.delete("/tasks/:taskId", DailyController.deleteDailyTask);

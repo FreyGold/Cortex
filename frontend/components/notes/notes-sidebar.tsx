@@ -95,6 +95,7 @@ interface NoteItemProps {
 }
 
 function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const currentWorkspaceId = searchParams.get("workspaceId");
   const archiveNote = useArchiveNote();
@@ -113,19 +114,29 @@ function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
     setIsRenaming(false);
   };
 
+  const handleArchive = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    archiveNote.mutate(note.id);
+    if (active) {
+      router.push(`/notes${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`);
+    }
+  };
   return (
     <ContextMenu onOpenChange={setIsMenuOpen}>
       <ContextMenuTrigger asChild>
-        <Link 
-          href={`/notes/${note.id}${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`} 
+        <Link
+          href={`/notes/${note.id}${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`}
           className={cn(
-            "group flex items-center gap-2 py-1.5 px-3 rounded-md transition-all active:scale-[0.98] active:translate-y-px relative select-none",
-            active ? "bg-accent/60 text-foreground" : "text-muted-foreground/70 hover:bg-accent/30 hover:text-foreground",
-            isMenuOpen && "bg-accent/40 ring-1 ring-primary/10",
+            "group flex items-center gap-2.5 py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-200 ease-out active:scale-[0.98] select-none",
+            active ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20" : "hover:bg-accent/40 text-muted-foreground/70 hover:text-foreground",
+            isMenuOpen && "bg-accent/60 ring-1 ring-primary/10",
             note.is_optimistic && "opacity-50 animate-pulse pointer-events-none"
           )}
           style={{ paddingLeft: `${depth * 12 + 12}px` }}
-          draggable={!isIntro && !isRenaming}
+          draggable={!isRenaming}
           onDragStart={onDragStart}
           onClick={(e) => {
             if (isRenaming) {
@@ -723,9 +734,9 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
                 ))}
             </div>
         )}
-
-        {/* ARCHIVE SECTION */}
-        <div className="space-y-1">
-            <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Archive</span>
-            <NavButton icon={Trash2} label="Trash" onClick={() => router.push(`/notes/archive${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes/archive"} />
-        </div>
+        </>)}
+      </div>
+      <GlobalAssistantModal isOpen={globalAssistantOpen} onOpenChange={setGlobalAssistantOpen} />
+    </div>
+  );
+}

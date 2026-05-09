@@ -25,6 +25,97 @@ function extractPlateText(nodes: any[]): string {
   return parts.join(" ").trim();
 }
 
+/** --- Optimized Sub-components --- */
+
+const HighlightSection = React.memo(({ 
+  initialValue, 
+  onSave 
+}: { 
+  initialValue: string; 
+  onSave: (val: string) => void 
+}) => {
+  const [value, setValue] = useState(initialValue);
+
+  // Sync with prop if it changes from outside
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  // Debounced sync to parent
+  useEffect(() => {
+    if (value === initialValue) return;
+    const timer = setTimeout(() => {
+      onSave(value);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [value, initialValue, onSave]);
+
+  return (
+    <section className="space-y-4">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Smile className="size-4" />
+        <h3 className="text-xs font-bold uppercase tracking-widest">Main Highlight / Focus</h3>
+      </div>
+      <Input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => {
+          if (value !== initialValue) onSave(value);
+        }}
+        placeholder="What's the one thing that defined this day?"
+        className="text-2xl font-bold bg-transparent border-none px-1 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/10"
+      />
+    </section>
+  );
+});
+
+const TaskItem = React.memo(({ 
+  task, 
+  onUpdate, 
+  onDelete 
+}: { 
+  task: any; 
+  onUpdate: (taskId: string, payload: any) => void; 
+  onDelete: (taskId: string) => void 
+}) => {
+  const [text, setText] = useState(task.text);
+
+  useEffect(() => {
+    setText(task.text);
+  }, [task.text]);
+
+  return (
+    <div className="group flex items-center gap-3 p-3 rounded-xl hover:bg-accent/30 transition-colors">
+      <Checkbox
+        checked={task.is_completed}
+        onCheckedChange={(checked) => onUpdate(task.id, { is_completed: !!checked })}
+        className="size-5 rounded-md"
+      />
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={() => {
+          if (text !== task.text) {
+            onUpdate(task.id, { text });
+          }
+        }}
+        className={cn(
+          "flex-1 bg-transparent border-none focus:outline-none text-[15px] font-medium leading-none",
+          task.is_completed && "text-muted-foreground/40 line-through transition-all"
+        )}
+      />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onDelete(task.id)}
+        className="size-8 opacity-0 group-hover:opacity-100 text-destructive/40 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+      >
+        <Trash2 className="size-4" />
+      </Button>
+    </div>
+  );
+});
+
 interface DailyLogViewProps {
   date: string;
   workspaceId?: string;
@@ -43,6 +134,24 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
   const [editorContent, setEditorContent] = useState<any[] | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isEditorMaximized, setIsEditorMaximized] = useState(false);
+
+  const handleHighlightChange = React.useCallback((val: string) => {
+    setHighlight(val);
+    setIsDirty(true);
+  }, []);
+
+  const handleEditorChange = React.useCallback((val: any[]) => {
+    setEditorContent(val);
+    setIsDirty(true);
+  }, []);
+
+  const handleUpdateTask = React.useCallback((taskId: string, payload: any) => {
+    updateTask.mutate({ taskId, payload });
+  }, [updateTask]);
+
+  const handleDeleteTask = React.useCallback((taskId: string) => {
+    deleteTask.mutate(taskId);
+  }, [deleteTask]);
 
   const log = data?.log;
 
@@ -92,7 +201,7 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
     return (
       <div className="flex flex-col items-center justify-center h-full p-20 text-center">
         <div className="size-16 rounded-full bg-muted flex items-center justify-center mb-4">
-           <History className="size-8 text-muted-foreground/40" />
+          <History className="size-8 text-muted-foreground/40" />
         </div>
         <h3 className="text-xl font-bold mb-2">No record for this day</h3>
         <p className="text-muted-foreground max-w-xs mb-6">You haven't started tracking your productivity for this day yet.</p>
@@ -119,39 +228,31 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-6 border-b border-border/5 bg-background/50 backdrop-blur-sm">
         <div className="flex flex-col">
-           <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Daily Track</span>
-              <span className="text-muted-foreground/20 text-lg">/</span>
-              <h2 className="text-xl font-bold tracking-tight">{format(parseISO(date), "MMMM do, yyyy")}</h2>
-           </div>
-           <div className="flex items-center gap-2 mt-1">
-              <Badge variant="outline" className="text-[10px] uppercase tracking-tighter h-5 px-1.5 font-bold pt-2">
-                 {format(parseISO(date), "EEEE")}
-              </Badge>
-              {totalTasks > 0 && (
-                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
-                  {completedTasks}/{totalTasks} Tasks Completed ({Math.round(progress)}%)
-                </span>
-              )}
-           </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Daily Track</span>
+            <span className="text-muted-foreground/20 text-lg">/</span>
+            <h2 className="text-xl font-bold tracking-tight">{format(parseISO(date), "MMMM do, yyyy")}</h2>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge variant="outline" className="text-[10px] uppercase tracking-tighter h-5 px-1.5 font-bold pt-2">
+              {format(parseISO(date), "EEEE")}
+            </Badge>
+            {totalTasks > 0 && (
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
+                {completedTasks}/{totalTasks} Tasks Completed ({Math.round(progress)}%)
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="max-w-6xl mx-auto px-8 py-12 space-y-12">          
+        <div className="max-w-6xl mx-auto px-8 py-12 space-y-12">
           {/* Highlight Section */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-               <Smile className="size-4" />
-               <h3 className="text-xs font-bold uppercase tracking-widest">Main Highlight / Focus</h3>
-            </div>
-            <Input 
-              value={highlight}
-              onChange={(e) => { setHighlight(e.target.value); setIsDirty(true); }}
-              placeholder="What's the one thing that defined this day?"
-              className="text-2xl font-bold bg-transparent border-none px-0 h-auto focus-visible:ring-0 placeholder:text-muted-foreground/10"
-            />
-          </section>
+          <HighlightSection 
+            initialValue={highlight} 
+            onSave={handleHighlightChange} 
+          />
 
           <Separator className="bg-border/5" />
 
@@ -159,54 +260,37 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
           <section className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-muted-foreground">
-                 <Plus className="size-4" />
-                 <h3 className="text-xs font-bold uppercase tracking-widest">Daily Tasks & Routines</h3>
+                <Plus className="size-4" />
+                <h3 className="text-xs font-bold uppercase tracking-widest">Daily Tasks & Routines</h3>
               </div>
               {progress === 100 && totalTasks > 0 && (
                 <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1 px-2">
-                   <Sparkles className="size-3" /> Perfect Day
+                  <Sparkles className="size-3" /> Perfect Day
                 </Badge>
               )}
             </div>
 
             <div className="space-y-2">
               {log.tasks?.map((task) => (
-                <div key={task.id} className="group flex items-center gap-3 p-3 rounded-xl hover:bg-accent/30 transition-colors">
-                  <Checkbox 
-                    checked={task.is_completed} 
-                    onCheckedChange={(checked) => updateTask.mutate({ taskId: task.id, payload: { is_completed: !!checked } })}
-                    className="size-5 rounded-md"
-                  />
-                  <input 
-                    value={task.text}
-                    onChange={(e) => updateTask.mutate({ taskId: task.id, payload: { text: e.target.value } })}
-                    className={cn(
-                      "flex-1 bg-transparent border-none focus:outline-none text-[15px] font-medium leading-none",
-                      task.is_completed && "text-muted-foreground/40 line-through transition-all"
-                    )}
-                  />
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => deleteTask.mutate(task.id)}
-                    className="size-8 opacity-0 group-hover:opacity-100 text-destructive/40 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
+                <TaskItem 
+                  key={task.id} 
+                  task={task} 
+                  onUpdate={handleUpdateTask} 
+                  onDelete={handleDeleteTask} 
+                />
               ))}
 
               <form onSubmit={handleAddTask} className="flex items-center gap-3 p-3 rounded-xl bg-accent/20 ring-1 ring-border/5 mt-4">
-                 <div className="size-5 rounded-md border-2 border-dashed border-muted-foreground/20" />
-                 <input 
-                   value={newTaskText}
-                   onChange={(e) => setNewTaskText(e.target.value)}
-                   placeholder="Add a new task or routine..."
-                   className="flex-1 bg-transparent border-none focus:outline-none text-[15px] font-medium placeholder:text-muted-foreground/30"
-                 />
-                 <Button type="submit" size="sm" variant="ghost" className="h-7 px-2 font-bold text-[10px] uppercase tracking-tighter">
-                   Add Task
-                 </Button>
+                <div className="size-5 rounded-md border-2 border-dashed border-muted-foreground/20" />
+                <input
+                  value={newTaskText}
+                  onChange={(e) => setNewTaskText(e.target.value)}
+                  placeholder="Add a new task or routine..."
+                  className="flex-1 bg-transparent border-none focus:outline-none text-[15px] font-medium placeholder:text-muted-foreground/30"
+                />
+                <Button type="submit" size="sm" variant="ghost" className="h-7 px-2 font-bold text-[10px] uppercase tracking-tighter">
+                  Add Task
+                </Button>
               </form>
             </div>
           </section>
@@ -217,12 +301,12 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
           <section className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-muted-foreground">
-                 <MessageSquare className="size-4" />
-                 <h3 className="text-xs font-bold uppercase tracking-widest">Reflection & Notes</h3>
+                <MessageSquare className="size-4" />
+                <h3 className="text-xs font-bold uppercase tracking-widest">Reflection & Notes</h3>
               </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsEditorMaximized(true)}
                 className="size-8 text-muted-foreground/40 hover:text-foreground rounded-lg transition-colors"
               >
@@ -230,9 +314,9 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
               </Button>
             </div>
             <div className="min-h-[600px]">
-              <PlateEditor 
+              <PlateEditor
                 content={editorContent}
-                onChange={(val) => { setEditorContent(val); setIsDirty(true); }}
+                onChange={handleEditorChange}
                 editorClassName="text-lg leading-relaxed outline-none min-h-[600px]"
               />
             </div>
@@ -244,8 +328,8 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
               <DialogTitle className="sr-only">Maximized Reflection Editor</DialogTitle>
               <div className="flex items-center justify-between px-8 py-4 border-b border-border/5 bg-background/50 backdrop-blur-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                   <MessageSquare className="size-4" />
-                   <h3 className="text-xs font-bold uppercase tracking-widest">Journaling / {format(parseISO(date), "MMMM do, yyyy")}</h3>
+                  <MessageSquare className="size-4" />
+                  <h3 className="text-xs font-bold uppercase tracking-widest">Journaling / {format(parseISO(date), "MMMM do, yyyy")}</h3>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setIsEditorMaximized(false)} className="rounded-full hover:bg-accent/50">
                   <X className="size-5" />
@@ -253,9 +337,9 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
               </div>
               <div className="flex-1 overflow-y-auto custom-scrollbar ">
                 <div className="px-12">
-                  <PlateEditor 
+                  <PlateEditor
                     content={editorContent}
-                    onChange={(val) => { setEditorContent(val); setIsDirty(true); }}
+                    onChange={handleEditorChange}
                     editorClassName="text-xl leading-relaxed outline-none min-h-[70vh] min-w-[75vh]"
                   />
                 </div>
