@@ -1,6 +1,24 @@
 import { DailyRepository } from "../repositories/DailyRepository";
 import { embedText } from "./AIService";
 
+/**
+ * Walk Plate (Slate-based) JSON and extract all leaf text nodes
+ * into a single plain-text string, suitable for embedding.
+ */
+function extractPlateText(nodes: any[]): string {
+  if (!Array.isArray(nodes)) return "";
+  const parts: string[] = [];
+  const walk = (node: any) => {
+    if (typeof node?.text === "string") {
+      parts.push(node.text);
+    } else if (Array.isArray(node?.children)) {
+      node.children.forEach(walk);
+    }
+  };
+  nodes.forEach(walk);
+  return parts.join(" ").trim();
+}
+
 export class DailyService {
   constructor(private repo: DailyRepository) {}
 
@@ -18,17 +36,29 @@ export class DailyService {
 
   async updateDailyLog(userId: string, logId: string, payload: Record<string, any>) {
     const finalPayload = { ...payload };
-    if (payload.content_text || payload.highlight) {
+
+    // Normalize camelCase keys from frontend → snake_case for the DB
+    if ("contentText" in payload) {
+      finalPayload.content_text = payload.contentText;
+      delete finalPayload.contentText;
+    }
+
+    // If the frontend sent Plate JSON content but no content_text,
+    // extract plain text from the Plate nodes so embeddings always work.
+    if (payload.content && !finalPayload.content_text) {
+      finalPayload.content_text = extractPlateText(payload.content);
+    }
+
+    const textForEmbedding = `${finalPayload.highlight || ""}\n${finalPayload.content_text || ""}`.trim();
+    if (textForEmbedding) {
       try {
-        const textToEmbed = `${payload.highlight || ''}\n${payload.content_text || ''}`.trim();
-        if (textToEmbed) {
-          const embedding = await embedText(`passage: ${textToEmbed}`);
-          finalPayload.embedding = embedding;
-        }
+        const embedding = await embedText(`passage: ${textForEmbedding}`);
+        finalPayload.embedding = embedding;
       } catch (e) {
         console.error("Failed to generate embedding for daily log", e);
       }
     }
+
     await this.repo.updateDailyLog(userId, logId, finalPayload);
   }
 

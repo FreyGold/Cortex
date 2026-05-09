@@ -244,7 +244,7 @@ export class DailyRepository {
         const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
         const log = logs.find(l => l.date === dateStr);
         const tasks = log?.tasks || [];
-        const done = tasks.filter(t => t.is_completed).length;
+        const done = tasks.filter((t: any) => t.is_completed).length;
         const total = tasks.length;
         weeklyData.push({
           day: dayName,

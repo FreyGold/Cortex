@@ -13,6 +13,18 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
+/** Extract plain text from Plate (Slate-based) JSON nodes */
+function extractPlateText(nodes: any[]): string {
+  if (!Array.isArray(nodes)) return "";
+  const parts: string[] = [];
+  const walk = (node: any) => {
+    if (typeof node?.text === "string") parts.push(node.text);
+    else if (Array.isArray(node?.children)) node.children.forEach(walk);
+  };
+  nodes.forEach(walk);
+  return parts.join(" ").trim();
+}
+
 interface DailyLogViewProps {
   date: string;
   workspaceId?: string;
@@ -48,6 +60,7 @@ export function DailyLogView({ date, workspaceId, onClose }: DailyLogViewProps) 
       updateLog.mutate({
         highlight: highlight.trim() || null,
         content: editorContent,
+        contentText: extractPlateText(editorContent ?? []),
       });
       setIsDirty(false);
     }, 1000);

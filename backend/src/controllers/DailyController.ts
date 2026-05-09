@@ -30,7 +30,7 @@ export class DailyController {
       const service = getService(req);
       const { date } = req.params;
       const { workspaceId } = req.query;
-      const log = await service.getDailyLogDetail(req.user!.id, date, workspaceId as string);
+      const log = await service.getDailyLogDetail(req.user!.id, date as string, workspaceId as string);
       return res.status(200).json({ log });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -53,7 +53,7 @@ export class DailyController {
     try {
       const service = getService(req);
       const { logId } = req.params;
-      await service.updateDailyLog(req.user!.id, logId, req.body);
+      await service.updateDailyLog(req.user!.id, logId as string, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -76,7 +76,7 @@ export class DailyController {
     try {
       const service = getService(req);
       const { taskId } = req.params;
-      await service.updateDailyTask(taskId, req.body);
+      await service.updateDailyTask(taskId as string, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -87,7 +87,7 @@ export class DailyController {
     try {
       const service = getService(req);
       const { taskId } = req.params;
-      await service.deleteDailyTask(taskId);
+      await service.deleteDailyTask(taskId as string);
       return res.status(204).send();
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -122,7 +122,7 @@ export class DailyController {
     try {
       const service = getService(req);
       const { habitId } = req.params;
-      await service.updateHabit(req.user!.id, habitId, req.body);
+      await service.updateHabit(req.user!.id, habitId as string, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -133,7 +133,7 @@ export class DailyController {
     try {
       const service = getService(req);
       const { habitId } = req.params;
-      await service.deleteHabit(req.user!.id, habitId);
+      await service.deleteHabit(req.user!.id, habitId as string);
       return res.status(204).send();
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -158,7 +158,7 @@ export class DailyController {
       const { habitId } = req.params;
       const { date, completed } = req.body;
       if (!date || completed === undefined) return res.status(400).json({ error: "Date and completed status are required" });
-      await service.toggleHabitLog(req.user!.id, habitId, date, completed);
+      await service.toggleHabitLog(req.user!.id, habitId as string, date, completed);
       return res.status(200).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

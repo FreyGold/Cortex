@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PanelLeft as SidebarSimple, X } from "lucide-react";
+import { PanelLeft as SidebarSimple } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "../app-sidebar";
@@ -29,7 +29,7 @@ export function DailyLayoutClient({ children }: { children: React.ReactNode }) {
 
   const handleTabChange = (tab: string) => {
     if (tab === "assistant") {
-      setIsAssistantOpen(!isAssistantOpen);
+      setIsAssistantOpen((prev) => !prev);
     } else {
       setActiveTab(tab);
     }
@@ -52,15 +52,25 @@ export function DailyLayoutClient({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex w-full h-screen overflow-hidden relative bg-background">
-      {/* Sidebar Drawer */}
-      <AppSidebar 
-        isOpen={isOpen} 
-        onToggle={() => setIsOpen(!isOpen)} 
-        activeDailyTab={activeTab}
-        onDailyTabChange={handleTabChange}
-      />
+      {/* Sidebar */}
+      <div
+        className={cn(
+          "transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] shrink-0 h-full flex flex-col relative",
+          isOpen
+            ? "w-[260px] translate-x-0 opacity-100"
+            : "w-0 -translate-x-full opacity-0 overflow-hidden",
+          isMobile && "absolute z-40 shadow-2xl"
+        )}
+      >
+        <AppSidebar
+          isOpen={true}
+          onToggle={() => setIsOpen(false)}
+          activeDailyTab={activeTab}
+          onDailyTabChange={handleTabChange}
+        />
+      </div>
 
-      {/* Toggle button when closed (floating) */}
+      {/* Toggle button when sidebar closed (floating) */}
       {!isOpen && (
         <div className="absolute top-4 left-4 z-50">
           <Button
@@ -74,6 +84,7 @@ export function DailyLayoutClient({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
+      {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div
           className="absolute inset-0 bg-background/80 backdrop-blur-sm z-30"
@@ -82,20 +93,26 @@ export function DailyLayoutClient({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex min-w-0 relative h-full">
+      <div className="flex-1 flex min-w-0 relative h-full overflow-hidden">
         {/* Main Content */}
-        <main className={cn(
-            "flex-1 min-w-0 min-h-0 h-full relative overflow-hidden flex flex-col transition-all duration-500",
+        <main
+          className={cn(
+            "flex-1 min-w-0 min-h-0 h-full relative overflow-hidden flex flex-col transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
             isAssistantOpen ? "mr-[400px]" : "mr-0"
-        )}>
+          )}
+        >
           {renderContent()}
         </main>
 
         {/* Daily Assistant Slide-over */}
-        <div className={cn(
-          "fixed top-0 right-0 h-full bg-background border-l border-border/5 transition-all duration-500 ease-[cubic-bezier(0.2,0,0,1)] z-40 shadow-2xl",
-          isAssistantOpen ? "w-[400px] translate-x-0" : "w-0 translate-x-full overflow-hidden border-none"
-        )}>
+        <div
+          className={cn(
+            "fixed top-0 right-0 h-full bg-sidebar border-l border-border/5 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] z-40 shadow-2xl",
+            isAssistantOpen
+              ? "w-[400px] translate-x-0"
+              : "w-0 translate-x-full overflow-hidden border-none"
+          )}
+        >
           {isAssistantOpen && (
             <DailyAssistant onClose={() => setIsAssistantOpen(false)} />
           )}

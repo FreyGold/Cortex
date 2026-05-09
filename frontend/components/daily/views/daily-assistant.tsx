@@ -57,10 +57,13 @@ export function DailyAssistant({ onClose }: DailyAssistantProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/5 bg-background/50 backdrop-blur-sm">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/5 bg-sidebar/50 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-primary" />
           <h3 className="text-sm font-bold uppercase tracking-widest">Assistant</h3>
+          <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+            Beta
+          </span>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-accent/50 size-8">
           <X className="size-4" />

@@ -11,7 +11,14 @@ import {
   updateDailyTask, 
   deleteDailyTask,
   searchDailyLogs,
-  getDailyStats
+  getDailyStats,
+  getHabits,
+  createHabit,
+  updateHabit,
+  deleteHabit,
+  getHabitLogs,
+  toggleHabitLog,
+  type HabitItem,
 } from "@/lib/api/daily";
 
 async function getAccessToken() {
@@ -138,6 +145,95 @@ export function useDailyStats() {
     queryFn: async () => {
       const token = await getAccessToken();
       return getDailyStats(token);
+    },
+  });
+}
+
+// ── Habits Hooks ─────────────────────────────────────────
+
+export function useHabits() {
+  return useQuery({
+    queryKey: ["habits"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getHabits(token);
+    },
+  });
+}
+
+export function useCreateHabit() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ text, frequency }: { text: string; frequency?: HabitItem["frequency"] }) => {
+      const token = await getAccessToken();
+      return createHabit(token, text, frequency);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["habits"] });
+    },
+  });
+}
+
+export function useUpdateHabit() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      habitId,
+      payload,
+    }: {
+      habitId: string;
+      payload: Partial<Pick<HabitItem, "text" | "frequency" | "is_active">>;
+    }) => {
+      const token = await getAccessToken();
+      return updateHabit(token, habitId, payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["habits"] });
+    },
+  });
+}
+
+export function useDeleteHabit() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (habitId: string) => {
+      const token = await getAccessToken();
+      return deleteHabit(token, habitId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["habits"] });
+    },
+  });
+}
+
+export function useHabitLogs(start: string, end: string) {
+  return useQuery({
+    queryKey: ["habit-logs", start, end],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getHabitLogs(token, start, end);
+    },
+    enabled: !!start && !!end,
+  });
+}
+
+export function useToggleHabitLog() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      habitId,
+      date,
+      completed,
+    }: {
+      habitId: string;
+      date: string;
+      completed: boolean;
+    }) => {
+      const token = await getAccessToken();
+      return toggleHabitLog(token, habitId, date, completed);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["habit-logs"] });
     },
   });
 }

@@ -177,7 +177,7 @@ function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
                     <DropdownMenuItem className="text-xs gap-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateNote.mutate({ isPinned: !note.is_pinned }); }}>
                         <Star className="size-3" /> {note.is_pinned ? "Unpin Note" : "Pin Note"}
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-xs gap-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); archiveNote.mutate(note.id); }}>
+                    <DropdownMenuItem className="text-xs gap-2" onClick={handleArchive}>
                         <Archive className="size-3" /> Archive
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -199,7 +199,7 @@ function NoteItem({ note, active, depth, onDragStart }: NoteItemProps) {
           {note.is_pinned ? "Unpin Note" : "Pin Note"}
         </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuItem onClick={() => archiveNote.mutate(note.id)} variant="destructive">
+        <ContextMenuItem onClick={() => handleArchive()} variant="destructive">
           <Archive className="size-4" />
           Archive Note
         </ContextMenuItem>
@@ -729,10 +729,3 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
             <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 mb-2 block">Archive</span>
             <NavButton icon={Trash2} label="Trash" onClick={() => router.push(`/notes/archive${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`)} active={pathname === "/notes/archive"} />
         </div>
-        </>)}
-      </div>
-
-      <GlobalAssistantModal isOpen={globalAssistantOpen} onOpenChange={setGlobalAssistantOpen} />
-    </div>
-  );
-}

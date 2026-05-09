@@ -110,7 +110,7 @@ export function AppSidebar({ onToggle, activeDailyTab, onDailyTabChange, isOpen 
 
   return (
     <div className={cn(
-        "flex flex-col h-full bg-[#fbfbfa] dark:bg-[#0c0c0c] select-none border-r border-border/5 overflow-x-hidden transition-all duration-300",
+        "flex flex-col h-full bg-sidebar select-none border-r border-border/5 overflow-x-hidden transition-all duration-300",
         isOpen ? "w-[260px]" : "w-0 opacity-0"
     )}>
       {/* Header / Workspace */}
