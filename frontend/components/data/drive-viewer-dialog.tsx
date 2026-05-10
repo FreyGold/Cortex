@@ -1,9 +1,8 @@
 "use client";
 
-import { ExternalLink, ChevronRight, FileText, FolderOpen } from "lucide-react";
-import { useCallback, useState, ReactNode } from "react";
+import { ChevronRight, ExternalLink, FileText, FolderOpen } from "lucide-react";
+import { type ReactNode, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
 
@@ -123,7 +123,9 @@ export function DriveViewerDialog({
     setOpen(nextOpen);
     if (nextOpen) {
       if (!driveId) {
-        setError("Invalid Google Drive ID. Please ensure the resource has a valid link.");
+        setError(
+          "Invalid Google Drive ID. Please ensure the resource has a valid link.",
+        );
         return;
       }
       void loadNode(driveId, null);
@@ -158,7 +160,11 @@ export function DriveViewerDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant={triggerVariant} size={triggerSize} className={cn("gap-2", triggerClassName, className)}>
+        <Button
+          variant={triggerVariant}
+          size={triggerSize}
+          className={cn("gap-2", triggerClassName, className)}
+        >
           {initialIsFolder ? (
             <FolderOpen className="size-4" />
           ) : (

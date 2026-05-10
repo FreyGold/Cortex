@@ -1,14 +1,34 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Search, Sparkles, Calendar, ArrowRight, History, MessageSquare, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { format, parseISO } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  Calendar,
+  History,
+  MessageSquare,
+  Search,
+  Sparkles,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  EASE_OUT,
+  staggerContainer,
+  staggerItem,
+} from "@/components/daily/full-calendar/animations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { format, parseISO } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useSearchDailyLogs } from "@/hooks/use-daily";
 import { useDebounce } from "@/hooks/use-debounce";
+
+const SUGGESTIONS = [
+  "last week progress",
+  "exam preparation",
+  "project milestones",
+  "meditation streak",
+];
 
 export function DailySearch() {
   const [query, setQuery] = useState("");
@@ -25,93 +45,139 @@ export function DailySearch() {
   const isSearching = searchMutation.isPending;
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar p-8 bg-background/50">
-      <div className="max-w-4xl mx-auto space-y-12 pt-12">
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-bold uppercase tracking-widest text-primary">
-             <Sparkles className="size-3" /> Semantic Exploration
-          </div>
-          <h2 className="text-4xl font-bold tracking-tight">Search your history</h2>
-          <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-            Find specific moments, tasks, or insights from your past daily logs using natural language.
-          </p>
-        </div>
-
+    <div className="flex-1 overflow-y-auto custom-scrollbar bg-background/50">
+      <div className="max-w-2xl mx-auto px-6 py-10 space-y-8">
         {/* Search Bar */}
-        <div className="relative group">
-          <div className="absolute inset-0 bg-primary/5 blur-2xl rounded-3xl opacity-0 group-focus-within:opacity-100 transition-all" />
-          <Input 
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: EASE_OUT }}
+          className="relative"
+        >
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground/30 pointer-events-none z-10" />
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for 'the day I finished the project' or 'algorithms study'..."
-            className="h-20 pl-16 pr-6 bg-card border-border/10 rounded-3xl shadow-xl text-xl focus-visible:ring-primary/10 relative z-10"
+            placeholder="Search your history..."
+            className="h-12 pl-12 pr-10 rounded-2xl bg-card border-border/10 text-[15px] focus-visible:ring-2 focus-visible:ring-primary/15"
           />
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 z-10" />
-          {isSearching && (
-             <div className="absolute right-6 top-1/2 -translate-y-1/2 z-10">
-                <div className="size-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-             </div>
-          )}
-        </div>
+          <AnimatePresence>
+            {isSearching && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.12, ease: EASE_OUT }}
+                className="absolute right-4 top-1/2 -translate-y-1/2"
+              >
+                <div className="size-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
-        {/* Suggestions / History */}
-        {!query && (
-          <div className="space-y-6">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/40 text-center">Recent Searches</h3>
-            <div className="flex flex-wrap justify-center gap-2">
-               {["last week progress", "exam preparation", "project milestones", "meditation streak"].map((s, i) => (
-                 <Button key={i} variant="outline" className="rounded-full h-8 px-4 text-xs bg-card/50 border-border/5 hover:bg-card">
-                   {s}
-                 </Button>
-               ))}
-            </div>
-          </div>
-        )}
+        {/* Empty state suggestions */}
+        <AnimatePresence mode="wait">
+          {!query && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: EASE_OUT }}
+              className="space-y-3"
+            >
+              <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Try searching for
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {SUGGESTIONS.map((s, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.15,
+                      delay: i * 0.04,
+                      ease: EASE_OUT,
+                    }}
+                  >
+                    <Button
+                      variant="outline"
+                      onClick={() => setQuery(s)}
+                      className="h-8 rounded-lg px-3 text-[13px] bg-card border-border/10 hover:bg-accent/50 transition-colors"
+                    >
+                      {s}
+                    </Button>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Results */}
-        {results.length > 0 && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
-             <div className="flex items-center justify-between px-2">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Found {results.length} related moments</h3>
-             </div>
-             <div className="grid gap-4">
+        <AnimatePresence>
+          {results.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: EASE_OUT }}
+              className="space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[12px] font-semibold text-muted-foreground">
+                  {results.length} results
+                </span>
+              </div>
+              <motion.div
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+                className="space-y-2"
+              >
                 {results.map((res) => (
-                  <Card key={res.id} className="group border-border/5 bg-card/50 backdrop-blur-sm hover:bg-card hover:border-border/10 transition-all shadow-sm cursor-pointer overflow-hidden">
-                    <CardContent className="p-0">
-                       <div className="p-6 flex items-start gap-6">
-                          <div className="flex flex-col items-center gap-1 shrink-0 pt-1">
-                             <Calendar className="size-5 text-primary/40" />
-                             <span className="text-[10px] font-bold text-muted-foreground/30">{format(parseISO(res.date), "MMM d")}</span>
+                  <motion.div key={res.id} variants={staggerItem}>
+                    <Card className="group border-border/10 bg-card hover:border-border/25 transition-colors cursor-pointer overflow-hidden">
+                      <CardContent className="p-0">
+                        <div className="flex items-start gap-4 p-5">
+                          <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                            <Calendar className="size-4 text-muted-foreground/30" />
+                            <span className="text-[10px] font-semibold text-muted-foreground/30">
+                              {format(parseISO(res.date), "MMM d")}
+                            </span>
                           </div>
-                          <div className="flex-1 space-y-2">
-                             <div className="flex items-center justify-between">
-                                <h4 className="font-bold tracking-tight text-lg">{res.highlight}</h4>
-                                <Badge variant="secondary" className="bg-primary/5 text-primary border-none text-[9px] font-bold uppercase tracking-widest">
-                                   {Math.round(res.similarity * 100)}% Match
-                                </Badge>
-                             </div>
-                             <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                               {res.content_text || "No detailed notes found for this day."}
-                             </p>
-                             <div className="flex items-center gap-4 pt-2">
-                                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
-                                   <History className="size-3" /> {format(parseISO(res.date), "yyyy")}
-                                </div>
-                                <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
-                                   <MessageSquare className="size-3" /> Log Detail
-                                </div>
-                             </div>
+                          <div className="flex-1 min-w-0 space-y-2">
+                            <div className="flex items-start justify-between gap-3">
+                              <h4 className="text-[15px] font-semibold leading-none">
+                                {res.highlight}
+                              </h4>
+                              <Badge className="text-[10px] font-bold bg-primary/8 text-primary shrink-0 px-2 py-0.5 rounded-md">
+                                {Math.round(res.similarity * 100)}%
+                              </Badge>
+                            </div>
+                            <p className="text-[13px] text-muted-foreground leading-relaxed line-clamp-2">
+                              {res.content_text ||
+                                "No detailed notes for this day."}
+                            </p>
+                            <div className="flex items-center gap-4 pt-1">
+                              <span className="text-[10px] font-semibold text-muted-foreground/30 uppercase tracking-wide">
+                                {format(parseISO(res.date), "yyyy")}
+                              </span>
+                            </div>
                           </div>
-                          <div className="self-center opacity-0 group-hover:opacity-100 transition-opacity">
-                             <ArrowRight className="size-5 text-primary" />
+                          <div className="shrink-0 pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                            <ArrowRight className="size-4 text-primary" />
                           </div>
-                       </div>
-                    </CardContent>
-                  </Card>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
-             </div>
-          </div>
-        )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

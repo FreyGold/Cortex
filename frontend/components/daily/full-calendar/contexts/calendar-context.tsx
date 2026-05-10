@@ -3,8 +3,14 @@
 import type React from "react";
 import { createContext, useContext, useState } from "react";
 import { useLocalStorage } from "@/components/daily/full-calendar/hooks";
-import type { IEvent, IUser } from "@/components/daily/full-calendar/interfaces";
-import type { TCalendarView, TEventColor } from "@/components/daily/full-calendar/types";
+import type {
+  IEvent,
+  IUser,
+} from "@/components/daily/full-calendar/interfaces";
+import type {
+  TCalendarView,
+  TEventColor,
+} from "@/components/daily/full-calendar/types";
 
 interface ICalendarContext {
   selectedDate: Date;
@@ -68,8 +74,10 @@ export function CalendarProvider({
   view?: TCalendarView;
   badge?: "dot" | "colored";
 }) {
-
-  const [rawSettings, setSettings] = useLocalStorage<Partial<CalendarSettings>>("calendar-settings", {});
+  const [rawSettings, setSettings] = useLocalStorage<Partial<CalendarSettings>>(
+    "calendar-settings",
+    {},
+  );
 
   const settings: CalendarSettings = {
     ...DEFAULT_SETTINGS,
@@ -127,12 +135,15 @@ export function CalendarProvider({
   };
 
   const setStartOfDayHour = (newVal: number) => {
-    if (!isNaN(newVal) && newVal >= MIN_SCROLL_HOUR && newVal <= MAX_SCROLL_HOUR) {
+    if (
+      !isNaN(newVal) &&
+      newVal >= MIN_SCROLL_HOUR &&
+      newVal <= MAX_SCROLL_HOUR
+    ) {
       setStartOfDayHourState(newVal);
       updateSettings({ startOfDayHour: newVal });
     }
   };
-
 
   const setAgendaModeGroupBy = (groupBy: "date" | "color") => {
     setAgendaModeGroupByState(groupBy);

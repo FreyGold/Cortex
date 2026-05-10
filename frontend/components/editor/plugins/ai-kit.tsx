@@ -1,32 +1,32 @@
-'use client';
+"use client";
 
-import cloneDeep from 'lodash/cloneDeep.js';
-import { BaseAIPlugin, withAIBatch } from '@platejs/ai';
+import { BaseAIPlugin, withAIBatch } from "@platejs/ai";
 import {
   AIChatPlugin,
   AIPlugin,
   applyAISuggestions,
   getInsertPreviewStart,
   useChatChunk,
-} from '@platejs/ai/react';
-import { ElementApi, getPluginType, KEYS, PathApi } from 'platejs';
-import { usePluginOption } from 'platejs/react';
-import { deserializeMd } from '@platejs/markdown';
+} from "@platejs/ai/react";
+import { deserializeMd } from "@platejs/markdown";
+import cloneDeep from "lodash/cloneDeep.js";
+import { ElementApi, getPluginType, KEYS, PathApi } from "platejs";
+import { usePluginOption } from "platejs/react";
 
-import { AILoadingBar, AIMenu } from '@/components/ui/ai-menu';
-import { AIAnchorElement, AILeaf } from '@/components/ui/ai-node';
+import { AILoadingBar, AIMenu } from "@/components/ui/ai-menu";
+import { AIAnchorElement, AILeaf } from "@/components/ui/ai-node";
 
-import { useChat } from '../use-chat';
-import { CursorOverlayKit } from './cursor-overlay-kit';
-import { MarkdownKit } from './markdown-kit';
+import { useChat } from "../use-chat";
+import { CursorOverlayKit } from "./cursor-overlay-kit";
+import { MarkdownKit } from "./markdown-kit";
 
 const getNodeText = (node: any): string => {
-  if (!node) return '';
-  if (typeof node.text === 'string') return node.text;
+  if (!node) return "";
+  if (typeof node.text === "string") return node.text;
   if (Array.isArray(node.children)) {
-    return node.children.map(getNodeText).join('');
+    return node.children.map(getNodeText).join("");
   }
-  return '';
+  return "";
 };
 
 /**
@@ -35,44 +35,52 @@ const getNodeText = (node: any): string => {
  * check — if it's undefined the editor crashes mid-stream.
  */
 const deepSanitizeNodes = (nodes: any[]): any[] => {
-  if (!Array.isArray(nodes)) return [{ text: '' }];
+  if (!Array.isArray(nodes)) return [{ text: "" }];
 
   return nodes.map((node) => {
-    if (typeof node !== 'object' || node === null) return { text: '' };
-    if ('text' in node) return node;
+    if (typeof node !== "object" || node === null) return { text: "" };
+    if ("text" in node) return node;
 
     const rawChildren = Array.isArray(node.children) ? node.children : [];
     let children = deepSanitizeNodes(rawChildren);
-    const type: string = node.type ?? '';
+    const type: string = node.type ?? "";
 
-    if (type === 'tr') {
-      const hasCells = children.some((c: any) => c.type === 'td' || c.type === 'th');
-      if (!hasCells) children = [{ type: 'td', children: [{ text: '' }] }];
-    } else if (type === 'td' || type === 'th') {
-      if (children.length === 0) children = [{ text: '' }];
-    } else if (type === 'table') {
-      const hasRows = children.some((c: any) => c.type === 'tr');
-      if (!hasRows) children = [{ type: 'tr', children: [{ type: 'td', children: [{ text: '' }] }] }];
-      
+    if (type === "tr") {
+      const hasCells = children.some(
+        (c: any) => c.type === "td" || c.type === "th",
+      );
+      if (!hasCells) children = [{ type: "td", children: [{ text: "" }] }];
+    } else if (type === "td" || type === "th") {
+      if (children.length === 0) children = [{ text: "" }];
+    } else if (type === "table") {
+      const hasRows = children.some((c: any) => c.type === "tr");
+      if (!hasRows)
+        children = [
+          { type: "tr", children: [{ type: "td", children: [{ text: "" }] }] },
+        ];
+
       const colSizes: number[] = [];
       children.forEach((row: any) => {
-        if (row.type === 'tr' && Array.isArray(row.children)) {
+        if (row.type === "tr" && Array.isArray(row.children)) {
           row.children.forEach((cell: any, colIndex: number) => {
             const text = getNodeText(cell);
             // Estimate width: 8px per char + 32px padding. Min 120, Max 500
-            const estimatedWidth = Math.min(500, Math.max(120, text.length * 8 + 32));
+            const estimatedWidth = Math.min(
+              500,
+              Math.max(120, text.length * 8 + 32),
+            );
             if (!colSizes[colIndex] || estimatedWidth > colSizes[colIndex]) {
               colSizes[colIndex] = estimatedWidth;
             }
           });
         }
       });
-      
+
       if (colSizes.length > 0 && !node.colSizes) {
         return { ...node, children, colSizes };
       }
     } else if (children.length === 0) {
-      children = [{ text: '' }];
+      children = [{ text: "" }];
     }
 
     return { ...node, children };
@@ -86,17 +94,18 @@ const deepSanitizeNodes = (nodes: any[]): any[] => {
  */
 const hasIncompleteTable = (nodes: any[]): boolean => {
   for (const node of nodes) {
-    if (typeof node !== 'object' || node === null || 'text' in node) continue;
-    if (node.type === 'table') {
+    if (typeof node !== "object" || node === null || "text" in node) continue;
+    if (node.type === "table") {
       const rows: any[] = Array.isArray(node.children) ? node.children : [];
       if (rows.length === 0) return true;
       for (const row of rows) {
-        if (!row || row.type !== 'tr') return true;
+        if (!row || row.type !== "tr") return true;
         const cells: any[] = Array.isArray(row.children) ? row.children : [];
         if (cells.length === 0) return true;
       }
     }
-    if (Array.isArray(node.children) && hasIncompleteTable(node.children)) return true;
+    if (Array.isArray(node.children) && hasIncompleteTable(node.children))
+      return true;
   }
   return false;
 };
@@ -104,21 +113,23 @@ const hasIncompleteTable = (nodes: any[]): boolean => {
 export const aiChatPlugin = AIChatPlugin.extend({
   options: {
     chatOptions: {
-      api: '/api/ai/command',
+      api: "/api/ai/command",
       body: {},
     },
     streaming: false,
-    _blockChunks: '',
+    _blockChunks: "",
     _mdxName: null,
     toolName: null,
     chatSelection: null,
-    _rawMarkdown: '',
+    _rawMarkdown: "",
     _blockPath: null,
+    _streamEndPath: null,
+    _originalPath: null,
     _lastInsertedLength: 1,
     _lastRenderTime: 0,
     chat: {
       messages: [],
-      status: 'ready',
+      status: "ready",
     } as any,
   },
   handlers: {
@@ -137,22 +148,34 @@ export const aiChatPlugin = AIChatPlugin.extend({
   },
   shortcuts: {
     show: {
-      keys: 'mod+j',
+      keys: "mod+j",
     },
   },
   useHooks: ({ editor, getOption }) => {
     useChat();
 
-    const mode = usePluginOption(AIChatPlugin, 'mode');
-    const toolName = usePluginOption(AIChatPlugin, 'toolName');
+    const mode = usePluginOption(AIChatPlugin, "mode");
+    const toolName = usePluginOption(AIChatPlugin, "toolName");
 
-    let rawMarkdown = (editor.getOption(AIChatPlugin, '_rawMarkdown' as any) as string) || '';
-    let lastInsertedLength = (editor.getOption(AIChatPlugin, '_lastInsertedLength' as any) as unknown as number) || 1;
-    let lastRenderTime = (editor.getOption(AIChatPlugin, '_lastRenderTime' as any) as unknown as number) || 0;
+    let rawMarkdown =
+      (editor.getOption(AIChatPlugin, "_rawMarkdown" as any) as string) || "";
+    let lastInsertedLength =
+      (editor.getOption(
+        AIChatPlugin,
+        "_lastInsertedLength" as any,
+      ) as unknown as number) || 1;
+    const lastRenderTime =
+      (editor.getOption(
+        AIChatPlugin,
+        "_lastRenderTime" as any,
+      ) as unknown as number) || 0;
 
-    const renderMarkdown = (markdown: string) => {
+    const renderMarkdown = (
+      markdown: string,
+      isFirstChunk: boolean = false,
+    ) => {
       editor.tf.withoutSaving(() => {
-        if (!getOption('streaming')) return;
+        if (!getOption("streaming")) return;
 
         editor.tf.withScrolling(() => {
           editor.tf.withoutNormalizing(() => {
@@ -160,26 +183,68 @@ export const aiChatPlugin = AIChatPlugin.extend({
             const sanitizedNodes = deepSanitizeNodes(parsedNodes);
 
             if (hasIncompleteTable(sanitizedNodes)) return;
-            
-            const newNodes = sanitizedNodes ? sanitizedNodes.map(n => ({ ...n, [getPluginType(editor, KEYS.ai)]: true })) : [];
-            const targetPath = editor.getOption(AIChatPlugin, '_blockPath');
-            
-            if (targetPath) {
+
+            const newNodes = sanitizedNodes
+              ? sanitizedNodes.map((n) => ({
+                  ...n,
+                  [getPluginType(editor, KEYS.ai)]: true,
+                }))
+              : [];
+
+            if (newNodes.length === 0) return;
+
+            const blockPath = editor.getOption(AIChatPlugin, "_blockPath");
+            const streamEndPath = editor.getOption(
+              AIChatPlugin,
+              "_streamEndPath",
+            );
+
+            if (!blockPath) return;
+
+            if (isFirstChunk) {
               try {
                 for (let i = 0; i < lastInsertedLength; i++) {
-                  editor.tf.removeNodes({ at: targetPath });
+                  editor.tf.removeNodes({ at: blockPath });
                 }
-              } catch(e) {}
-              
-              if (newNodes.length > 0) {
-                editor.tf.insertNodes(newNodes, { at: targetPath, select: true });
-                lastInsertedLength = newNodes.length;
-                editor.setOption(AIChatPlugin, '_lastInsertedLength' as any, lastInsertedLength);
-              } else {
-                 editor.tf.insertNodes({ children: [{ text: '' }], type: getPluginType(editor, KEYS.aiChat), [getPluginType(editor, KEYS.ai)]: true }, { at: targetPath, select: true });
-                 lastInsertedLength = 1;
-                 editor.setOption(AIChatPlugin, '_lastInsertedLength' as any, 1);
-              }
+              } catch (e) {}
+
+              editor.tf.insertNodes(newNodes, { at: blockPath, select: true });
+
+              const newEndPath = [...blockPath];
+              newEndPath[newEndPath.length - 1] =
+                (newEndPath[newEndPath.length - 1] ?? 0) + newNodes.length;
+              editor.setOption(
+                AIChatPlugin,
+                "_streamEndPath" as any,
+                newEndPath,
+              );
+
+              lastInsertedLength = newNodes.length;
+              editor.setOption(
+                AIChatPlugin,
+                "_lastInsertedLength" as any,
+                lastInsertedLength,
+              );
+            } else {
+              const insertPath = streamEndPath || blockPath;
+
+              editor.tf.insertNodes(newNodes, { at: insertPath, select: true });
+
+              const newEndPath = [...insertPath];
+              newEndPath[newEndPath.length - 1] =
+                (newEndPath[newEndPath.length - 1] ?? 0) + newNodes.length;
+              editor.setOption(
+                AIChatPlugin,
+                "_streamEndPath" as any,
+                newEndPath,
+              );
+
+              lastInsertedLength = newNodes.length;
+              editor.setOption(
+                AIChatPlugin,
+                "_lastInsertedLength" as any,
+                lastInsertedLength,
+              );
             }
           });
         });
@@ -188,10 +253,10 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
     useChatChunk({
       onChunk: ({ chunk, isFirst, nodes, text: content }) => {
-        if (isFirst && mode === 'insert') {
-          rawMarkdown = '';
-          editor.setOption(AIChatPlugin, '_rawMarkdown' as any, '');
-          editor.setOption(AIChatPlugin, '_lastInsertedLength' as any, 1);
+        if (isFirst && mode === "insert") {
+          rawMarkdown = "";
+          editor.setOption(AIChatPlugin, "_rawMarkdown" as any, "");
+          editor.setOption(AIChatPlugin, "_lastInsertedLength" as any, 1);
 
           const { startBlock, startInEmptyParagraph } =
             getInsertPreviewStart(editor);
@@ -205,38 +270,39 @@ export const aiChatPlugin = AIChatPlugin.extend({
                 : [],
           });
 
+          const cursorPath = editor.selection!.focus.path.slice(0, 1);
+          const storedOriginalPath = editor.getOption(AIChatPlugin, "_originalPath") as number[] | null;
+          const originalPath = storedOriginalPath || cursorPath;
+          if (!storedOriginalPath) {
+            editor.setOption(AIChatPlugin, "_originalPath" as any, originalPath);
+          }
+
           editor.tf.withoutSaving(() => {
+            const targetPath = PathApi.next(originalPath);
             editor.tf.insertNodes(
               {
-                children: [{ text: '' }],
+                children: [{ text: "" }],
                 type: getPluginType(editor, KEYS.aiChat),
               },
               {
-                at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
-              }
+                at: targetPath,
+              },
             );
-            const newPath = editor.selection!.focus.path.slice(0, 1);
-            editor.setOption(AIChatPlugin, '_blockPath' as any, newPath);
+            editor.setOption(AIChatPlugin, "_blockPath" as any, targetPath);
+            editor.setOption(AIChatPlugin, "_streamEndPath" as any, targetPath);
           });
-          editor.setOption(AIChatPlugin, 'streaming', true);
+          editor.setOption(AIChatPlugin, "streaming", true);
         }
 
-        if (mode === 'insert') {
-          const newMarkdown = rawMarkdown + chunk;
-          rawMarkdown = newMarkdown;
-          editor.setOption(AIChatPlugin, '_rawMarkdown' as any, newMarkdown);
-          
-          const now = Date.now();
-          // Use a very low throttle (32ms ~ 30fps) for smooth but controlled rendering
-          if (!isFirst && now - lastRenderTime < 32) return;
-          
-          lastRenderTime = now;
-          editor.setOption(AIChatPlugin, '_lastRenderTime' as any, now);
-          
-          renderMarkdown(newMarkdown);
+        if (mode === "insert") {
+          const newChunk = chunk;
+          rawMarkdown = rawMarkdown + newChunk;
+          editor.setOption(AIChatPlugin, "_rawMarkdown" as any, rawMarkdown);
+
+          renderMarkdown(newChunk, isFirst);
         }
 
-        if (toolName === 'edit' && mode === 'chat') {
+        if (toolName === "edit" && mode === "chat") {
           withAIBatch(
             editor,
             () => {
@@ -244,21 +310,22 @@ export const aiChatPlugin = AIChatPlugin.extend({
             },
             {
               split: isFirst,
-            }
+            },
           );
         }
       },
       onFinish: () => {
-        if (mode === 'insert' && rawMarkdown) {
-          renderMarkdown(rawMarkdown);
-        }
-        editor.setOption(AIChatPlugin, 'streaming', false);
-        editor.setOption(AIChatPlugin, '_blockChunks', '');
-        editor.setOption(AIChatPlugin, '_blockPath' as any, null);
-        editor.setOption(AIChatPlugin, '_mdxName', null);
-        editor.setOption(AIChatPlugin, '_rawMarkdown' as any, '');
-        editor.setOption(AIChatPlugin, '_lastInsertedLength' as any, 1);
-        editor.setOption(AIChatPlugin, '_lastRenderTime' as any, 0);
+        editor.getTransforms(AIChatPlugin).aiChat.accept();
+        editor.tf.focus({ edge: "end" });
+        editor.setOption(AIChatPlugin, "streaming", false);
+        editor.setOption(AIChatPlugin, "_blockChunks", "");
+        editor.setOption(AIChatPlugin, "_blockPath" as any, null);
+        editor.setOption(AIChatPlugin, "_streamEndPath" as any, null);
+        editor.setOption(AIChatPlugin, "_originalPath" as any, null);
+        editor.setOption(AIChatPlugin, "_mdxName", null);
+        editor.setOption(AIChatPlugin, "_rawMarkdown" as any, "");
+        editor.setOption(AIChatPlugin, "_lastInsertedLength" as any, 1);
+        editor.setOption(AIChatPlugin, "_lastRenderTime" as any, 0);
       },
     });
   },

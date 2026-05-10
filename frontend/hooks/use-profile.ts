@@ -1,12 +1,12 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ApiError } from "@/lib/api/client";
 import {
+  type CurrentProfile,
   getCurrentProfile,
   requestVerification,
-  type CurrentProfile,
 } from "@/lib/api/profile";
-import { ApiError } from "@/lib/api/client";
 import { createClient } from "@/lib/supabase/client";
 
 async function getAccessToken() {

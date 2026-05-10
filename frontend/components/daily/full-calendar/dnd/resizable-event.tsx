@@ -12,10 +12,9 @@ import { motion } from "framer-motion";
 import { Resizable, type ResizeCallback } from "re-resizable";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
-import { cn } from "@/lib/utils";
 import { useCalendar } from "@/components/daily/full-calendar/contexts/calendar-context";
-
 import type { IEvent } from "@/components/daily/full-calendar/interfaces";
+import { cn } from "@/lib/utils";
 
 interface ResizableEventBlockProps {
   event: IEvent;

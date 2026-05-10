@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { PanelLeft as SidebarSimple, Menu as List } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Menu as List, PanelLeft as SidebarSimple } from "lucide-react";
+import { useEffect, useState } from "react";
 import { NotesSidebar } from "@/components/notes/notes-sidebar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function NotesLayoutClient({ children }: { children: React.ReactNode }) {
@@ -30,11 +30,11 @@ export function NotesLayoutClient({ children }: { children: React.ReactNode }) {
           isOpen
             ? "w-[280px] translate-x-0 opacity-100"
             : "w-0 -translate-x-full opacity-0 overflow-hidden",
-          isMobile && "absolute z-40 shadow-2xl"
+          isMobile && "absolute z-40 shadow-2xl",
         )}
       >
         <div className="flex-1 overflow-hidden">
-           <NotesSidebar onToggle={() => setIsOpen(false)} />
+          <NotesSidebar onToggle={() => setIsOpen(false)} />
         </div>
       </div>
 

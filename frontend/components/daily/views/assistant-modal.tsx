@@ -1,0 +1,52 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { X } from "lucide-react";
+import React from "react";
+import { EASE_OUT } from "@/components/daily/full-calendar/animations";
+import { Button } from "@/components/ui/button";
+import { DailyAssistant } from "./daily-assistant";
+
+interface AssistantModalProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function AssistantModal({ isOpen, onOpenChange }: AssistantModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: EASE_OUT }}
+        className="fixed inset-0 z-50 bg-background/30 backdrop-blur-md"
+        onClick={() => onOpenChange(false)}
+      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+        transition={{ duration: 0.25, ease: EASE_OUT }}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-modal overflow-hidden flex flex-col"
+        style={{ width: "42vw", height: "80vh" }}
+      >
+        <div className="flex items-center justify-end px-4 py-2.5 border-b border-border/5 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
+          >
+            <X className="size-3.5" />
+          </Button>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <DailyAssistant onClose={() => onOpenChange(false)} />
+        </div>
+      </motion.div>
+    </>
+  );
+}

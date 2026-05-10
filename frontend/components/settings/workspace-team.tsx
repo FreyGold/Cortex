@@ -1,6 +1,9 @@
 "use client";
 
+import { AlertTriangle, Mail, Plus, Shield, Trash2, Users } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,23 +13,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useWorkspaceMembers, useAddWorkspaceMember, useDeleteWorkspaceMember, useUpdateWorkspaceMemberRole, useWorkspaces, useCreateWorkspace, useDeleteWorkspace } from "@/hooks/use-workspace";
-import { Trash2, Shield, Users, Mail, Plus, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  useAddWorkspaceMember,
+  useCreateWorkspace,
+  useDeleteWorkspace,
+  useDeleteWorkspaceMember,
+  useUpdateWorkspaceMemberRole,
+  useWorkspaceMembers,
+  useWorkspaces,
+} from "@/hooks/use-workspace";
 
 export function WorkspaceTeam() {
   const { data: workspaces, isLoading: isLoadingWorkspaces } = useWorkspaces();
   const createWorkspace = useCreateWorkspace();
   const deleteWorkspace = useDeleteWorkspace();
   const { data: user } = useAuth();
-  
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
+
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(
+    null,
+  );
   const [newWorkspaceName, setNewWorkspaceName] = useState("");
 
-  const { data: members, isLoading: isLoadingMembers } = useWorkspaceMembers(selectedWorkspaceId || "");
+  const { data: members, isLoading: isLoadingMembers } = useWorkspaceMembers(
+    selectedWorkspaceId || "",
+  );
   const addMember = useAddWorkspaceMember();
   // ... delete and update hooks also need workspaceId for invalidation if we want to be strict,
   // but let's just use them as is for now if they work by ID.
@@ -51,11 +63,15 @@ export function WorkspaceTeam() {
 
   const handleDeleteWorkspace = async () => {
     if (!selectedWorkspaceId) return;
-    
+
     const ws = workspaces?.find((w: any) => w.id === selectedWorkspaceId);
     if (!ws) return;
 
-    if (!window.confirm(`Are you sure you want to delete "${ws.name}"? This will permanently remove all associated notes and folders. This action cannot be undone.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete "${ws.name}"? This will permanently remove all associated notes and folders. This action cannot be undone.`,
+      )
+    ) {
       return;
     }
 
@@ -73,7 +89,11 @@ export function WorkspaceTeam() {
     if (!email || !selectedWorkspaceId) return;
 
     try {
-      await addMember.mutateAsync({ workspaceId: selectedWorkspaceId, email, role });
+      await addMember.mutateAsync({
+        workspaceId: selectedWorkspaceId,
+        email,
+        role,
+      });
       setEmail("");
       setRole("viewer");
       toast.success("Team member invited successfully");
@@ -101,7 +121,9 @@ export function WorkspaceTeam() {
     }
   };
 
-  const selectedWorkspace = workspaces?.find((w: any) => w.id === selectedWorkspaceId);
+  const selectedWorkspace = workspaces?.find(
+    (w: any) => w.id === selectedWorkspaceId,
+  );
   const isOwner = selectedWorkspace?.owner_id === user?.id;
 
   return (
@@ -109,18 +131,23 @@ export function WorkspaceTeam() {
       <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
         <div className="flex items-center gap-2 text-primary">
           <Plus className="size-4" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">Create New Workspace</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider">
+            Create New Workspace
+          </span>
         </div>
-        <form onSubmit={handleCreateWorkspace} className="flex items-center gap-3">
-            <Input 
-              placeholder="Workspace Name (e.g. Study Group)" 
-              value={newWorkspaceName}
-              onChange={(e) => setNewWorkspaceName(e.target.value)}
-              required 
-            />
-            <Button type="submit" disabled={createWorkspace.isPending}>
-              {createWorkspace.isPending ? "Creating..." : "Create"}
-            </Button>
+        <form
+          onSubmit={handleCreateWorkspace}
+          className="flex items-center gap-3"
+        >
+          <Input
+            placeholder="Workspace Name (e.g. Study Group)"
+            value={newWorkspaceName}
+            onChange={(e) => setNewWorkspaceName(e.target.value)}
+            required
+          />
+          <Button type="submit" disabled={createWorkspace.isPending}>
+            {createWorkspace.isPending ? "Creating..." : "Create"}
+          </Button>
         </form>
       </div>
 
@@ -128,12 +155,14 @@ export function WorkspaceTeam() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary">
             <Users className="size-4" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Select Workspace to Manage</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">
+              Select Workspace to Manage
+            </span>
           </div>
           {selectedWorkspaceId && isOwner && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive gap-2"
               onClick={handleDeleteWorkspace}
               disabled={deleteWorkspace.isPending}
@@ -143,15 +172,20 @@ export function WorkspaceTeam() {
             </Button>
           )}
         </div>
-        <Select value={selectedWorkspaceId || ""} onValueChange={setSelectedWorkspaceId}>
-            <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose a workspace..." />
-            </SelectTrigger>
-            <SelectContent>
-                {workspaces?.map((w: any) => (
-                    <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
-                ))}
-            </SelectContent>
+        <Select
+          value={selectedWorkspaceId || ""}
+          onValueChange={setSelectedWorkspaceId}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Choose a workspace..." />
+          </SelectTrigger>
+          <SelectContent>
+            {workspaces?.map((w: any) => (
+              <SelectItem key={w.id} value={w.id}>
+                {w.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
 
@@ -160,19 +194,21 @@ export function WorkspaceTeam() {
           <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
             <div className="flex items-center gap-2 text-primary">
               <Users className="size-4" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Invite to {selectedWorkspace?.name}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Invite to {selectedWorkspace?.name}
+              </span>
             </div>
-            
+
             <form onSubmit={handleInvite} className="flex items-center gap-3">
               <div className="relative flex-1">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input 
-                  type="email" 
-                  placeholder="Email address" 
+                <Input
+                  type="email"
+                  placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-9"
-                  required 
+                  required
                 />
               </div>
               <Select value={role} onValueChange={setRole}>
@@ -194,7 +230,9 @@ export function WorkspaceTeam() {
           <div className="rounded-xl border border-border/60 bg-card">
             <div className="p-4 border-b border-border/60 flex items-center gap-2 text-primary bg-muted/20 rounded-t-xl">
               <Shield className="size-4" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Team Members</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                Team Members
+              </span>
             </div>
             <div className="p-0">
               {isLoadingMembers ? (
@@ -205,15 +243,23 @@ export function WorkspaceTeam() {
               ) : members && members.length > 0 ? (
                 <div className="divide-y divide-border/60">
                   {members.map((member: any) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 hover:bg-muted/10 transition-colors">
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-4 hover:bg-muted/10 transition-colors"
+                    >
                       <div>
                         <p className="font-medium text-sm">{member.email}</p>
-                        <p className="text-xs text-muted-foreground">Joined {new Date(member.created_at).toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Joined{" "}
+                          {new Date(member.created_at).toLocaleDateString()}
+                        </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Select 
-                          value={member.role} 
-                          onValueChange={(val) => handleRoleChange(member.id, val)}
+                        <Select
+                          value={member.role}
+                          onValueChange={(val) =>
+                            handleRoleChange(member.id, val)
+                          }
                           disabled={updateRole.isPending}
                         >
                           <SelectTrigger className="w-[110px] h-8 text-xs">
@@ -225,9 +271,9 @@ export function WorkspaceTeam() {
                             <SelectItem value="admin">Admin</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => handleDelete(member.id)}
                           disabled={deleteMember.isPending}

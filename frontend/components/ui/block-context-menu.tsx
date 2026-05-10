@@ -1,43 +1,41 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin } from "@platejs/ai/react";
 import {
   BLOCK_CONTEXT_MENU_ID,
   BlockMenuPlugin,
   BlockSelectionPlugin,
-} from '@platejs/selection/react';
-import { KEYS } from 'platejs';
+} from "@platejs/selection/react";
+import { ClipboardPaste, Copy, MessageSquarePlus } from "lucide-react";
+import { KEYS } from "platejs";
 import {
   useEditorPlugin,
   useEditorReadOnly,
   usePluginOption,
-} from 'platejs/react';
-
+} from "platejs/react";
+import * as React from "react";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuGroup,
   ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-} from '@/components/ui/context-menu';
-import { useIsTouchDevice } from '@/hooks/use-is-touch-device';
-import { Copy, ClipboardPaste, MessageSquarePlus } from "lucide-react";
+} from "@/components/ui/context-menu";
+import { useIsTouchDevice } from "@/hooks/use-is-touch-device";
 
-type Value = 'askAI' | null;
+type Value = "askAI" | null;
 
 export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const { api, editor } = useEditorPlugin(BlockMenuPlugin);
   const [value, setValue] = React.useState<Value>(null);
   const isTouch = useIsTouchDevice();
   const readOnly = useEditorReadOnly();
-  const openId = usePluginOption(BlockMenuPlugin, 'openId');
+  const openId = usePluginOption(BlockMenuPlugin, "openId");
   const isOpen = openId === BLOCK_CONTEXT_MENU_ID;
 
   const handleTurnInto = React.useCallback(
@@ -47,7 +45,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         .blockSelection.getNodes()
         .forEach(([node, path]) => {
           if (node[KEYS.listType]) {
-            editor.tf.unsetNodes([KEYS.listType, 'indent'], {
+            editor.tf.unsetNodes([KEYS.listType, "indent"], {
               at: path,
             });
           }
@@ -55,16 +53,16 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           editor.tf.toggleBlock(type, { at: path });
         });
     },
-    [editor]
+    [editor],
   );
 
   const handleAlign = React.useCallback(
-    (align: 'center' | 'left' | 'right') => {
+    (align: "center" | "left" | "right") => {
       editor
         .getTransforms(BlockSelectionPlugin)
         .blockSelection.setNodes({ align });
     },
-    [editor]
+    [editor],
   );
 
   if (isTouch) {
@@ -84,7 +82,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         asChild
         onContextMenu={(event) => {
           const dataset = (event.target as HTMLElement).dataset;
-          const disabled = dataset?.plateOpenContextMenu === 'false';
+          const disabled = dataset?.plateOpenContextMenu === "false";
 
           if (disabled) return event.preventDefault();
 
@@ -98,7 +96,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
       >
         <div className="w-full">{children}</div>
       </ContextMenuTrigger>
-      
+
       <ContextMenuContent
         className="w-64"
         onCloseAutoFocus={(e) => {
@@ -107,7 +105,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             editor.getApi(BlockSelectionPlugin).blockSelection?.focus?.();
           } catch (err) {}
 
-          if (value === 'askAI') {
+          if (value === "askAI") {
             editor.getApi(AIChatPlugin).aiChat?.show?.();
           }
 
@@ -115,28 +113,28 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
         }}
       >
         <ContextMenuGroup>
-          <ContextMenuItem 
+          <ContextMenuItem
             className="gap-2 cursor-pointer"
             onSelect={(e) => {
               e.preventDefault();
-              document.execCommand('copy');
+              document.execCommand("copy");
             }}
           >
             <Copy className="size-4 text-muted-foreground" />
             <span>Copy</span>
             <ContextMenuShortcut>⌘C</ContextMenuShortcut>
           </ContextMenuItem>
-          
+
           {!readOnly && (
-            <ContextMenuItem 
+            <ContextMenuItem
               className="gap-2 cursor-pointer"
               onSelect={async (e) => {
                 e.preventDefault();
                 try {
                   const text = await navigator.clipboard.readText();
-                  document.execCommand('insertText', false, text);
+                  document.execCommand("insertText", false, text);
                 } catch (e) {
-                  console.error('Failed to paste', e);
+                  console.error("Failed to paste", e);
                 }
               }}
             >
@@ -146,15 +144,17 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             </ContextMenuItem>
           )}
 
-          <ContextMenuItem 
+          <ContextMenuItem
             className="gap-2 cursor-pointer text-primary font-semibold"
             onSelect={(e) => {
               e.preventDefault();
               if (readOnly) {
                 const selection = window.getSelection();
-                window.dispatchEvent(new CustomEvent("add-note-comment", {
-                  detail: { text: selection?.toString() }
-                }));
+                window.dispatchEvent(
+                  new CustomEvent("add-note-comment", {
+                    detail: { text: selection?.toString() },
+                  }),
+                );
                 return;
               }
               try {
@@ -170,13 +170,15 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             <ContextMenuShortcut>⌘⇧M</ContextMenuShortcut>
           </ContextMenuItem>
 
-          <ContextMenuItem 
+          <ContextMenuItem
             className="gap-2 cursor-pointer text-muted-foreground"
             onSelect={(e) => {
               e.preventDefault();
-              window.dispatchEvent(new CustomEvent("add-note-comment", {
-                detail: { text: null }
-              }));
+              window.dispatchEvent(
+                new CustomEvent("add-note-comment", {
+                  detail: { text: null },
+                }),
+              );
             }}
           >
             <MessageSquarePlus className="size-4" />
@@ -190,7 +192,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             <ContextMenuGroup>
               <ContextMenuItem
                 onClick={() => {
-                  setValue('askAI');
+                  setValue("askAI");
                 }}
               >
                 Ask AI
@@ -267,13 +269,13 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
               <ContextMenuSub>
                 <ContextMenuSubTrigger>Align</ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
-                  <ContextMenuItem onClick={() => handleAlign('left')}>
+                  <ContextMenuItem onClick={() => handleAlign("left")}>
                     Left
                   </ContextMenuItem>
-                  <ContextMenuItem onClick={() => handleAlign('center')}>
+                  <ContextMenuItem onClick={() => handleAlign("center")}>
                     Center
                   </ContextMenuItem>
-                  <ContextMenuItem onClick={() => handleAlign('right')}>
+                  <ContextMenuItem onClick={() => handleAlign("right")}>
                     Right
                   </ContextMenuItem>
                 </ContextMenuSubContent>

@@ -5,6 +5,7 @@ export type DailyTaskItem = {
   log_id: string;
   text: string;
   is_completed: boolean;
+  habit_id: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -27,7 +28,9 @@ export type HabitItem = {
   id: string;
   user_id: string;
   text: string;
-  frequency: "Daily" | "Weekdays" | "Weekends" | "Custom";
+  frequency: "Daily" | "Weekly" | "Monthly";
+  week_days: string[];
+  month_days: string[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -40,7 +43,12 @@ export type HabitLogItem = {
   completed: boolean;
 };
 
-export function getDailyLogs(accessToken: string, monthStart: string, monthEnd: string, workspaceId?: string) {
+export function getDailyLogs(
+  accessToken: string,
+  monthStart: string,
+  monthEnd: string,
+  workspaceId?: string,
+) {
   const ts = Date.now();
   let url = `/api/daily?start=${monthStart}&end=${monthEnd}&_t=${ts}`;
   if (workspaceId) {
@@ -51,7 +59,11 @@ export function getDailyLogs(accessToken: string, monthStart: string, monthEnd: 
   });
 }
 
-export function getDailyLogDetail(accessToken: string, date: string, workspaceId?: string) {
+export function getDailyLogDetail(
+  accessToken: string,
+  date: string,
+  workspaceId?: string,
+) {
   let url = `/api/daily/${date}`;
   if (workspaceId) url += `?workspaceId=${workspaceId}`;
   return apiRequest<{ log: DailyLogItem }>(url, {
@@ -59,7 +71,11 @@ export function getDailyLogDetail(accessToken: string, date: string, workspaceId
   });
 }
 
-export function createDailyLog(accessToken: string, date: string, workspaceId?: string) {
+export function createDailyLog(
+  accessToken: string,
+  date: string,
+  workspaceId?: string,
+) {
   return apiRequest<{ log: DailyLogItem }>("/api/daily", {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -70,7 +86,12 @@ export function createDailyLog(accessToken: string, date: string, workspaceId?: 
 export function updateDailyLog(
   accessToken: string,
   logId: string,
-  payload: { rating?: string | null; highlight?: string | null; content?: any; contentText?: string }
+  payload: {
+    rating?: string | null;
+    highlight?: string | null;
+    content?: any;
+    contentText?: string;
+  },
 ) {
   return apiRequest<{ success: boolean }>(`/api/daily/logs/${logId}`, {
     method: "PUT",
@@ -79,7 +100,11 @@ export function updateDailyLog(
   });
 }
 
-export function createDailyTask(accessToken: string, logId: string, text: string) {
+export function createDailyTask(
+  accessToken: string,
+  logId: string,
+  text: string,
+) {
   return apiRequest<{ task: DailyTaskItem }>("/api/daily/tasks", {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -87,7 +112,11 @@ export function createDailyTask(accessToken: string, logId: string, text: string
   });
 }
 
-export function updateDailyTask(accessToken: string, taskId: string, payload: { text?: string; is_completed?: boolean; log_id?: string }) {
+export function updateDailyTask(
+  accessToken: string,
+  taskId: string,
+  payload: { text?: string; is_completed?: boolean; log_id?: string },
+) {
   return apiRequest<{ success: boolean }>(`/api/daily/tasks/${taskId}`, {
     method: "PUT",
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -128,19 +157,21 @@ export function getHabits(accessToken: string) {
 export function createHabit(
   accessToken: string,
   text: string,
-  frequency: HabitItem["frequency"] = "Daily"
+  frequency: HabitItem["frequency"] = "Daily",
+  week_days: string[] = [],
+  month_days: string[] = [],
 ) {
   return apiRequest<{ habit: HabitItem }>("/api/daily/habits", {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
-    body: { text, frequency },
+    body: { text, frequency, week_days, month_days },
   });
 }
 
 export function updateHabit(
   accessToken: string,
   habitId: string,
-  payload: Partial<Pick<HabitItem, "text" | "frequency" | "is_active">>
+  payload: Partial<Pick<HabitItem, "text" | "frequency" | "is_active">>,
 ) {
   return apiRequest<{ success: boolean }>(`/api/daily/habits/${habitId}`, {
     method: "PUT",
@@ -156,14 +187,10 @@ export function deleteHabit(accessToken: string, habitId: string) {
   });
 }
 
-export function getHabitLogs(
-  accessToken: string,
-  start: string,
-  end: string
-) {
+export function getHabitLogs(accessToken: string, start: string, end: string) {
   return apiRequest<{ logs: HabitLogItem[] }>(
     `/api/daily/habit-logs?start=${start}&end=${end}`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
+    { headers: { Authorization: `Bearer ${accessToken}` } },
   );
 }
 
@@ -171,14 +198,11 @@ export function toggleHabitLog(
   accessToken: string,
   habitId: string,
   date: string,
-  completed: boolean
+  completed: boolean,
 ) {
-  return apiRequest<{ success: boolean }>(
-    `/api/daily/habits/${habitId}/logs`,
-    {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${accessToken}` },
-      body: { date, completed },
-    }
-  );
+  return apiRequest<{ success: boolean }>(`/api/daily/habits/${habitId}/logs`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: { date, completed },
+  });
 }

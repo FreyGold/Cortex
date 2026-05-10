@@ -1,18 +1,17 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import { CopilotPlugin } from "@platejs/ai/react";
 
-import { normalizeStaticValue } from 'platejs';
-import { Plate, usePlateEditor } from 'platejs/react';
-
-import { EditorKit } from '@/components/editor/editor-kit';
-import { SettingsDialog } from '@/components/editor/settings-dialog';
-import { Editor, EditorContainer } from '@/components/ui/editor';
-import { useCurrentProfile } from '@/hooks/use-profile';
-import { useAISettings } from '@/hooks/use-ai-settings';
-import { discussionPlugin } from '@/components/editor/plugins/discussion-kit';
-import { aiChatPlugin } from '@/components/editor/plugins/ai-kit';
-import { CopilotPlugin } from '@platejs/ai/react';
+import { normalizeStaticValue } from "platejs";
+import { Plate, usePlateEditor } from "platejs/react";
+import * as React from "react";
+import { EditorKit } from "@/components/editor/editor-kit";
+import { aiChatPlugin } from "@/components/editor/plugins/ai-kit";
+import { discussionPlugin } from "@/components/editor/plugins/discussion-kit";
+import { SettingsDialog } from "@/components/editor/settings-dialog";
+import { Editor, EditorContainer } from "@/components/ui/editor";
+import { useAISettings } from "@/hooks/use-ai-settings";
+import { useCurrentProfile } from "@/hooks/use-profile";
 
 export interface PlateEditorProps {
   content?: any;
@@ -20,10 +19,12 @@ export interface PlateEditorProps {
   className?: string;
   editorClassName?: string;
   readOnly?: boolean;
-  variant?: 'default' | 'demo' | 'fullWidth' | 'none';
+  variant?: "default" | "demo" | "fullWidth" | "none";
 }
 
-export const PlateEditor = React.memo(function PlateEditor(props: PlateEditorProps) {
+export const PlateEditor = React.memo(function PlateEditor(
+  props: PlateEditorProps,
+) {
   const { data: profileData, isLoading } = useCurrentProfile();
 
   if (isLoading) {
@@ -43,11 +44,12 @@ function PlateEditorInner({
   className,
   editorClassName,
   readOnly = false,
-  variant = 'default',
+  variant = "default",
   profile,
 }: PlateEditorProps & { profile?: any }) {
   const { settings, isLoaded } = useAISettings();
-  const initialValue = Array.isArray(content) && content.length > 0 ? content : value;
+  const initialValue =
+    Array.isArray(content) && content.length > 0 ? content : value;
 
   const editor = usePlateEditor({
     plugins: EditorKit,
@@ -82,7 +84,7 @@ function PlateEditorInner({
                   [profile.id]: {
                     id: profile.id,
                     avatarUrl: profile.avatar_url,
-                    name: profile.name || 'Anonymous',
+                    name: profile.name || "Anonymous",
                   },
                 }
               : {},
@@ -94,16 +96,16 @@ function PlateEditorInner({
 
   React.useEffect(() => {
     if (profile) {
-      editor.setOption(discussionPlugin, 'currentUserId', profile.id);
-      
-      const currentUsers = editor.getOption(discussionPlugin, 'users') || {};
-      editor.setOption(discussionPlugin, 'users', {
+      editor.setOption(discussionPlugin, "currentUserId", profile.id);
+
+      const currentUsers = editor.getOption(discussionPlugin, "users") || {};
+      editor.setOption(discussionPlugin, "users", {
         ...currentUsers,
         [profile.id]: {
           id: profile.id,
           avatarUrl: profile.avatar_url,
-          name: profile.name || 'Anonymous',
-        }
+          name: profile.name || "Anonymous",
+        },
       });
     }
   }, [profile, editor]);
@@ -112,38 +114,70 @@ function PlateEditorInner({
   React.useEffect(() => {
     if (isLoaded) {
       // The inline AI Commands (aiChatPlugin) should use the EDITOR settings
-      const chatOptions = editor.getOption(aiChatPlugin, 'chatOptions') || {};
-      editor.setOption(aiChatPlugin, 'chatOptions', {
+      const chatOptions = editor.getOption(aiChatPlugin, "chatOptions") || {};
+      editor.setOption(aiChatPlugin, "chatOptions", {
         ...chatOptions,
         body: {
           ...chatOptions?.body,
-          apiKey: settings.editorApiKey || settings.aiApiKey || (chatOptions?.body as Record<string, any>)?.apiKey,
-          model: settings.editorModel || settings.aiModel || (chatOptions?.body as Record<string, any>)?.model,
-          provider: settings.editorProvider || settings.aiProvider || (chatOptions?.body as Record<string, any>)?.provider,
-        }
+          apiKey:
+            settings.editorApiKey ||
+            settings.aiApiKey ||
+            (chatOptions?.body as Record<string, any>)?.apiKey,
+          model:
+            settings.editorModel ||
+            settings.aiModel ||
+            (chatOptions?.body as Record<string, any>)?.model,
+          provider:
+            settings.editorProvider ||
+            settings.aiProvider ||
+            (chatOptions?.body as Record<string, any>)?.provider,
+        },
       });
 
       // Copilot autocomplete also uses EDITOR settings
-      const completeOptions = editor.getOption(CopilotPlugin, 'completeOptions') || {};
-      editor.setOption(CopilotPlugin, 'completeOptions', {
+      const completeOptions =
+        editor.getOption(CopilotPlugin, "completeOptions") || {};
+      editor.setOption(CopilotPlugin, "completeOptions", {
         ...completeOptions,
         body: {
           ...completeOptions?.body,
-          apiKey: settings.editorApiKey || settings.aiApiKey || (completeOptions?.body as Record<string, any>)?.apiKey,
-          model: settings.editorModel || settings.aiModel || (completeOptions?.body as Record<string, any>)?.model,
-          provider: settings.editorProvider || settings.aiProvider || (completeOptions?.body as Record<string, any>)?.provider,
-        }
+          apiKey:
+            settings.editorApiKey ||
+            settings.aiApiKey ||
+            (completeOptions?.body as Record<string, any>)?.apiKey,
+          model:
+            settings.editorModel ||
+            settings.aiModel ||
+            (completeOptions?.body as Record<string, any>)?.model,
+          provider:
+            settings.editorProvider ||
+            settings.aiProvider ||
+            (completeOptions?.body as Record<string, any>)?.provider,
+        },
       });
     }
   }, [settings, editor, isLoaded]);
 
   return (
-    <Plate editor={editor} onValueChange={({ value }) => onChange?.(value)} readOnly={readOnly}>
-      <EditorContainer className={className} variant={variant === 'demo' ? 'demo' : variant === 'none' ? 'none' : 'default'}>
-        <Editor variant={variant} className={editorClassName} disabled={readOnly} />
+    <Plate
+      editor={editor}
+      onValueChange={({ value }) => onChange?.(value)}
+      readOnly={readOnly}
+    >
+      <EditorContainer
+        className={className}
+        variant={
+          variant === "demo" ? "demo" : variant === "none" ? "none" : "default"
+        }
+      >
+        <Editor
+          variant={variant}
+          className={editorClassName}
+          disabled={readOnly}
+        />
       </EditorContainer>
     </Plate>
   );
 }
 
-const value = normalizeStaticValue([{ children: [{ text: '' }], type: 'p' }]);
+const value = normalizeStaticValue([{ children: [{ text: "" }], type: "p" }]);

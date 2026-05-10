@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { ArrowRight, Ghost, LayoutGrid, List } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -149,7 +149,10 @@ export function CourseList({
                   : null;
 
                 return (
-                  <TableRow key={course.id} className="group hover:bg-muted/30 transition-colors">
+                  <TableRow
+                    key={course.id}
+                    className="group hover:bg-muted/30 transition-colors"
+                  >
                     <TableCell className="font-medium text-xs">
                       {course.code ? (
                         <Badge variant="outline" className="text-[10px]">
@@ -175,7 +178,12 @@ export function CourseList({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" asChild className="h-8 w-8 p-0 rounded-full">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        asChild
+                        className="h-8 w-8 p-0 rounded-full"
+                      >
                         <Link href={`/data/${course.id}`}>
                           <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
                           <span className="sr-only">View course</span>

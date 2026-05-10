@@ -31,7 +31,7 @@ export function setupProfile(
     majorId: string | null;
     yearLevelId: string | null;
     preferredLanguage: "en" | "ar";
-  }
+  },
 ) {
   return apiRequest<{ success: boolean }>("/api/profile/setup", {
     method: "POST",

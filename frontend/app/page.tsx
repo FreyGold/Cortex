@@ -1,14 +1,16 @@
 import {
   ArrowRight,
+  BookMarked,
   Brain,
   CheckCircle,
-  Zap,
-  BookMarked,
   Notebook,
   ShieldCheck,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { ShellHeaderActions } from "@/components/shell-header-actions";
+import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SiteHeader } from "@/components/site-header";
-import { ShellHeaderActions } from "@/components/shell-header-actions";
 import { getServerSession } from "@/lib/auth";
 
 const featureIcons = [Notebook, BookMarked, Brain];
@@ -32,7 +32,7 @@ export const metadata = {
 export default async function Home() {
   const t = await getTranslations("home");
   const shellT = await getTranslations("shell");
-  
+
   const session = await getServerSession();
   const signedIn = Boolean(session);
   const isAdmin = session?.profile?.role === "admin";
@@ -82,7 +82,10 @@ export default async function Home() {
       <main className="container mx-auto space-y-12 px-4 py-8 md:py-12 lg:py-16">
         <section className="grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
           <div className="space-y-6">
-            <Badge variant="outline" className="rounded-full px-3 text-[11px] font-bold uppercase tracking-wider">
+            <Badge
+              variant="outline"
+              className="rounded-full px-3 text-[11px] font-bold uppercase tracking-wider"
+            >
               {signedIn ? t("hero.badgeSignedIn") : t("hero.badge")}
             </Badge>
 

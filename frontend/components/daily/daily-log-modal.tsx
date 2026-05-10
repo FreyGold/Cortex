@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { AnimatePresence, motion } from "framer-motion";
+import { EASE_OUT } from "@/components/daily/full-calendar/animations";
 import { DailyLogView } from "./daily-log-view";
 
 interface DailyLogModalProps {
@@ -11,13 +11,38 @@ interface DailyLogModalProps {
   workspaceId?: string;
 }
 
-export function DailyLogModal({ date, isOpen, onOpenChange, workspaceId }: DailyLogModalProps) {
+export function DailyLogModal({
+  date,
+  isOpen,
+  onOpenChange,
+  workspaceId,
+}: DailyLogModalProps) {
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="min-w-[80vw] w-full h-[90vh] p-0 overflow-hidden rounded-2xl border-border/10 shadow-2xl">
-        <DialogTitle className="sr-only">Daily Log for {date}</DialogTitle>
-        <DailyLogView date={date} workspaceId={workspaceId} onClose={() => onOpenChange(false)} />
-      </DialogContent>
-    </Dialog>
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: EASE_OUT }}
+            className="fixed inset-0 z-50 bg-background/60 backdrop-blur-sm"
+            onClick={() => onOpenChange(false)}
+          />
+          <motion.div
+            key="modal"
+            initial={{ opacity: 0, scale: 0.95, y: 12, rotateX: 5 }}
+            animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 12, rotateX: 5 }}
+            transition={{ duration: 0.3, ease: EASE_OUT }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-2xl shadow-black/10 border border-border/20 flex flex-col overflow-hidden"
+            style={{ width: "52vw", height: "80vh" }}
+          >
+            <DailyLogView date={date} workspaceId={workspaceId} />
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

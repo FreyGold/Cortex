@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { DailyLogView } from "@/components/daily/daily-log-view";
 
 export default function DailyDatePage() {

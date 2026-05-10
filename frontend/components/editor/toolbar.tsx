@@ -1,14 +1,17 @@
 "use client";
 
+import type { Editor } from "@tiptap/react";
 import {
+  Redo as ArrowClockwise,
+  Undo as ArrowCounterClockwise,
   Bold,
-  Italic,
-  Underline,
-  Strikethrough,
+  ChevronDown as CaretDown,
+  ChevronRight as CaretRight,
   Code,
   SquareCode as CodeBlock,
   Highlighter,
   Image,
+  Italic,
   Link,
   Unlink as LinkBreak,
   List,
@@ -18,22 +21,19 @@ import {
   Palette,
   Type as Paragraph,
   Quote as Quotes,
+  Strikethrough,
   Table,
   AlignCenter as TextAlignCenter,
   AlignJustify as TextAlignJustify,
   AlignLeft as TextAlignLeft,
   AlignRight as TextAlignRight,
   Heading1 as TextHOne,
-  Heading2 as TextHTwo,
   Heading3 as TextHThree,
-  Superscript as TextSuperscript,
+  Heading2 as TextHTwo,
   Subscript as TextSubscript,
-  ChevronDown as CaretDown,
-  ChevronRight as CaretRight,
-  Undo as ArrowCounterClockwise,
-  Redo as ArrowClockwise,
+  Superscript as TextSuperscript,
+  Underline,
 } from "lucide-react";
-import type { Editor } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

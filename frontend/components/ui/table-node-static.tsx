@@ -1,12 +1,11 @@
-import * as React from 'react';
+import { BaseTablePlugin } from "@platejs/table";
 
-import type { TTableCellElement, TTableElement } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
+import type { TTableCellElement, TTableElement } from "platejs";
+import type { SlateElementProps } from "platejs/static";
+import { SlateElement } from "platejs/static";
+import type * as React from "react";
 
-import { BaseTablePlugin } from '@platejs/table';
-import { SlateElement } from 'platejs/static';
-
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 export function TableElementStatic({
   children,
@@ -24,7 +23,7 @@ export function TableElementStatic({
       <div className="group/table relative w-fit">
         <table
           className="mr-0 ml-px table h-px table-fixed border-collapse"
-          style={{ width: '100%' }}
+          style={{ width: "100%" }}
         >
           <tbody className="min-w-full">{children}</tbody>
         </table>
@@ -56,24 +55,24 @@ export function TableCellElementStatic({
   return (
     <SlateElement
       {...props}
-      as={isHeader ? 'th' : 'td'}
+      as={isHeader ? "th" : "td"}
       className={cn(
-        'h-full overflow-visible border-none bg-background p-0',
-        element.background ? 'bg-(--cellBackground)' : 'bg-background',
-        isHeader && 'text-left font-normal *:m-0',
-        'before:size-full',
+        "h-full overflow-visible border-none bg-background p-0",
+        element.background ? "bg-(--cellBackground)" : "bg-background",
+        isHeader && "text-left font-normal *:m-0",
+        "before:size-full",
         "before:absolute before:box-border before:select-none before:content-['']",
         borders &&
           cn(
-            borders.bottom?.size && 'before:border-b before:border-b-border',
-            borders.right?.size && 'before:border-r before:border-r-border',
-            borders.left?.size && 'before:border-l before:border-l-border',
-            borders.top?.size && 'before:border-t before:border-t-border'
-          )
+            borders.bottom?.size && "before:border-b before:border-b-border",
+            borders.right?.size && "before:border-r before:border-r-border",
+            borders.left?.size && "before:border-l before:border-l-border",
+            borders.top?.size && "before:border-t before:border-t-border",
+          ),
       )}
       style={
         {
-          '--cellBackground': element.background,
+          "--cellBackground": element.background,
           maxWidth: width || 240,
           minWidth: width || 120,
         } as React.CSSProperties
@@ -95,7 +94,7 @@ export function TableCellElementStatic({
 }
 
 export function TableCellHeaderElementStatic(
-  props: SlateElementProps<TTableCellElement>
+  props: SlateElementProps<TTableCellElement>,
 ) {
   return <TableCellElementStatic {...props} isHeader />;
 }

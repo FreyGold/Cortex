@@ -1,19 +1,35 @@
 "use client";
 
-import React from "react";
-import { format, startOfMonth, endOfMonth } from "date-fns";
-import { useDailyLogs } from "@/hooks/use-daily";
+import { endOfMonth, format, startOfMonth } from "date-fns";
+import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import React, { useState } from "react";
+import { CalendarBody } from "@/components/daily/full-calendar/calendar-body";
 import {
   CalendarProvider,
   useCalendar,
 } from "@/components/daily/full-calendar/contexts/calendar-context";
 import { DndProvider } from "@/components/daily/full-calendar/contexts/dnd-context";
 import { CalendarHeader } from "@/components/daily/full-calendar/header/calendar-header";
-import { CalendarBody } from "@/components/daily/full-calendar/calendar-body";
-import { Loader2 } from "lucide-react";
+import { HabitsModal } from "@/components/daily/habits-modal";
+import { AssistantModal } from "@/components/daily/views/assistant-modal";
+import { InsightsModal } from "@/components/daily/views/insights-modal";
+import { SearchModal } from "@/components/daily/views/search-modal";
+import { useDailyLogs } from "@/hooks/use-daily";
 
-function DailyCalendarContent() {
+interface DailyCalendarContentProps {
+  onHabitsOpen: () => void;
+  onInsightsOpen: () => void;
+  onSearchOpen: () => void;
+  onAssistantOpen: () => void;
+}
+
+function DailyCalendarContent({
+  onHabitsOpen,
+  onInsightsOpen,
+  onSearchOpen,
+  onAssistantOpen,
+}: DailyCalendarContentProps) {
   const { selectedDate } = useCalendar();
   const searchParams = useSearchParams();
   const workspaceId = searchParams.get("workspaceId") || undefined;
@@ -33,7 +49,12 @@ function DailyCalendarContent() {
 
   return (
     <div className="flex-1 flex flex-col border rounded-2xl bg-card shadow-sm overflow-hidden ring-1 ring-border/5">
-      <CalendarHeader />
+      <CalendarHeader
+        onHabitsOpen={onHabitsOpen}
+        onInsightsOpen={onInsightsOpen}
+        onSearchOpen={onSearchOpen}
+        onAssistantOpen={onAssistantOpen}
+      />
       <div className="flex-1 overflow-auto custom-scrollbar">
         <CalendarBody />
       </div>
@@ -42,17 +63,31 @@ function DailyCalendarContent() {
 }
 
 export default function DailyCalendarPage() {
+  const [habitsOpen, setHabitsOpen] = useState(false);
+  const [insightsOpen, setInsightsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        <div className="flex-1 flex flex-col p-8 pt-6 overflow-hidden bg-background/50">
+        <div className="flex-1 flex flex-col p-4 pt-3 overflow-hidden bg-background/50">
           <CalendarProvider events={[]} users={[]} view="month">
             <DndProvider>
-              <DailyCalendarContent />
+              <DailyCalendarContent
+                onHabitsOpen={() => setHabitsOpen(true)}
+                onInsightsOpen={() => setInsightsOpen(true)}
+                onSearchOpen={() => setSearchOpen(true)}
+                onAssistantOpen={() => setAssistantOpen(true)}
+              />
             </DndProvider>
           </CalendarProvider>
         </div>
       </div>
+      <HabitsModal isOpen={habitsOpen} onOpenChange={setHabitsOpen} />
+      <InsightsModal isOpen={insightsOpen} onOpenChange={setInsightsOpen} />
+      <SearchModal isOpen={searchOpen} onOpenChange={setSearchOpen} />
+      <AssistantModal isOpen={assistantOpen} onOpenChange={setAssistantOpen} />
     </div>
   );
 }

@@ -129,9 +129,7 @@ export function DataFilters({
         </p>
         <Select
           value={selectedUniversityId ?? "all"}
-          onValueChange={(val) =>
-            updateParams({ university: val })
-          }
+          onValueChange={(val) => updateParams({ university: val })}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t("filters.allUniversities")} />
@@ -148,12 +146,12 @@ export function DataFilters({
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground">{t("filters.filterLabels.college")}</p>
+        <p className="text-xs font-semibold text-muted-foreground">
+          {t("filters.filterLabels.college")}
+        </p>
         <Select
           value={selectedCollegeId ?? "all"}
-          onValueChange={(val) =>
-            updateParams({ college: val })
-          }
+          onValueChange={(val) => updateParams({ college: val })}
           disabled={filteredColleges.length === 0}
         >
           <SelectTrigger className="w-full">
@@ -171,12 +169,12 @@ export function DataFilters({
       </div>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground">{t("filters.filterLabels.major")}</p>
+        <p className="text-xs font-semibold text-muted-foreground">
+          {t("filters.filterLabels.major")}
+        </p>
         <Select
           value={selectedMajorId ?? "all"}
-          onValueChange={(val) =>
-            updateParams({ major: val })
-          }
+          onValueChange={(val) => updateParams({ major: val })}
           disabled={filteredMajors.length === 0}
         >
           <SelectTrigger className="w-full">
@@ -199,9 +197,7 @@ export function DataFilters({
         </p>
         <Select
           value={selectedYearId ?? "all"}
-          onValueChange={(val) =>
-            updateParams({ year: val })
-          }
+          onValueChange={(val) => updateParams({ year: val })}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t("filters.allYears")} />

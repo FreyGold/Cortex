@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/api/profile";
+import { createClient } from "@/lib/supabase/server";
 
 export async function requireAdmin() {
   const supabase = await createClient();
@@ -12,7 +12,9 @@ export async function requireAdmin() {
     redirect("/auth/login?redirectTo=/admin");
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session?.access_token) {
     redirect("/auth/login?redirectTo=/admin");
   }

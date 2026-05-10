@@ -2,16 +2,16 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  archiveGlobalConversation,
+  askAllNotes,
   askGeneralAI,
   askNote,
-  askAllNotes,
-  getNoteConversation,
-  getGlobalConversation,
-  listGlobalConversations,
   clearGlobalConversation,
-  archiveGlobalConversation,
   embedNote,
   generateSummary,
+  getGlobalConversation,
+  getNoteConversation,
+  listGlobalConversations,
   searchNotes,
   suggestTags,
 } from "@/lib/api/ai";
@@ -50,7 +50,14 @@ export function useSemanticSearch() {
 export function useAskNote(noteId: string) {
   return useMutation({
     mutationFn: async (
-      input: string | { question?: string; messages?: any[]; conversationId?: string; noteId?: string },
+      input:
+        | string
+        | {
+            question?: string;
+            messages?: any[];
+            conversationId?: string;
+            noteId?: string;
+          },
     ) => {
       const token = await getAuthToken();
       const payload = typeof input === "string" ? { question: input } : input;
@@ -62,7 +69,14 @@ export function useAskNote(noteId: string) {
 export function useAskAllNotes() {
   return useMutation({
     mutationFn: async (
-      input: string | { question?: string; messages?: any[]; conversationId?: string; noteId?: string },
+      input:
+        | string
+        | {
+            question?: string;
+            messages?: any[];
+            conversationId?: string;
+            noteId?: string;
+          },
     ) => {
       const token = await getAuthToken();
       const payload = typeof input === "string" ? { question: input } : input;

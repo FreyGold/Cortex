@@ -1,18 +1,34 @@
 "use client";
 
-import { usePublicNote, useReplicateNote, useNoteDetail, useNoteShares, useUpdateNote, useUpdateNoteTags, useArchiveNote, useCreateCourseResource, useCreateNoteShare, useDeleteNoteShare, useCreateTag } from "@/hooks/use-notes";
-import { useEmbedNote, useGenerateSummary, useSuggestTags } from "@/hooks/use-note-ai";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { PanelRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { PlateEditor } from "@/components/editor";
-import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useCatalog } from "@/hooks/use-data";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  useEmbedNote,
+  useGenerateSummary,
+  useSuggestTags,
+} from "@/hooks/use-note-ai";
+import {
+  useArchiveNote,
+  useCreateCourseResource,
+  useCreateNoteShare,
+  useCreateTag,
+  useDeleteNoteShare,
+  useNoteDetail,
+  useNoteShares,
+  usePublicNote,
+  useReplicateNote,
+  useUpdateNote,
+  useUpdateNoteTags,
+} from "@/hooks/use-notes";
+import { cn } from "@/lib/utils";
 import { GlobalAssistantModal } from "./global-assistant-modal";
 import { NotePropertiesSidebar } from "./note-properties-sidebar";
 
@@ -30,17 +46,35 @@ function extractText(content: any): string {
 
 const INTRO_NOTE_CONTENT = [
   { type: "h1", children: [{ text: "Welcome to Cortex!" }] },
-  { type: "p", children: [{ text: "This is your personal academic workspace. Use this space to capture lectures, synthesize research, and organize your studies." }] },
+  {
+    type: "p",
+    children: [
+      {
+        text: "This is your personal academic workspace. Use this space to capture lectures, synthesize research, and organize your studies.",
+      },
+    ],
+  },
   { type: "h2", children: [{ text: "Features" }] },
   {
-    type: "ul", children: [
+    type: "ul",
+    children: [
       { type: "li", children: [{ text: "Rich-text editing with Plate" }] },
-      { type: "li", children: [{ text: "AI-powered summaries and tag suggestions" }] },
+      {
+        type: "li",
+        children: [{ text: "AI-powered summaries and tag suggestions" }],
+      },
       { type: "li", children: [{ text: "Folder-based organization" }] },
-      { type: "li", children: [{ text: "Global search and assistant" }] }
-    ]
+      { type: "li", children: [{ text: "Global search and assistant" }] },
+    ],
   },
-  { type: "p", children: [{ text: "Feel free to edit this note to try out the editor features. Note that changes to this introduction will not be saved." }] }
+  {
+    type: "p",
+    children: [
+      {
+        text: "Feel free to edit this note to try out the editor features. Note that changes to this introduction will not be saved.",
+      },
+    ],
+  },
 ];
 
 function NoteEditorSkeleton() {
@@ -110,7 +144,9 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
   const workspaceId = searchParams.get("workspaceId");
   const isMobile = useIsMobile();
   const isIntroRoute = noteId === "introduction";
-  const fetchId = isIntroRoute ? "d538eda1-b07f-45f6-9353-aedefd89b61b" : noteId;
+  const fetchId = isIntroRoute
+    ? "d538eda1-b07f-45f6-9353-aedefd89b61b"
+    : noteId;
 
   const detailQuery = useNoteDetail(fetchId);
   const sharesQuery = useNoteShares(fetchId);
@@ -144,7 +180,9 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
   const [suggestedTagsText, setSuggestedTagsText] = useState<string[]>([]);
   const [question, setQuestion] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [pendingTagToSelect, setPendingTagToSelect] = useState<string | null>(null);
+  const [pendingTagToSelect, setPendingTagToSelect] = useState<string | null>(
+    null,
+  );
 
   const createTagMutation = useCreateTag();
 
@@ -161,7 +199,9 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
 
   useEffect(() => {
     if (pendingTagToSelect && detailQuery.data?.tags) {
-      const newTag = detailQuery.data.tags.find((t: any) => t.name.toLowerCase() === pendingTagToSelect);
+      const newTag = detailQuery.data.tags.find(
+        (t: any) => t.name.toLowerCase() === pendingTagToSelect,
+      );
       if (newTag && !selectedTagIds.includes(newTag.id)) {
         const next = [...selectedTagIds, newTag.id];
         setSelectedTagIds(next);
@@ -191,8 +231,17 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
     if (Array.isArray(content) && content.length > 0) {
       initialContent = content;
       initialText = extractText(content);
-    } else if (typeof content === "object" && content !== null && "html" in content) {
-      initialContent = [{ type: "p", children: [{ text: (content as any).html.replace(/<[^>]+>/g, "") }] }];
+    } else if (
+      typeof content === "object" &&
+      content !== null &&
+      "html" in content
+    ) {
+      initialContent = [
+        {
+          type: "p",
+          children: [{ text: (content as any).html.replace(/<[^>]+>/g, "") }],
+        },
+      ];
       initialText = (content as any).html.replace(/<[^>]+>/g, "");
     } else if (typeof content === "string" && content.trim().length > 0) {
       initialContent = [{ type: "p", children: [{ text: content }] }];
@@ -208,7 +257,9 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
     setEditorContent(initialContent);
     setContentText(initialText);
     setFolderId(note.folder_id ?? "");
-    setSelectedTagIds((detailQuery.data?.noteTags ?? []).map((item) => item.tag_id));
+    setSelectedTagIds(
+      (detailQuery.data?.noteTags ?? []).map((item) => item.tag_id),
+    );
     setSummaryText(note.summary ?? null);
     setDirty(false);
   }, [detailQuery.data]);
@@ -226,10 +277,21 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
       setDirty(false);
     }, 1000);
     return () => clearTimeout(timer);
-  }, [isIntroRoute, dirty, folderId, editorContent, contentText, title, updateNote]);
+  }, [
+    isIntroRoute,
+    dirty,
+    folderId,
+    editorContent,
+    contentText,
+    title,
+    updateNote,
+  ]);
 
   if (detailQuery.isLoading || !editorContent) return <NoteEditorSkeleton />;
-  if (detailQuery.isError || !detailQuery.data) return <div className="p-8 text-destructive">Failed to load note context.</div>;
+  if (detailQuery.isError || !detailQuery.data)
+    return (
+      <div className="p-8 text-destructive">Failed to load note context.</div>
+    );
 
   const handleArchive = async () => {
     await archiveNoteMutation.mutateAsync(noteId);
@@ -253,7 +315,8 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
     try {
       await createShare.mutateAsync({
         mode: shareMode,
-        sharedWithUserId: shareMode === "user" ? recipientUserId.trim() : undefined,
+        sharedWithUserId:
+          shareMode === "user" ? recipientUserId.trim() : undefined,
         role: shareRole,
       });
       setShareFeedback("Shared with user!");
@@ -268,14 +331,22 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
         <div className="flex-1 min-w-0 h-full overflow-y-auto relative custom-scrollbar flex flex-col">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border/5 bg-background/50 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Private</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                Private
+              </span>
               <span className="text-muted-foreground/20 text-lg">/</span>
-              <span className="text-sm font-semibold truncate max-w-[200px]">{title || "Untitled note"}</span>
+              <span className="text-sm font-semibold truncate max-w-[200px]">
+                {title || "Untitled note"}
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               {lastSavedAt && (
                 <span className="text-[10px] text-muted-foreground/40 hidden sm:inline-block">
-                  Saved {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  Saved{" "}
+                  {lastSavedAt.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
               )}
               <div className="h-4 w-[1px] bg-border/10 mx-1 hidden sm:block" />
@@ -285,7 +356,9 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
                 size="icon"
                 className={cn(
                   "h-8 w-8 rounded-lg transition-all",
-                  sidebarOpen ? "text-primary bg-primary/5 border border-primary/10" : "text-muted-foreground hover:bg-accent/50"
+                  sidebarOpen
+                    ? "text-primary bg-primary/5 border border-primary/10"
+                    : "text-muted-foreground hover:bg-accent/50",
                 )}
                 onClick={() => setSidebarOpen(!sidebarOpen)}
               >
@@ -328,10 +401,14 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
           />
         </div>
 
-        <div className={cn(
-          "h-full overflow-y-auto overflow-x-hidden border-l border-border/30 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] bg-muted/5",
-          sidebarOpen ? "w-[320px] opacity-100" : "w-0 opacity-0 pointer-events-none border-none"
-        )}>
+        <div
+          className={cn(
+            "h-full overflow-y-auto overflow-x-hidden border-l border-border/30 custom-scrollbar transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] bg-muted/5",
+            sidebarOpen
+              ? "w-[320px] opacity-100"
+              : "w-0 opacity-0 pointer-events-none border-none",
+          )}
+        >
           <NotePropertiesSidebar
             noteId={noteId}
             folderId={folderId}
@@ -377,7 +454,9 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
             isPublished={detailQuery.data?.note?.is_published}
             isSaving={updateNote.isPending || dirty}
             lastSavedAt={lastSavedAt}
-            wordCount={contentText ? contentText.split(/\s+/).filter(Boolean).length : 0}
+            wordCount={
+              contentText ? contentText.split(/\s+/).filter(Boolean).length : 0
+            }
             createdAt={detailQuery.data?.note?.created_at ?? null}
             handleArchive={!isIntroRoute ? handleArchive : undefined}
           />

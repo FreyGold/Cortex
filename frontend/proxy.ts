@@ -55,7 +55,9 @@ export async function proxy(request: NextRequest) {
   setLocaleCookie(response, locale);
 
   if (!user && startsWithPrefix(pathname, protectedPrefixes)) {
-    const hasSession = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
+    const hasSession = request.cookies
+      .getAll()
+      .some((c) => c.name.startsWith("sb-"));
     if (hasSession) {
       const logoutUrl = new URL("/auth/logout/submit", request.url);
       const redirectResponse = NextResponse.redirect(logoutUrl);

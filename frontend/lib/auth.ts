@@ -15,7 +15,7 @@ export async function getServerSession() {
     // Call our backend to verify the token and get the profile.
     // The backend will perform the secure getUser() check and return the verified profile.
     const { profile } = await getCurrentProfile(session.access_token);
-    
+
     if (!profile) {
       return null;
     }

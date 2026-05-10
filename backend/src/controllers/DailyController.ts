@@ -109,9 +109,11 @@ export class DailyController {
   static async createHabit(req: Request, res: Response) {
     try {
       const service = getService(req);
-      const { text, frequency } = req.body;
+      const { text, frequency, week_days, month_days } = req.body;
       if (!text) return res.status(400).json({ error: "Habit text is required" });
-      const habit = await service.createHabit(req.user!.id, text, frequency || 'Daily');
+      const weekDays: string[] = Array.isArray(week_days) ? week_days : [];
+      const monthDays: string[] = Array.isArray(month_days) ? month_days : [];
+      const habit = await service.createHabit(req.user!.id, text, frequency || "Daily", weekDays, monthDays);
       return res.status(201).json({ habit });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

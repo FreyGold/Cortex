@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,12 +29,12 @@ export function AddDoctorDialog({ onSuccess }: Props) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    
+
     setIsLoading(true);
     try {
       const token = await getAccessToken();
       if (!token) throw new Error("Unauthorized");
-      
+
       const { doctor } = await createDoctor(token, name);
       onSuccess(doctor);
       setOpen(false);
@@ -49,7 +49,12 @@ export function AddDoctorDialog({ onSuccess }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="h-8 w-8 ml-2" title="Add instructor">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 ml-2"
+          title="Add instructor"
+        >
           <Plus className="size-4" />
         </Button>
       </DialogTrigger>

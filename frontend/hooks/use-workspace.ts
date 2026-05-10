@@ -10,7 +10,7 @@ export function useWorkspaces() {
         .from("workspaces")
         .select("*")
         .order("created_at", { ascending: false });
-        
+
       if (error) throw error;
       return data;
     },
@@ -22,7 +22,9 @@ export function useCreateWorkspace() {
   return useMutation({
     mutationFn: async (name: string) => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("No user");
 
       const { data, error } = await supabase
@@ -30,7 +32,7 @@ export function useCreateWorkspace() {
         .insert({ name, owner_id: user.id })
         .select()
         .single();
-        
+
       if (error) throw error;
       return data;
     },
@@ -42,14 +44,24 @@ export function useCreateWorkspace() {
 
       if (previousWorkspaces) {
         queryClient.setQueryData(["workspaces"], (old: any) => [
-          { id: `temp-${Math.random()}`, name, created_at: new Date().toISOString(), is_optimistic: true },
-          ...(old || [])
+          {
+            id: `temp-${Math.random()}`,
+            name,
+            created_at: new Date().toISOString(),
+            is_optimistic: true,
+          },
+          ...(old || []),
         ]);
       }
       if (previousJoined) {
         queryClient.setQueryData(["joined-workspaces"], (old: any) => [
-          { id: `temp-${Math.random()}`, name, avatar_url: null, is_optimistic: true },
-          ...(old || [])
+          {
+            id: `temp-${Math.random()}`,
+            name,
+            avatar_url: null,
+            is_optimistic: true,
+          },
+          ...(old || []),
         ]);
       }
 
@@ -75,11 +87,8 @@ export function useDeleteWorkspace() {
   return useMutation({
     mutationFn: async (id: string) => {
       const supabase = createClient();
-      const { error } = await supabase
-        .from("workspaces")
-        .delete()
-        .eq("id", id);
-        
+      const { error } = await supabase.from("workspaces").delete().eq("id", id);
+
       if (error) throw error;
     },
     onMutate: async (id) => {
@@ -89,13 +98,13 @@ export function useDeleteWorkspace() {
       const previousJoined = queryClient.getQueryData(["joined-workspaces"]);
 
       if (previousWorkspaces) {
-        queryClient.setQueryData(["workspaces"], (old: any) => 
-          (old || []).filter((w: any) => w.id !== id)
+        queryClient.setQueryData(["workspaces"], (old: any) =>
+          (old || []).filter((w: any) => w.id !== id),
         );
       }
       if (previousJoined) {
-        queryClient.setQueryData(["joined-workspaces"], (old: any) => 
-          (old || []).filter((w: any) => w.id !== id)
+        queryClient.setQueryData(["joined-workspaces"], (old: any) =>
+          (old || []).filter((w: any) => w.id !== id),
         );
       }
 
@@ -126,7 +135,7 @@ export function useWorkspaceMembers(workspaceId: string) {
         .select("*")
         .eq("workspace_id", workspaceId)
         .order("created_at", { ascending: false });
-        
+
       if (error) throw error;
       return data;
     },
@@ -137,37 +146,65 @@ export function useWorkspaceMembers(workspaceId: string) {
 export function useAddWorkspaceMember() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ workspaceId, email, role }: { workspaceId: string; email: string; role: string }) => {
+    mutationFn: async ({
+      workspaceId,
+      email,
+      role,
+    }: {
+      workspaceId: string;
+      email: string;
+      role: string;
+    }) => {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("workspace_members")
         .insert({ workspace_id: workspaceId, email, role })
         .select()
         .single();
-        
+
       if (error) throw error;
       return data;
     },
     onMutate: async ({ workspaceId, email, role }) => {
-      await queryClient.cancelQueries({ queryKey: ["workspace-members", workspaceId] });
-      const previousMembers = queryClient.getQueryData(["workspace-members", workspaceId]);
+      await queryClient.cancelQueries({
+        queryKey: ["workspace-members", workspaceId],
+      });
+      const previousMembers = queryClient.getQueryData([
+        "workspace-members",
+        workspaceId,
+      ]);
 
       if (previousMembers) {
-        queryClient.setQueryData(["workspace-members", workspaceId], (old: any) => [
-          { id: `temp-${Math.random()}`, workspace_id: workspaceId, email, role, created_at: new Date().toISOString(), is_optimistic: true },
-          ...(old || [])
-        ]);
+        queryClient.setQueryData(
+          ["workspace-members", workspaceId],
+          (old: any) => [
+            {
+              id: `temp-${Math.random()}`,
+              workspace_id: workspaceId,
+              email,
+              role,
+              created_at: new Date().toISOString(),
+              is_optimistic: true,
+            },
+            ...(old || []),
+          ],
+        );
       }
 
       return { previousMembers, workspaceId };
     },
     onError: (err, variables, context) => {
       if (context?.previousMembers) {
-        queryClient.setQueryData(["workspace-members", context.workspaceId], context.previousMembers);
+        queryClient.setQueryData(
+          ["workspace-members", context.workspaceId],
+          context.previousMembers,
+        );
       }
     },
     onSettled: (_, __, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["workspace-members", variables.workspaceId] });
+      queryClient.invalidateQueries({
+        queryKey: ["workspace-members", variables.workspaceId],
+      });
     },
   });
 }
@@ -185,12 +222,17 @@ export function useDeleteWorkspaceMember() {
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["workspace-members"] });
-      const previousMembers = queryClient.getQueriesData({ queryKey: ["workspace-members"] });
-
-      queryClient.setQueriesData({ queryKey: ["workspace-members"] }, (old: any) => {
-        if (!old) return old;
-        return old.filter((m: any) => m.id !== id);
+      const previousMembers = queryClient.getQueriesData({
+        queryKey: ["workspace-members"],
       });
+
+      queryClient.setQueriesData(
+        { queryKey: ["workspace-members"] },
+        (old: any) => {
+          if (!old) return old;
+          return old.filter((m: any) => m.id !== id);
+        },
+      );
 
       return { previousMembers };
     },
@@ -220,12 +262,17 @@ export function useUpdateWorkspaceMemberRole() {
     },
     onMutate: async ({ id, role }) => {
       await queryClient.cancelQueries({ queryKey: ["workspace-members"] });
-      const previousMembers = queryClient.getQueriesData({ queryKey: ["workspace-members"] });
-
-      queryClient.setQueriesData({ queryKey: ["workspace-members"] }, (old: any) => {
-        if (!old) return old;
-        return old.map((m: any) => m.id === id ? { ...m, role } : m);
+      const previousMembers = queryClient.getQueriesData({
+        queryKey: ["workspace-members"],
       });
+
+      queryClient.setQueriesData(
+        { queryKey: ["workspace-members"] },
+        (old: any) => {
+          if (!old) return old;
+          return old.map((m: any) => (m.id === id ? { ...m, role } : m));
+        },
+      );
 
       return { previousMembers };
     },
@@ -247,14 +294,16 @@ export function useJoinedWorkspaces() {
     queryKey: ["joined-workspaces"],
     queryFn: async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user?.email) return [];
 
       const { data, error } = await supabase
         .from("workspace_members")
         .select("workspace_id, workspaces(name, avatar_url)")
         .eq("email", user.email);
-        
+
       if (error) throw error;
       return data.map((item: any) => ({
         id: item.workspace_id,

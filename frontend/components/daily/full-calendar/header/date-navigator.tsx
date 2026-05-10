@@ -2,19 +2,20 @@ import { formatDate } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { buttonHover, transition } from "@/components/daily/full-calendar/animations";
+import {
+  buttonHover,
+  transition,
+} from "@/components/daily/full-calendar/animations";
 import { useCalendar } from "@/components/daily/full-calendar/contexts/calendar-context";
-
 import {
   getEventsCount,
   navigateDate,
   rangeText,
 } from "@/components/daily/full-calendar/helpers";
-
 import type { IEvent } from "@/components/daily/full-calendar/interfaces";
 import type { TCalendarView } from "@/components/daily/full-calendar/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface IProps {
   view: TCalendarView;
@@ -47,7 +48,7 @@ export function DateNavigator({ view, events }: IProps) {
           {month} {year}
         </motion.span>
       </div>
-...
+      ...
       <div className="flex items-center gap-2">
         <MotionButton
           variant="outline"

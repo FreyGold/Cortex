@@ -25,7 +25,7 @@ export class DailyRepository {
   async getDailyLogDetail(userId: string, date: string, workspaceId?: string) {
     let query = this.supabase
       .from("daily_logs")
-      .select("*, tasks:daily_tasks(*)")
+      .select("*, tasks:daily_tasks(*, habit:habits(frequency, week_days, month_days))")
       .eq("user_id", userId)
       .eq("date", date);
 
@@ -41,14 +41,7 @@ export class DailyRepository {
   }
 
   async createDailyLog(userId: string, date: string, workspaceId?: string) {
-    // 1. Check auto-populate settings
-    const { data: profile } = await this.supabase
-      .from("profiles")
-      .select("daily_auto_populate_habits")
-      .eq("id", userId)
-      .single();
-
-    // 2. Create the log
+    // 1. Create the log
     const { data, error } = await this.supabase
       .from("daily_logs")
       .insert({
@@ -60,29 +53,50 @@ export class DailyRepository {
       })
       .select()
       .single();
-      
+
     if (error) throw error;
 
-    // 3. Auto-populate habits as tasks if enabled
-    if (profile?.daily_auto_populate_habits) {
-      const { data: habits } = await this.supabase
-        .from("habits")
-        .select("*")
-        .eq("user_id", userId);
-        
-      if (habits && habits.length > 0) {
-        // Simple logic: insert all active habits as daily tasks
-        const tasksToInsert = habits.map(h => ({
+    // 2. Auto-populate habits as tasks
+    const dow = new Date(date).toLocaleDateString("en-US", { weekday: "long" });
+
+    const { data: habits, error: habitsError } = await this.supabase
+      .from("habits")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (habitsError) {
+      console.error("Failed to fetch habits:", habitsError);
+    } else if (habits && habits.length > 0) {
+      const applicableHabits = habits.filter((h) => {
+        if (h.frequency === "Daily") return true;
+        if (h.frequency === "Weekly") {
+          const days: string[] = h.week_days || [];
+          return days.includes(dow);
+        }
+        if (h.frequency === "Monthly") {
+          const dom = new Date(date).getDate().toString();
+          const days: string[] = h.month_days || [];
+          return days.includes(dom);
+        }
+        return false;
+      });
+
+      console.log(`[createDailyLog] date=${date}, dow=${dow}, totalHabits=${habits.length}, applicable=${applicableHabits.length}, firstHabit=`, habits[0]);
+
+      if (applicableHabits.length > 0) {
+        const tasksToInsert = applicableHabits.map((h) => ({
           log_id: data.id,
           text: h.text,
-          is_completed: false
+          is_completed: false,
+          habit_id: h.id,
         }));
-        
-        await this.supabase.from("daily_tasks").insert(tasksToInsert);
+
+        const { error: insertError } = await this.supabase.from("daily_tasks").insert(tasksToInsert);
+        if (insertError) console.error("Failed to insert habit tasks:", insertError);
       }
     }
 
-    // 4. Return the full object
+    // 3. Return the full object
     const { data: finalLog } = await this.supabase
       .from("daily_logs")
       .select("*, tasks:daily_tasks(*)")
@@ -139,10 +153,10 @@ export class DailyRepository {
     return data;
   }
 
-  async createHabit(userId: string, text: string, frequency: string) {
+  async createHabit(userId: string, text: string, frequency: string, weekDays: string[] = [], monthDays: string[] = []) {
     const { data, error } = await this.supabase
       .from("habits")
-      .insert({ user_id: userId, text, frequency })
+      .insert({ user_id: userId, text, frequency, week_days: weekDays, month_days: monthDays })
       .select()
       .single();
     if (error) throw error;

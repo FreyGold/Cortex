@@ -1,6 +1,5 @@
 "use client";
 
-import { GripVertical as DotsSixVertical } from "lucide-react";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import {
   Details,
@@ -29,6 +28,7 @@ import Typography from "@tiptap/extension-typography";
 import Underline from "@tiptap/extension-underline";
 import StarterKit from "@tiptap/starter-kit";
 import { common, createLowlight } from "lowlight";
+import { GripVertical as DotsSixVertical } from "lucide-react";
 import { createElement } from "react";
 import { createRoot } from "react-dom/client";
 

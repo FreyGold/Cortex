@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { fadeIn, transition } from "@/components/daily/full-calendar/animations";
+import {
+  fadeIn,
+  transition,
+} from "@/components/daily/full-calendar/animations";
 import { useCalendar } from "@/components/daily/full-calendar/contexts/calendar-context";
 import { CalendarMonthView } from "@/components/daily/full-calendar/views/month-view/calendar-month-view";
 

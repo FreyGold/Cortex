@@ -1,8 +1,27 @@
 "use client";
 
-import { Sparkles as Sparkle } from "lucide-react";
+import { Loader2, Sparkles as Sparkle } from "lucide-react";
 import { useMessages } from "next-intl";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputActionAddAttachments,
+  PromptInputActionMenu,
+  PromptInputActionMenuContent,
+  PromptInputActionMenuTrigger,
+  PromptInputBody,
+  PromptInputFooter,
+  PromptInputHeader,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputTools,
+} from "@/components/ai-elements/prompt-input";
+import { SpeechInput } from "@/components/ai-elements/speech-input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,30 +30,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { getBackendUrl } from "@/lib/api/backend-url";
 import { getMessage } from "@/lib/messages";
 import { createClient, getAccessToken } from "@/lib/supabase/client";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Message,
-  MessageContent,
-  MessageResponse,
-} from "@/components/ai-elements/message";
-import {
-  PromptInput,
-  PromptInputHeader,
-  PromptInputActionAddAttachments,
-  PromptInputActionMenu,
-  PromptInputActionMenuContent,
-  PromptInputActionMenuTrigger,
-  PromptInputBody,
-  PromptInputTextarea,
-  PromptInputFooter,
-  PromptInputSubmit,
-  PromptInputTools,
-} from "@/components/ai-elements/prompt-input";
-import { SpeechInput } from "@/components/ai-elements/speech-input";
-import { Loader2 } from "lucide-react";
 
 type ChatItem = {
   id: string;
@@ -54,7 +53,10 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [text, setText] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const isSubmitDisabled = useMemo(() => !(text.trim()) || isStreaming, [text, isStreaming]);
+  const isSubmitDisabled = useMemo(
+    () => !text.trim() || isStreaming,
+    [text, isStreaming],
+  );
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -184,11 +186,7 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
         <DialogHeader className="border-b border-border px-6 py-4">
           <DialogTitle className="flex items-center gap-2 text-lg font-bold">
             <Sparkle className="size-5 text-primary" />
-            {getMessage(
-              translationMessages,
-              "shell.ai.title",
-              "AI Assistant",
-            )}
+            {getMessage(translationMessages, "shell.ai.title", "AI Assistant")}
           </DialogTitle>
           <DialogDescription className="text-xs">
             {getMessage(
@@ -219,7 +217,7 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
                 messages.map((message) => (
                   <Message key={message.id} from={message.role}>
                     <MessageContent>
-                      {message.role === 'assistant' ? (
+                      {message.role === "assistant" ? (
                         <MessageResponse>{message.text}</MessageResponse>
                       ) : (
                         message.text
@@ -227,7 +225,9 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
                       {message.pending && (
                         <div className="mt-2 flex items-center gap-2 text-primary/60">
                           <Loader2 className="size-3 animate-spin" />
-                          <span className="text-[10px] font-medium uppercase tracking-widest">Generating...</span>
+                          <span className="text-[10px] font-medium uppercase tracking-widest">
+                            Generating...
+                          </span>
                         </div>
                       )}
                     </MessageContent>
@@ -245,7 +245,15 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
                   {/* attachments display could go here */}
                 </PromptInputHeader>
                 <PromptInputBody>
-                  <PromptInputTextarea onChange={(e) => setText(e.target.value)} value={text} placeholder={getMessage(translationMessages, "shell.ai.placeholder", "Ask me anything...")} />
+                  <PromptInputTextarea
+                    onChange={(e) => setText(e.target.value)}
+                    value={text}
+                    placeholder={getMessage(
+                      translationMessages,
+                      "shell.ai.placeholder",
+                      "Ask me anything...",
+                    )}
+                  />
                 </PromptInputBody>
                 <PromptInputFooter>
                   <PromptInputTools>
@@ -255,9 +263,19 @@ export function GeneralAiDrawer({ open, onOpenChange }: GeneralAiDrawerProps) {
                         <PromptInputActionAddAttachments />
                       </PromptInputActionMenuContent>
                     </PromptInputActionMenu>
-                    <SpeechInput className="shrink-0" aria-label="Start voice input" onTranscriptionChange={handleTranscriptionChange} title="Start voice input" size="icon-sm" variant="ghost" />
+                    <SpeechInput
+                      className="shrink-0"
+                      aria-label="Start voice input"
+                      onTranscriptionChange={handleTranscriptionChange}
+                      title="Start voice input"
+                      size="icon-sm"
+                      variant="ghost"
+                    />
                   </PromptInputTools>
-                  <PromptInputSubmit disabled={isSubmitDisabled} status={isStreaming ? 'streaming' : undefined} />
+                  <PromptInputSubmit
+                    disabled={isSubmitDisabled}
+                    status={isStreaming ? "streaming" : undefined}
+                  />
                 </PromptInputFooter>
               </PromptInput>
             </div>

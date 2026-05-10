@@ -12,14 +12,18 @@ async function getCalendarData() {
   };
 }
 
-export async function Calendar() {
+interface CalendarProps {
+  onHabitsOpen?: () => void;
+}
+
+export async function Calendar({ onHabitsOpen }: CalendarProps) {
   const { events, users } = await getCalendarData();
 
   return (
     <CalendarProvider events={events} users={users} view="month">
       <DndProvider>
-        <div className="w-full border rounded-xl">
-          <CalendarHeader />
+        <div className="w-full bg-card rounded-2xl overflow-hidden">
+          <CalendarHeader onHabitsOpen={onHabitsOpen} />
           <CalendarBody />
         </div>
       </DndProvider>

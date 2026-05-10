@@ -1,11 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Check, Loader2, Eye, EyeOff, Wand2Icon, Bot, Cpu, ChevronsUpDown } from "lucide-react";
+import {
+  Bot,
+  Check,
+  ChevronsUpDown,
+  Cpu,
+  Eye,
+  EyeOff,
+  Loader2,
+  Wand2Icon,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { models } from "@/components/editor/settings-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Command,
   CommandEmpty,
@@ -14,19 +29,19 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { useAISettings } from "@/hooks/use-ai-settings";
-import { models } from "@/components/editor/settings-dialog";
-import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export function AIIntegrationForm() {
   const { settings, updateSettings, isLoaded } = useAISettings();
-  
+
   // Editor Settings
   const [editorApiKey, setEditorApiKey] = useState("");
   const [editorModel, setEditorModel] = useState("google/gemini-2.0-flash");
@@ -36,7 +51,9 @@ export function AIIntegrationForm() {
 
   // Assistant Settings
   const [assistantApiKey, setAssistantApiKey] = useState("");
-  const [assistantModel, setAssistantModel] = useState("google/gemini-2.0-flash");
+  const [assistantModel, setAssistantModel] = useState(
+    "google/gemini-2.0-flash",
+  );
   const [assistantProvider, setAssistantProvider] = useState("google");
   const [showAssistantKey, setShowAssistantKey] = useState(false);
   const [openAssistantModel, setOpenAssistantModel] = useState(false);
@@ -48,12 +65,22 @@ export function AIIntegrationForm() {
   useEffect(() => {
     if (isLoaded) {
       setEditorApiKey(settings.editorApiKey ?? settings.aiApiKey ?? "");
-      setEditorModel(settings.editorModel ?? settings.aiModel ?? "google/gemini-2.0-flash");
-      setEditorProvider(settings.editorProvider ?? settings.aiProvider ?? "google");
+      setEditorModel(
+        settings.editorModel ?? settings.aiModel ?? "google/gemini-2.0-flash",
+      );
+      setEditorProvider(
+        settings.editorProvider ?? settings.aiProvider ?? "google",
+      );
 
       setAssistantApiKey(settings.assistantApiKey ?? settings.aiApiKey ?? "");
-      setAssistantModel(settings.assistantModel ?? settings.aiModel ?? "google/gemini-2.0-flash");
-      setAssistantProvider(settings.assistantProvider ?? settings.aiProvider ?? "google");
+      setAssistantModel(
+        settings.assistantModel ??
+          settings.aiModel ??
+          "google/gemini-2.0-flash",
+      );
+      setAssistantProvider(
+        settings.assistantProvider ?? settings.aiProvider ?? "google",
+      );
     }
   }, [isLoaded, settings]);
 
@@ -63,7 +90,7 @@ export function AIIntegrationForm() {
 
     try {
       // Simulate a small delay for better UX feel
-      await new Promise(resolve => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       updateSettings({
         editorApiKey: editorApiKey || null,
@@ -77,7 +104,7 @@ export function AIIntegrationForm() {
       setLastSaved(new Date());
       setShowSuccess(true);
       toast.success("AI settings updated locally on this machine");
-      
+
       setTimeout(() => setShowSuccess(false), 2500);
     } catch (err: any) {
       toast.error(err.message || "Failed to update AI settings");
@@ -87,21 +114,27 @@ export function AIIntegrationForm() {
   };
 
   if (!isLoaded) {
-    return <div className="p-8 text-center text-muted-foreground">Loading settings...</div>;
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Loading settings...
+      </div>
+    );
   }
 
   const renderModelSelector = (
-    value: string, 
-    onValueChange: (val: string) => void, 
-    open: boolean, 
+    value: string,
+    onValueChange: (val: string) => void,
+    open: boolean,
     setOpen: (open: boolean) => void,
-    id: string
+    id: string,
   ) => {
     const selectedModel = models.find((m) => m.value === value) || models[0];
 
     return (
       <div className="group relative">
-        <Label htmlFor={id} className="mb-2 block">Model</Label>
+        <Label htmlFor={id} className="mb-2 block">
+          Model
+        </Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger id={id} asChild>
             <Button
@@ -134,7 +167,7 @@ export function AIIntegrationForm() {
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          value === m.value ? "opacity-100" : "opacity-0"
+                          value === m.value ? "opacity-100" : "opacity-0",
                         )}
                       />
                       {m.label}
@@ -149,7 +182,11 @@ export function AIIntegrationForm() {
     );
   };
 
-  const renderProviderSelector = (value: string, onValueChange: (val: string) => void, id: string) => {
+  const renderProviderSelector = (
+    value: string,
+    onValueChange: (val: string) => void,
+    id: string,
+  ) => {
     // Keeping this as a standard Select as it has few items
     const providers = [
       { value: "google", label: "Google Gemini" },
@@ -157,36 +194,44 @@ export function AIIntegrationForm() {
       { value: "anthropic", label: "Anthropic Claude" },
       { value: "groq", label: "Groq (Ultra Fast)" },
     ];
-    
-    const selectedLabel = providers.find(p => p.value === value)?.label;
+
+    const selectedLabel = providers.find((p) => p.value === value)?.label;
 
     return (
       <div className="space-y-2">
         <Label htmlFor={id}>Provider</Label>
         <Popover>
           <PopoverTrigger id={id} asChild>
-            <Button variant="outline" className="w-full justify-between font-normal">
+            <Button
+              variant="outline"
+              className="w-full justify-between font-normal"
+            >
               {selectedLabel}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-             <div className="p-1">
-               {providers.map((p) => (
-                 <Button
+            <div className="p-1">
+              {providers.map((p) => (
+                <Button
                   key={p.value}
                   variant="ghost"
                   className={cn(
                     "w-full justify-start font-normal",
-                    value === p.value && "bg-accent"
+                    value === p.value && "bg-accent",
                   )}
                   onClick={() => onValueChange(p.value)}
-                 >
-                   <Check className={cn("mr-2 h-4 w-4", value === p.value ? "opacity-100" : "opacity-0")} />
-                   {p.label}
-                 </Button>
-               ))}
-             </div>
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === p.value ? "opacity-100" : "opacity-0",
+                    )}
+                  />
+                  {p.label}
+                </Button>
+              ))}
+            </div>
           </PopoverContent>
         </Popover>
       </div>
@@ -204,7 +249,8 @@ export function AIIntegrationForm() {
             <CardTitle>AI Integration</CardTitle>
           </div>
           <CardDescription>
-            Configure your personal AI keys and preferred models. These are stored **locally on your machine** and not in our database.
+            Configure your personal AI keys and preferred models. These are
+            stored **locally on your machine** and not in our database.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -213,12 +259,24 @@ export function AIIntegrationForm() {
             <div className="space-y-6">
               <div className="flex items-center gap-2 pb-2 border-b border-border/40">
                 <Cpu className="size-4 text-primary" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Editor & Autocomplete</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Editor & Autocomplete
+                </h3>
               </div>
-              
+
               <div className="grid gap-6 md:grid-cols-2">
-                {renderProviderSelector(editorProvider, setEditorProvider, "editor-provider")}
-                {renderModelSelector(editorModel, setEditorModel, openEditorModel, setOpenEditorModel, "editor-model")}
+                {renderProviderSelector(
+                  editorProvider,
+                  setEditorProvider,
+                  "editor-provider",
+                )}
+                {renderModelSelector(
+                  editorModel,
+                  setEditorModel,
+                  openEditorModel,
+                  setOpenEditorModel,
+                  "editor-model",
+                )}
               </div>
 
               <div className="space-y-2">
@@ -239,7 +297,11 @@ export function AIIntegrationForm() {
                     className="absolute right-0 top-0 h-full hover:bg-transparent"
                     onClick={() => setShowEditorKey(!showEditorKey)}
                   >
-                    {showEditorKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    {showEditorKey ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -249,12 +311,24 @@ export function AIIntegrationForm() {
             <div className="space-y-6">
               <div className="flex items-center gap-2 pb-2 border-b border-border/40">
                 <Bot className="size-4 text-primary" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">AI Assistant & Chat</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  AI Assistant & Chat
+                </h3>
               </div>
-              
+
               <div className="grid gap-6 md:grid-cols-2">
-                {renderProviderSelector(assistantProvider, setAssistantProvider, "assistant-provider")}
-                {renderModelSelector(assistantModel, setAssistantModel, openAssistantModel, setOpenAssistantModel, "assistant-model")}
+                {renderProviderSelector(
+                  assistantProvider,
+                  setAssistantProvider,
+                  "assistant-provider",
+                )}
+                {renderModelSelector(
+                  assistantModel,
+                  setAssistantModel,
+                  openAssistantModel,
+                  setOpenAssistantModel,
+                  "assistant-model",
+                )}
               </div>
 
               <div className="space-y-2">
@@ -275,7 +349,11 @@ export function AIIntegrationForm() {
                     className="absolute right-0 top-0 h-full hover:bg-transparent"
                     onClick={() => setShowAssistantKey(!showAssistantKey)}
                   >
-                    {showAssistantKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    {showAssistantKey ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -287,13 +365,13 @@ export function AIIntegrationForm() {
                   Last saved: {lastSaved.toLocaleTimeString()}
                 </span>
               )}
-              <Button 
-                type="submit" 
-                disabled={saving} 
+              <Button
+                type="submit"
+                disabled={saving}
                 size="lg"
                 className={cn(
                   "min-w-[160px] transition-all duration-300",
-                  showSuccess && "bg-green-600 hover:bg-green-700 text-white"
+                  showSuccess && "bg-green-600 hover:bg-green-700 text-white",
                 )}
               >
                 {saving ? (
@@ -301,15 +379,20 @@ export function AIIntegrationForm() {
                 ) : showSuccess ? (
                   <Check className="mr-2 size-4" />
                 ) : null}
-                {saving ? "Saving..." : showSuccess ? "Saved!" : "Save All AI Settings"}
+                {saving
+                  ? "Saving..."
+                  : showSuccess
+                    ? "Saved!"
+                    : "Save All AI Settings"}
               </Button>
             </div>
           </form>
         </CardContent>
       </Card>
-      
+
       <p className="text-[11px] text-center text-muted-foreground">
-        Your keys are stored in your browser's local storage and never sent to our servers except to proxy your AI requests.
+        Your keys are stored in your browser's local storage and never sent to
+        our servers except to proxy your AI requests.
       </p>
     </div>
   );

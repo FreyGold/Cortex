@@ -1,25 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft as SidebarSimple } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import {
+  DURATION_STANDARD,
+  EASE_OUT,
+} from "@/components/daily/full-calendar/animations";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AppSidebar } from "../app-sidebar";
 import { DailyAssistant } from "./views/daily-assistant";
-import { DailyStats } from "./views/daily-stats";
-import { DailyHabits } from "./views/daily-habits";
-import { DailySearch } from "./views/daily-search";
 
 export function DailyLayoutClient({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(true);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [activeTab, setActiveTab] = useState("calendar");
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-      if (window.innerWidth < 1024) setIsOpen(false);
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) setIsOpen(false);
     };
 
     handleResize();
@@ -27,97 +29,94 @@ export function DailyLayoutClient({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleTabChange = (tab: string) => {
-    if (tab === "assistant") {
-      setIsAssistantOpen((prev) => !prev);
-    } else {
-      setActiveTab(tab);
-    }
-  };
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "calendar":
-        return children;
-      case "stats":
-        return <DailyStats />;
-      case "habits":
-        return <DailyHabits />;
-      case "search":
-        return <DailySearch />;
-      default:
-        return children;
-    }
-  };
-
   return (
     <div className="flex w-full h-screen overflow-hidden relative bg-background">
       {/* Sidebar */}
-      <div
-        className={cn(
-          "transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] shrink-0 h-full flex flex-col relative",
-          isOpen
-            ? "w-[260px] translate-x-0 opacity-100"
-            : "w-0 -translate-x-full opacity-0 overflow-hidden",
-          isMobile && "absolute z-40 shadow-2xl"
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ x: -260, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -260, opacity: 0 }}
+            transition={{ duration: DURATION_STANDARD, ease: EASE_OUT }}
+            className={cn(
+              "shrink-0 h-full flex flex-col relative",
+              isMobile && "absolute z-40 shadow-2xl",
+            )}
+            style={{ width: 260 }}
+          >
+            <AppSidebar
+              isOpen={true}
+              onToggle={() => setIsOpen(false)}
+              activeDailyTab="calendar"
+              onDailyTabChange={(tab) => {
+                if (tab === "assistant") setIsAssistantOpen((v) => !v);
+              }}
+            />
+          </motion.div>
         )}
-      >
-        <AppSidebar
-          isOpen={true}
-          onToggle={() => setIsOpen(false)}
-          activeDailyTab={activeTab}
-          onDailyTabChange={handleTabChange}
-        />
-      </div>
+      </AnimatePresence>
 
       {/* Toggle button when sidebar closed (floating) */}
-      {!isOpen && (
-        <div className="absolute top-4 left-4 z-50">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsOpen(true)}
-            className="h-9 w-9 text-muted-foreground hover:text-foreground bg-background/50 backdrop-blur-md shadow-xl border border-border/10 rounded-xl"
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: DURATION_STANDARD, ease: EASE_OUT }}
+            className="absolute top-4 left-4 z-50"
           >
-            <SidebarSimple className="size-5" />
-          </Button>
-        </div>
-      )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(true)}
+              className="h-9 w-9 text-muted-foreground hover:text-foreground bg-background/50 backdrop-blur-md shadow-xl border border-border/10 rounded-xl transition-colors hover:bg-background"
+            >
+              <SidebarSimple className="size-5" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile overlay */}
       {isMobile && isOpen && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15, ease: EASE_OUT }}
           className="absolute inset-0 bg-background/80 backdrop-blur-sm z-30"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex min-w-0 relative h-full overflow-hidden">
-        {/* Main Content */}
-        <main
-          className={cn(
-            "flex-1 min-w-0 min-h-0 h-full relative overflow-hidden flex flex-col transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
-            isAssistantOpen ? "mr-[400px]" : "mr-0"
-          )}
-        >
-          {renderContent()}
-        </main>
+      {/* Main Content */}
+      <main
+        className={cn(
+          "flex-1 min-w-0 min-h-0 h-full relative overflow-hidden flex flex-col",
+          isAssistantOpen ? "mr-[400px]" : "mr-0",
+          "transition-[margin] duration-[300ms]",
+        )}
+      >
+        {children}
+      </main>
 
-        {/* Daily Assistant Slide-over */}
-        <div
-          className={cn(
-            "fixed top-0 right-0 h-full bg-sidebar border-l border-border/5 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] z-40 shadow-2xl",
-            isAssistantOpen
-              ? "w-[400px] translate-x-0"
-              : "w-0 translate-x-full overflow-hidden border-none"
-          )}
-        >
-          {isAssistantOpen && (
+      {/* Daily Assistant Slide-over */}
+      <AnimatePresence>
+        {isAssistantOpen && (
+          <motion.div
+            initial={{ x: "100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: "100%", opacity: 0 }}
+            transition={{ duration: 0.3, ease: EASE_OUT }}
+            className="fixed top-0 right-0 h-full bg-sidebar border-l border-border/5 z-40 shadow-2xl"
+            style={{ width: 400 }}
+          >
             <DailyAssistant onClose={() => setIsAssistantOpen(false)} />
-          )}
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

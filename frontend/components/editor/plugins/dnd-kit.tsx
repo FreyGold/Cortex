@@ -1,13 +1,12 @@
-'use client';
+"use client";
 
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { createDragDropManager } from 'dnd-core';
+import { DndPlugin } from "@platejs/dnd";
+import { PlaceholderPlugin } from "@platejs/media/react";
+import { createDragDropManager } from "dnd-core";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
-import { DndPlugin } from '@platejs/dnd';
-import { PlaceholderPlugin } from '@platejs/media/react';
-
-import { BlockDraggable } from '@/components/ui/block-draggable';
+import { BlockDraggable } from "@/components/ui/block-draggable";
 
 // Create a single manager instance on the client to avoid "two HTML5 backends"
 // when navigating quickly between editor instances.
@@ -16,7 +15,7 @@ let manager: any = null;
 function SafeDndProvider({ children }: { children: React.ReactNode }) {
   // Synchronously initialize the manager on the client to ensure children
   // always have a drag-and-drop context.
-  if (typeof window !== 'undefined' && !manager) {
+  if (typeof window !== "undefined" && !manager) {
     manager = createDragDropManager(HTML5Backend);
   }
 

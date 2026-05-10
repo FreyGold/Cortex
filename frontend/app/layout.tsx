@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import "./globals.css";
@@ -7,11 +7,11 @@ import { Providers } from "@/app/providers";
 import { defaultLocale, getDirection, isLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-const geistHeading = Geist({subsets:['latin'],variable:'--font-heading'});
+const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" });
 
-const geistMono = Geist_Mono({subsets:['latin'],variable:'--font-mono'});
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const inter = Inter({
   subsets: ["latin"],
@@ -49,7 +49,13 @@ export default async function RootLayout({
     <html
       lang={locale}
       dir={getDirection(locale)}
-      className={cn(inter.variable, geist.variable, geistMono.variable, geistHeading.variable, "dark")}
+      className={cn(
+        inter.variable,
+        geist.variable,
+        geistMono.variable,
+        geistHeading.variable,
+        "dark",
+      )}
       style={{ fontFamily: "var(--font-sans)" }}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
@@ -78,14 +84,12 @@ export default async function RootLayout({
           }}
         />
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>
-            {children}
-          </Providers>
+          <Providers>{children}</Providers>
         </NextIntlClientProvider>
-      {/* impeccable-live-start */}
-<script src="http://localhost:8400/live.js"></script>
-{/* impeccable-live-end */}
-</body>
+        {/* impeccable-live-start */}
+        <script src="http://localhost:8400/live.js"></script>
+        {/* impeccable-live-end */}
+      </body>
     </html>
   );
 }

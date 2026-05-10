@@ -1,8 +1,9 @@
 "use client";
 
+import type { Editor } from "@tiptap/react";
 import {
-  Undo as ArrowCounterClockwise,
   Redo as ArrowClockwise,
+  Undo as ArrowCounterClockwise,
   ChevronRight as CaretRight,
   Clipboard as ClipboardText,
   Code,
@@ -29,7 +30,6 @@ import {
   Underline as TextUnderline,
   Trash2 as Trash,
 } from "lucide-react";
-import type { Editor } from "@tiptap/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 

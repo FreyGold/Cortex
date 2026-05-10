@@ -19,6 +19,6 @@ export type CatalogData = {
 export function useCatalog() {
   return useQuery<CatalogData>({
     queryKey: ["catalog"],
-    queryFn: () => apiRequest<CatalogData>("/api/data/catalog")
+    queryFn: () => apiRequest<CatalogData>("/api/data/catalog"),
   });
 }

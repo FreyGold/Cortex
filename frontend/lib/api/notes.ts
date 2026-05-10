@@ -13,7 +13,6 @@ export type NoteListItem = {
   archived_at?: string | null;
 };
 
-
 export type FolderItem = {
   id: string;
   name: string;
@@ -48,8 +47,8 @@ export type NoteShareItem = {
 
 export function getDashboardNotes(accessToken: string, workspaceId?: string) {
   const ts = Date.now();
-  const url = workspaceId 
-    ? `/api/notes/dashboard?workspaceId=${workspaceId}&_t=${ts}` 
+  const url = workspaceId
+    ? `/api/notes/dashboard?workspaceId=${workspaceId}&_t=${ts}`
     : `/api/notes/dashboard?_t=${ts}`;
   return apiRequest<{
     notes: NoteListItem[];
@@ -62,26 +61,40 @@ export function getDashboardNotes(accessToken: string, workspaceId?: string) {
 }
 
 export function getArchivedItems(accessToken: string) {
-  return apiRequest<{ notes: NoteListItem[]; folders: FolderItem[] }>("/api/notes/archived", {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  return apiRequest<{ notes: NoteListItem[]; folders: FolderItem[] }>(
+    "/api/notes/archived",
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 }
 
 export function restoreFolder(accessToken: string, folderId: string) {
-  return apiRequest<{ success: boolean }>(`/api/notes/folders/${folderId}/restore`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  return apiRequest<{ success: boolean }>(
+    `/api/notes/folders/${folderId}/restore`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 }
 
 export function deleteFolderForever(accessToken: string, folderId: string) {
-  return apiRequest<{ success: boolean }>(`/api/notes/folders/${folderId}/forever`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  return apiRequest<{ success: boolean }>(
+    `/api/notes/folders/${folderId}/forever`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 }
 
-export function createNote(accessToken: string, title: string, folderId: string | null, workspaceId?: string) {
+export function createNote(
+  accessToken: string,
+  title: string,
+  folderId: string | null,
+  workspaceId?: string,
+) {
   return apiRequest<{ id: string; title: string }>("/api/notes", {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -89,7 +102,12 @@ export function createNote(accessToken: string, title: string, folderId: string 
   });
 }
 
-export function createFolder(accessToken: string, name: string, workspaceId?: string, parentId?: string | null) {
+export function createFolder(
+  accessToken: string,
+  name: string,
+  workspaceId?: string,
+  parentId?: string | null,
+) {
   return apiRequest<{ success: boolean }>("/api/notes/folders", {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -100,7 +118,7 @@ export function createFolder(accessToken: string, name: string, workspaceId?: st
 export function updateFolder(
   accessToken: string,
   folderId: string,
-  payload: { name?: string; parentId?: string | null; color?: string | null }
+  payload: { name?: string; parentId?: string | null; color?: string | null },
 ) {
   return apiRequest<{ success: boolean }>(`/api/notes/folders/${folderId}`, {
     method: "PUT",
@@ -141,7 +159,13 @@ export function getNoteDetail(accessToken: string, noteId: string) {
 export function updateNote(
   accessToken: string,
   noteId: string,
-  payload: { title?: string; html?: string; content?: any; contentText?: string; folderId?: string | null }
+  payload: {
+    title?: string;
+    html?: string;
+    content?: any;
+    contentText?: string;
+    folderId?: string | null;
+  },
 ) {
   return apiRequest<{ success: boolean }>(`/api/notes/${noteId}`, {
     method: "PUT",
@@ -171,7 +195,11 @@ export function deleteNoteForever(accessToken: string, noteId: string) {
   });
 }
 
-export function updateNoteTags(accessToken: string, noteId: string, tagIds: string[]) {
+export function updateNoteTags(
+  accessToken: string,
+  noteId: string,
+  tagIds: string[],
+) {
   return apiRequest<{ success: boolean }>(`/api/notes/${noteId}/tags`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -194,7 +222,7 @@ export function createNoteShare(
     canEdit?: boolean;
     role?: "viewer" | "editor";
     expiresAt?: string | null;
-  }
+  },
 ) {
   return apiRequest<NoteShareItem>(`/api/notes/${noteId}/shares`, {
     method: "POST",
@@ -218,7 +246,7 @@ export function getPublicNoteDetail(noteId: string) {
 }
 export function replicateNote(
   accessToken: string,
-  payload: { title: string; content: any; contentText: string }
+  payload: { title: string; content: any; contentText: string },
 ) {
   return apiRequest<{ id: string; title: string }>("/api/notes/replicate", {
     method: "POST",
@@ -230,20 +258,27 @@ export function replicateNote(
 export function createCourseResource(
   accessToken: string,
   noteId: string,
-  payload: { courseId: string; titleEn: string }
+  payload: { courseId: string; titleEn: string },
 ) {
-  return apiRequest<{ id: string }> (`/api/notes/${noteId}/course-resource`, {
+  return apiRequest<{ id: string }>(`/api/notes/${noteId}/course-resource`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
     body: payload,
   });
 }
 
-export function deleteNoteShare(accessToken: string, noteId: string, shareId: string) {
-  return apiRequest<{ success: boolean }>(`/api/notes/${noteId}/shares/${shareId}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+export function deleteNoteShare(
+  accessToken: string,
+  noteId: string,
+  shareId: string,
+) {
+  return apiRequest<{ success: boolean }>(
+    `/api/notes/${noteId}/shares/${shareId}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 }
 
 export function deleteFolder(accessToken: string, folderId: string) {

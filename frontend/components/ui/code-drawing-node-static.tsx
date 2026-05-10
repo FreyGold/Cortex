@@ -1,9 +1,7 @@
-import * as React from 'react';
-
-import type { TCodeDrawingElement } from '@platejs/code-drawing';
-import type { SlateElementProps } from 'platejs/static';
-
-import { SlateElement } from 'platejs/static';
+import type { TCodeDrawingElement } from "@platejs/code-drawing";
+import type { SlateElementProps } from "platejs/static";
+import { SlateElement } from "platejs/static";
+import * as React from "react";
 
 export function CodeDrawingElementStatic({
   children,
@@ -16,13 +14,13 @@ export function CodeDrawingElementStatic({
           <pre className="m-0 overflow-x-auto font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
             <code className="block w-full">
               {(props.element.data?.code as string) ||
-                'Enter your code here...'}
+                "Enter your code here..."}
             </code>
           </pre>
         </div>
         <div className="relative flex min-w-0 flex-1 items-center justify-center rounded-md border bg-muted/30 p-4">
           <div className="text-muted-foreground">
-            {props.element.data?.drawingType || 'Mermaid'}
+            {props.element.data?.drawingType || "Mermaid"}
           </div>
         </div>
       </div>

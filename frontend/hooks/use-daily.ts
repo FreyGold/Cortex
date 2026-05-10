@@ -1,25 +1,25 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
-import { 
-  getDailyLogs, 
-  getDailyLogDetail, 
-  createDailyLog, 
-  updateDailyLog, 
-  createDailyTask, 
-  updateDailyTask, 
-  deleteDailyTask,
-  searchDailyLogs,
-  getDailyStats,
-  getHabits,
+import {
+  createDailyLog,
+  createDailyTask,
   createHabit,
-  updateHabit,
+  deleteDailyTask,
   deleteHabit,
+  getDailyLogDetail,
+  getDailyLogs,
+  getDailyStats,
   getHabitLogs,
-  toggleHabitLog,
+  getHabits,
   type HabitItem,
+  searchDailyLogs,
+  toggleHabitLog,
+  updateDailyLog,
+  updateDailyTask,
+  updateHabit,
 } from "@/lib/api/daily";
+import { createClient } from "@/lib/supabase/client";
 
 async function getAccessToken() {
   const supabase = createClient();
@@ -34,7 +34,11 @@ async function getAccessToken() {
   return session.access_token;
 }
 
-export function useDailyLogs(monthStart: string, monthEnd: string, workspaceId?: string) {
+export function useDailyLogs(
+  monthStart: string,
+  monthEnd: string,
+  workspaceId?: string,
+) {
   return useQuery({
     queryKey: ["daily-logs", monthStart, monthEnd, workspaceId],
     queryFn: async () => {
@@ -59,13 +63,22 @@ export function useCreateDailyLog() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ date, workspaceId }: { date: string; workspaceId?: string }) => {
+    mutationFn: async ({
+      date,
+      workspaceId,
+    }: {
+      date: string;
+      workspaceId?: string;
+    }) => {
       const token = await getAccessToken();
       return createDailyLog(token, date, workspaceId);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["daily-logs"] });
-      queryClient.setQueryData(["daily-log", data.log.date, data.log.workspace_id], data);
+      queryClient.setQueryData(
+        ["daily-log", data.log.date, data.log.workspace_id],
+        data,
+      );
     },
   });
 }
@@ -74,7 +87,12 @@ export function useUpdateDailyLog(logId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: { rating?: string | null; highlight?: string | null; content?: any; contentText?: string }) => {
+    mutationFn: async (payload: {
+      rating?: string | null;
+      highlight?: string | null;
+      content?: any;
+      contentText?: string;
+    }) => {
       const token = await getAccessToken();
       return updateDailyLog(token, logId, payload);
     },
@@ -104,7 +122,13 @@ export function useUpdateDailyTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ taskId, payload }: { taskId: string; payload: { text?: string; is_completed?: boolean; log_id?: string } }) => {
+    mutationFn: async ({
+      taskId,
+      payload,
+    }: {
+      taskId: string;
+      payload: { text?: string; is_completed?: boolean; log_id?: string };
+    }) => {
       const token = await getAccessToken();
       return updateDailyTask(token, taskId, payload);
     },
@@ -164,9 +188,19 @@ export function useHabits() {
 export function useCreateHabit() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ text, frequency }: { text: string; frequency?: HabitItem["frequency"] }) => {
+    mutationFn: async ({
+      text,
+      frequency,
+      week_days,
+      month_days,
+    }: {
+      text: string;
+      frequency?: HabitItem["frequency"];
+      week_days?: string[];
+      month_days?: string[];
+    }) => {
       const token = await getAccessToken();
-      return createHabit(token, text, frequency);
+      return createHabit(token, text, frequency, week_days, month_days);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["habits"] });

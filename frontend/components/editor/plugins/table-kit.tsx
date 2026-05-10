@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,
   TablePlugin,
   TableRowPlugin,
-} from '@platejs/table/react';
-import { KEYS, NodeApi } from 'platejs';
+} from "@platejs/table/react";
+import { KEYS, NodeApi } from "platejs";
 
 import {
   TableCellElement,
   TableCellHeaderElement,
   TableElement,
   TableRowElement,
-} from '@/components/ui/table-node';
+} from "@/components/ui/table-node";
 
 export const TableKit = [
   TablePlugin.extend({
     options: {
       initialTableWidth: 0,
     },
-    // @ts-ignore - Plate types might not include withOverrides directly in extend
+    // @ts-expect-error - Plate types might not include withOverrides directly in extend
     withOverrides: (editor: any) => {
       const { normalizeNode } = editor;
 
@@ -34,10 +34,14 @@ export const TableKit = [
 
         // Guard table rows: if a tr has no children array, insert a cell
         if (node.type === trType) {
-          if (!node.children || !Array.isArray(node.children) || node.children.length === 0) {
+          if (
+            !node.children ||
+            !Array.isArray(node.children) ||
+            node.children.length === 0
+          ) {
             editor.tf.insertNodes(
-              { type: tdType, children: [{ text: '' }] },
-              { at: [...path, 0] }
+              { type: tdType, children: [{ text: "" }] },
+              { at: [...path, 0] },
             );
             return;
           }
@@ -48,11 +52,12 @@ export const TableKit = [
         // because the internal normalizer calls computeCellIndices which
         // traverses ALL rows and crashes if any has missing children.
         if (node.type === tdType || node.type === thType) {
-          if (!node.children || !Array.isArray(node.children) || node.children.length === 0) {
-            editor.tf.insertNodes(
-              { text: '' },
-              { at: [...path, 0] }
-            );
+          if (
+            !node.children ||
+            !Array.isArray(node.children) ||
+            node.children.length === 0
+          ) {
+            editor.tf.insertNodes({ text: "" }, { at: [...path, 0] });
             return;
           }
 
@@ -61,13 +66,23 @@ export const TableKit = [
           try {
             const tablePath = path.slice(0, -2);
             const tableNode = NodeApi.get(editor, tablePath);
-            if (tableNode && tableNode.type === tableType && Array.isArray(tableNode.children)) {
+            if (
+              tableNode &&
+              tableNode.type === tableType &&
+              Array.isArray(tableNode.children)
+            ) {
               for (let i = 0; i < tableNode.children.length; i++) {
                 const row = tableNode.children[i];
-                if (row && row.type === trType && (!row.children || !Array.isArray(row.children) || row.children.length === 0)) {
+                if (
+                  row &&
+                  row.type === trType &&
+                  (!row.children ||
+                    !Array.isArray(row.children) ||
+                    row.children.length === 0)
+                ) {
                   editor.tf.insertNodes(
-                    { type: tdType, children: [{ text: '' }] },
-                    { at: [...tablePath, i, 0] }
+                    { type: tdType, children: [{ text: "" }] },
+                    { at: [...tablePath, i, 0] },
                   );
                   return; // re-normalize will pick up from here
                 }

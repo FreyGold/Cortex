@@ -1,5 +1,6 @@
 "use client";
 
+import type { Editor } from "@tiptap/react";
 import {
   Code,
   SquareCode as CodeBlock,
@@ -26,7 +27,6 @@ import {
   Superscript as TextSuperscript,
   Underline as TextUnderline,
 } from "lucide-react";
-import type { Editor } from "@tiptap/react";
 
 export interface SlashCommand {
   id: string;

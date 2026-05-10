@@ -1,5 +1,6 @@
 "use client";
 
+import type { Editor } from "@tiptap/react";
 import {
   Code,
   Highlighter,
@@ -16,7 +17,6 @@ import {
   Strikethrough as TextStrikethrough,
   Underline as TextUnderline,
 } from "lucide-react";
-import type { Editor } from "@tiptap/react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {

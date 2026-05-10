@@ -5,8 +5,8 @@ import {
   Building2 as Buildings,
   CheckCircle2 as CheckCircle,
   GraduationCap,
+  Loader2,
 } from "lucide-react";
-import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,8 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getBackendUrl } from "@/lib/api/backend-url";
-import { createClient } from "@/lib/supabase/client";
 import { getCatalogData } from "@/lib/data/catalog";
+import { createClient } from "@/lib/supabase/client";
 
 type University = {
   id: string;

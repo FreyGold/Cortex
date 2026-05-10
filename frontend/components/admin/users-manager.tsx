@@ -1,7 +1,11 @@
 "use client";
 
-import { Search as MagnifyingGlass, UserCheck, UserMinus } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import {
+  Loader2,
+  Search as MagnifyingGlass,
+  UserCheck,
+  UserMinus,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -84,8 +88,8 @@ export function UsersManager() {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground tracking-tight">
-                  {user.email ?? "No email"} <span className="mx-1 opacity-40">/</span> Role:{" "}
-                  {user.role}
+                  {user.email ?? "No email"}{" "}
+                  <span className="mx-1 opacity-40">/</span> Role: {user.role}
                 </p>
                 {user.verification_requested_at && !user.is_verified ? (
                   <p className="text-[11px] text-muted-foreground">

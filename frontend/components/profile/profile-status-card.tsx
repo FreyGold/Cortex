@@ -4,9 +4,9 @@ import {
   ArrowRight,
   CheckCircle2 as CheckCircle,
   Hourglass,
+  Loader2,
   BadgeCheck as SealCheck,
 } from "lucide-react";
-import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useMessages } from "next-intl";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,11 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export function ProfileStatusCard({ showEditLink = true }: { showEditLink?: boolean }) {
+export function ProfileStatusCard({
+  showEditLink = true,
+}: {
+  showEditLink?: boolean;
+}) {
   const messages = useMessages();
   const { data, isLoading, isError, error } = useCurrentProfile();
   const requestVerification = useRequestVerification();

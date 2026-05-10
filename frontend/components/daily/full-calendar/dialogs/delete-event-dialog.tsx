@@ -1,5 +1,6 @@
 import { TrashIcon } from "lucide-react";
 import { toast } from "sonner";
+import { useCalendar } from "@/components/daily/full-calendar/contexts/calendar-context";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +13,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useCalendar } from "@/components/daily/full-calendar/contexts/calendar-context";
 
 interface DeleteEventDialogProps {
   eventId: number;

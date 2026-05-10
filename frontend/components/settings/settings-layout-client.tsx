@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { PanelLeft as SidebarSimple } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "../app-sidebar";
 
-export function SettingsLayoutClient({ children }: { children: React.ReactNode }) {
+export function SettingsLayoutClient({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -24,10 +28,7 @@ export function SettingsLayoutClient({ children }: { children: React.ReactNode }
   return (
     <div className="flex w-full h-screen overflow-hidden relative bg-background">
       {/* Main Sidebar with Configuration tabs */}
-      <AppSidebar 
-        isOpen={isOpen} 
-        onToggle={() => setIsOpen(!isOpen)} 
-      />
+      <AppSidebar isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} />
 
       {/* Toggle button when closed (floating) */}
       {!isOpen && (

@@ -209,17 +209,32 @@
   --shadow-color: oklch(0.49 0.09 235.45);
   --shadow-opacity: 0.06;
   --shadow-offset-x: 0px;
-  --shadow-2xs: 0px 1px 2.5px 0px oklch(0.49 0.09 235.00 / 0.03);
-  --shadow-xs: 0px 1px 2.5px 0px oklch(0.49 0.09 235.00 / 0.03);
-  --shadow-2xl: 0px 1px 2.5px 0px oklch(0.49 0.09 235.00 / 0.15);
-  --shadow-sm: 0px 1px 2.5px 0px oklch(0.49 0.09 235.00 / 0.06), 0px 1px 2px -1px oklch(0.49 0.09 235.00 / 0.06);
-  --shadow: 0px 1px 2.5px 0px oklch(0.49 0.09 235.00 / 0.06), 0px 1px 2px -1px oklch(0.49 0.09 235.00 / 0.06);
-  --shadow-md: 0px 1px 2.5px 0px oklch(0.49 0.09 235.00 / 0.06), 0px 2px 4px -1px oklch(0.49 0.09 235.00 / 0.06);
-  --shadow-lg: 0px 1px 2.5px 0px oklch(0.49 0.09 235.00 / 0.06), 0px 4px 6px -1px oklch(0.49 0.09 235.00 / 0.06);
-  --shadow-xl: 0px 1px 2.5px 0px oklch(0.49 0.09 235.00 / 0.06), 0px 8px 10px -1px oklch(0.49 0.09 235.00 / 0.06);
-  --font-sans: 'Geist', 'Geist Fallback', var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-serif: 'Source Serif 4', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --shadow-2xs: 0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.03);
+  --shadow-xs: 0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.03);
+  --shadow-2xl: 0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.15);
+  --shadow-sm:
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 1px 2px -1px
+    oklch(0.49 0.09 235 / 0.06);
+  --shadow:
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 1px 2px -1px
+    oklch(0.49 0.09 235 / 0.06);
+  --shadow-md:
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 2px 4px -1px
+    oklch(0.49 0.09 235 / 0.06);
+  --shadow-lg:
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 4px 6px -1px
+    oklch(0.49 0.09 235 / 0.06);
+  --shadow-xl:
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 8px 10px -1px
+    oklch(0.49 0.09 235 / 0.06);
+  --font-sans:
+    "Geist", "Geist Fallback", var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif:
+    "Source Serif 4", ui-serif, Georgia, Cambria, "Times New Roman", Times,
+    serif;
+  --font-mono:
+    "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --shadow-blur: 2.5px;
   --highlight: oklch(0.852 0.199 91.936);
   --brand: oklch(0.623 0.214 259.815);
@@ -268,18 +283,23 @@
   --shadow-2xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
   --shadow-xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
   --shadow-2xl: 0px 1px 2px 0px oklch(0 0 0 / 0.03);
-  --shadow-sm: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
-  --shadow: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
-  --shadow-md: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
-  --shadow-lg: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
-  --shadow-xl: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
+  --shadow-sm:
+    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+  --shadow:
+    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+  --shadow-md:
+    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
+  --shadow-lg:
+    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
+  --shadow-xl:
+    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
   --highlight: oklch(0.852 0.199 91.936);
   --brand: oklch(0.707 0.165 254.624);
 }
 
 /* ─────────────────────────────────────────────
    BASE LAYER
-───────────────────────────────────────────── */
+ ───────────────────────────────────────────── */
 @layer base {
   *,
   *::before,
@@ -333,16 +353,23 @@
     letter-spacing: var(--tracking-normal);
   }
 
-  /* Typography utility classes */
-  /* Whisper border */
+  /* ── Button press feedback ── */
+  button:active {
+    transform: scale(0.97);
+    transition: transform 160ms ease-out;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   UTILITY LAYER
+ ───────────────────────────────────────────── */
+@layer utilities {
   .border-whisper {
     border: 1px solid rgba(0, 0, 0, 0.1);
   }
   .dark .border-whisper {
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
-
-  /* Card shadow utility */
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
@@ -352,8 +379,34 @@
   .shadow-brand {
     box-shadow: var(--shadow-brand);
   }
-  * {
-    @apply border-border outline-ring/50;
+}
+
+/* ─────────────────────────────────────────────
+   REDUCED MOTION
+ ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  button:active,
+  [role="button"]:active {
+    transform: none;
+  }
+}
+
+/* Touch device hover guard */
+@media (hover: none) and (pointer: coarse) {
+  *:hover {
+    transition: none;
   }
 }
 

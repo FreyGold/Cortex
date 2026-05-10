@@ -80,8 +80,8 @@ export class DailyService {
     return this.repo.getHabits(userId);
   }
 
-  async createHabit(userId: string, text: string, frequency: string) {
-    return this.repo.createHabit(userId, text, frequency);
+  async createHabit(userId: string, text: string, frequency: string, weekDays: string[] = [], monthDays: string[] = []) {
+    return this.repo.createHabit(userId, text, frequency, weekDays, monthDays);
   }
 
   async updateHabit(userId: string, habitId: string, payload: Record<string, any>) {

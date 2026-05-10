@@ -34,7 +34,11 @@ export function ShellHeaderActions({
         {getMessage(messages, "shell.ai.open", "Ask AI")}
       </Button>
       <Link href={signedIn ? "/auth/logout/submit" : "/auth/login"}>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-muted-foreground"
+        >
           {signedIn ? <SignOut className="size-3.5" /> : null}
           <span className="hidden sm:inline">{authLabel}</span>
         </Button>

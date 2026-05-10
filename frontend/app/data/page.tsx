@@ -1,12 +1,6 @@
-import { redirect } from "next/navigation";
-import {
-  ArrowRight,
-  Book,
-  Calendar,
-  Ghost,
-  GraduationCap,
-} from "lucide-react";
+import { ArrowRight, Book, Calendar, Ghost, GraduationCap } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { CourseDialog } from "@/components/data/course-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -50,8 +44,9 @@ export default async function DataPage({ searchParams }: PageProps) {
   if (Object.keys(params).length === 0) {
     const profile = session?.profile;
     const redirectParams = new URLSearchParams();
-    
-    if (profile?.university_id) redirectParams.set("university", profile.university_id);
+
+    if (profile?.university_id)
+      redirectParams.set("university", profile.university_id);
     if (profile?.college_id) redirectParams.set("college", profile.college_id);
     if (profile?.major_id) redirectParams.set("major", profile.major_id);
 
@@ -60,9 +55,12 @@ export default async function DataPage({ searchParams }: PageProps) {
     }
   }
 
-  const selectedUniversityId = params.university === "all" ? null : (params.university ?? null);
-  const selectedCollegeId = params.college === "all" ? null : (params.college ?? null);
-  const selectedMajorId = params.major === "all" ? null : (params.major ?? null);
+  const selectedUniversityId =
+    params.university === "all" ? null : (params.university ?? null);
+  const selectedCollegeId =
+    params.college === "all" ? null : (params.college ?? null);
+  const selectedMajorId =
+    params.major === "all" ? null : (params.major ?? null);
   const selectedYearId = params.year === "all" ? null : (params.year ?? null);
   const rawQuery = params.q?.trim() ?? "";
   const normalizedQuery = rawQuery.toLowerCase();
@@ -82,16 +80,29 @@ export default async function DataPage({ searchParams }: PageProps) {
     : null;
   const activeFilterTokens = [
     selectedUniversity
-      ? { label: t("filters.filterLabels.university"), value: selectedUniversity.name_en }
+      ? {
+          label: t("filters.filterLabels.university"),
+          value: selectedUniversity.name_en,
+        }
       : null,
     selectedCollege
-      ? { label: t("filters.filterLabels.college"), value: selectedCollege.name_en }
+      ? {
+          label: t("filters.filterLabels.college"),
+          value: selectedCollege.name_en,
+        }
       : null,
-    selectedMajor ? { label: t("filters.filterLabels.major"), value: selectedMajor.name_en } : null,
+    selectedMajor
+      ? { label: t("filters.filterLabels.major"), value: selectedMajor.name_en }
+      : null,
     selectedYear
-      ? { label: t("filters.filterLabels.year"), value: t("filters.year", { level: selectedYear.level }) }
+      ? {
+          label: t("filters.filterLabels.year"),
+          value: t("filters.year", { level: selectedYear.level }),
+        }
       : null,
-    rawQuery ? { label: t("filters.filterLabels.search"), value: rawQuery } : null,
+    rawQuery
+      ? { label: t("filters.filterLabels.search"), value: rawQuery }
+      : null,
   ].filter((item): item is { label: string; value: string } => Boolean(item));
 
   const majorsById = new Map(majors.map((item) => [item.id, item]));
@@ -155,7 +166,9 @@ export default async function DataPage({ searchParams }: PageProps) {
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
                 {t("header")}
               </h1>
-              <p className="text-muted-foreground text-lg max-w-2xl">{t("subtitle")}</p>
+              <p className="text-muted-foreground text-lg max-w-2xl">
+                {t("subtitle")}
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground/60">
               <span className="inline-flex items-center gap-1.5">
@@ -184,22 +197,24 @@ export default async function DataPage({ searchParams }: PageProps) {
         <section className="grid gap-8 lg:grid-cols-[280px_1fr] lg:items-start">
           <aside className="lg:sticky lg:top-4">
             <div className="rounded-3xl border border-border/40 bg-card/30 p-1">
-               <div className="px-4 py-3 border-b border-border/5">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">{t("filtersTitle")}</span>
-               </div>
-               <div className="p-2 pt-4">
-                  <DataFilters
-                    universities={universities}
-                    colleges={colleges}
-                    majors={majors}
-                    yearLevels={yearLevels}
-                    selectedUniversityId={selectedUniversityId}
-                    selectedCollegeId={selectedCollegeId}
-                    selectedMajorId={selectedMajorId}
-                    selectedYearId={selectedYearId}
-                    q={rawQuery}
-                  />
-               </div>
+              <div className="px-4 py-3 border-b border-border/5">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                  {t("filtersTitle")}
+                </span>
+              </div>
+              <div className="p-2 pt-4">
+                <DataFilters
+                  universities={universities}
+                  colleges={colleges}
+                  majors={majors}
+                  yearLevels={yearLevels}
+                  selectedUniversityId={selectedUniversityId}
+                  selectedCollegeId={selectedCollegeId}
+                  selectedMajorId={selectedMajorId}
+                  selectedYearId={selectedYearId}
+                  q={rawQuery}
+                />
+              </div>
             </div>
           </aside>
 
@@ -221,9 +236,14 @@ export default async function DataPage({ searchParams }: PageProps) {
                     </div>
                   ))}
                   {(activeFilterTokens.length > 0 || hasSearchQuery) && (
-                     <Button asChild variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold text-muted-foreground/40 hover:text-foreground">
-                        <Link href="/data">{t("filters.clearAll")}</Link>
-                     </Button>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-[10px] uppercase font-bold text-muted-foreground/40 hover:text-foreground"
+                    >
+                      <Link href="/data">{t("filters.clearAll")}</Link>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -235,8 +255,12 @@ export default async function DataPage({ searchParams }: PageProps) {
                   <Ghost className="size-8 text-muted-foreground/20" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-lg font-semibold text-muted-foreground">{t("empty.title")}</p>
-                  <p className="text-sm text-muted-foreground/40">{t("empty.description")}</p>
+                  <p className="text-lg font-semibold text-muted-foreground">
+                    {t("empty.title")}
+                  </p>
+                  <p className="text-sm text-muted-foreground/40">
+                    {t("empty.description")}
+                  </p>
                 </div>
               </div>
             ) : (

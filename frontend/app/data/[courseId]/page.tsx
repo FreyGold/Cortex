@@ -1,15 +1,9 @@
-import {
-  ArrowLeft,
-  Library,
-  ChevronLeft,
-  Ghost,
-  User,
-} from "lucide-react";
+import { ArrowLeft, ChevronLeft, Ghost, Library, User } from "lucide-react";
 import Link from "next/link";
 import { EditCourseDialog } from "@/components/data/edit-course-dialog";
+import { ManageCourseDoctorsDialog } from "@/components/data/manage-course-doctors-dialog";
 import { ResourceDialog } from "@/components/data/resource-dialog";
 import { ResourceList } from "@/components/data/resource-list";
-import { ManageCourseDoctorsDialog } from "@/components/data/manage-course-doctors-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,8 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCatalogData, getCourseData } from "@/lib/data/catalog";
 import { getServerSession } from "@/lib/auth";
+import { getCatalogData, getCourseData } from "@/lib/data/catalog";
 
 type PageProps = {
   params: Promise<{
@@ -49,29 +43,28 @@ export default async function CourseResourcesPage({
   const { colleges, majors, yearLevels } = await getCatalogData();
 
   const session = await getServerSession();
-  const isVerifiedOrAdmin = 
-    session?.profile?.role === "admin" || session?.profile?.is_verified === true;
+  const isVerifiedOrAdmin =
+    session?.profile?.role === "admin" ||
+    session?.profile?.is_verified === true;
   const isAdmin = session?.profile?.role === "admin";
 
   if (!course) {
     return (
-        <main className="container mx-auto flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 py-16 text-center flex-1">
-          <Ghost
-            className="mb-4 size-12 text-muted-foreground/50"
-          />
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Course not found
-          </h1>
-          <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            The course you are looking for does not exist or has been moved.
-          </p>
-          <Button variant="outline" asChild className="mt-6 gap-2">
-            <Link href="/data">
-              <ArrowLeft className="size-4" />
-              Return to Data Browser
-            </Link>
-          </Button>
-        </main>
+      <main className="container mx-auto flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 py-16 text-center flex-1">
+        <Ghost className="mb-4 size-12 text-muted-foreground/50" />
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Course not found
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">
+          The course you are looking for does not exist or has been moved.
+        </p>
+        <Button variant="outline" asChild className="mt-6 gap-2">
+          <Link href="/data">
+            <ArrowLeft className="size-4" />
+            Return to Data Browser
+          </Link>
+        </Button>
+      </main>
     );
   }
 
@@ -96,7 +89,8 @@ export default async function CourseResourcesPage({
 
     const nextParams = new URLSearchParams();
     if (nextType && nextType !== "all") nextParams.set("type", nextType);
-    if (nextDoctor && nextDoctor !== "all") nextParams.set("doctor", nextDoctor);
+    if (nextDoctor && nextDoctor !== "all")
+      nextParams.set("doctor", nextDoctor);
 
     const query = nextParams.toString();
     return query ? `/data/${courseId}?${query}` : `/data/${courseId}`;
@@ -108,37 +102,46 @@ export default async function CourseResourcesPage({
         <header className="space-y-6">
           <div className="flex items-center justify-between gap-4">
             <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="-ml-2 h-8 gap-1.5 text-muted-foreground hover:bg-accent/40 rounded-lg transition-all"
+              variant="ghost"
+              size="sm"
+              asChild
+              className="-ml-2 h-8 gap-1.5 text-muted-foreground hover:bg-accent/40 rounded-lg transition-all"
             >
-                <Link href="/data">
+              <Link href="/data">
                 <ChevronLeft className="size-4" />
                 Back to Explorer
-                </Link>
+              </Link>
             </Button>
 
             {isAdmin && (
-                <ManageCourseDoctorsDialog 
-                    courseId={courseId} 
-                    allDoctors={doctors} 
-                    assignedDoctors={courseDoctors} 
-                />
+              <ManageCourseDoctorsDialog
+                courseId={courseId}
+                allDoctors={doctors}
+                assignedDoctors={courseDoctors}
+              />
             )}
           </div>
 
           <div className="flex flex-wrap items-start justify-between gap-8">
             <div className="max-w-3xl space-y-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="font-bold text-[10px] h-5 px-2 bg-primary/10 text-primary border-none uppercase tracking-wider">
+                <Badge
+                  variant="secondary"
+                  className="font-bold text-[10px] h-5 px-2 bg-primary/10 text-primary border-none uppercase tracking-wider"
+                >
                   {course.code ?? "Course"}
                 </Badge>
-                <Badge variant="outline" className="font-semibold text-[10px] h-5 px-2 border-border/60 text-muted-foreground/60 uppercase tracking-wider">
+                <Badge
+                  variant="outline"
+                  className="font-semibold text-[10px] h-5 px-2 border-border/60 text-muted-foreground/60 uppercase tracking-wider"
+                >
                   <Library className="mr-1 size-3" />
                   {resources.length} resources
                 </Badge>
-                <Badge variant="outline" className="font-semibold text-[10px] h-5 px-2 border-border/60 text-muted-foreground/60 uppercase tracking-wider">
+                <Badge
+                  variant="outline"
+                  className="font-semibold text-[10px] h-5 px-2 border-border/60 text-muted-foreground/60 uppercase tracking-wider"
+                >
                   <User className="mr-1 size-3" />
                   {courseDoctors.length} instructors
                 </Badge>
@@ -170,7 +173,12 @@ export default async function CourseResourcesPage({
               <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/40">
                 Available Resources
               </h2>
-              <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold bg-muted/30 text-muted-foreground/60">{filteredResources.length}</Badge>
+              <Badge
+                variant="secondary"
+                className="h-5 px-1.5 text-[10px] font-bold bg-muted/30 text-muted-foreground/60"
+              >
+                {filteredResources.length}
+              </Badge>
             </div>
             <ResourceList
               resources={filteredResources}
@@ -179,30 +187,32 @@ export default async function CourseResourcesPage({
               doctors={doctors}
               selectedType={(type as string) || null}
               selectedDoctorId={(doctor as string) || null}
-            />          </section>
+            />{" "}
+          </section>
 
           <aside className="self-start lg:sticky lg:top-4">
             <div className="rounded-3xl border border-border/40 bg-card/30 p-1">
-               <div className="px-4 py-3 border-b border-border/5">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Refine Materials</span>
-               </div>
-               <div className="p-4 space-y-8">
-                  <div className="space-y-4">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/40 px-1">
-                      Resource Type
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      <Button
-                        size="sm"
-                        variant={!type ? "secondary" : "ghost"}
-                        asChild
-                        className="h-8 text-[11px] px-3 font-bold uppercase tracking-wider rounded-full transition-all"
-                      >
-                        <Link href={buildHref({ type: null })}>All</Link>
-                      </Button>
-                      {(
-                        ["lecture", "exam", "assignment", "other"] as const
-                      ).map((resourceType) => (
+              <div className="px-4 py-3 border-b border-border/5">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                  Refine Materials
+                </span>
+              </div>
+              <div className="p-4 space-y-8">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/40 px-1">
+                    Resource Type
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button
+                      size="sm"
+                      variant={!type ? "secondary" : "ghost"}
+                      asChild
+                      className="h-8 text-[11px] px-3 font-bold uppercase tracking-wider rounded-full transition-all"
+                    >
+                      <Link href={buildHref({ type: null })}>All</Link>
+                    </Button>
+                    {(["lecture", "exam", "assignment", "other"] as const).map(
+                      (resourceType) => (
                         <Button
                           key={resourceType}
                           size="sm"
@@ -216,49 +226,54 @@ export default async function CourseResourcesPage({
                             {resourceType}
                           </Link>
                         </Button>
-                      ))}
-                    </div>
+                      ),
+                    )}
                   </div>
+                </div>
 
-                  <div className="space-y-4">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/40 px-1">
-                      Instructor
-                    </p>
-                    <div className="flex flex-col gap-1">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/40 px-1">
+                    Instructor
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      size="sm"
+                      variant={!doctor ? "secondary" : "ghost"}
+                      asChild
+                      className="h-8 text-[11px] px-3 font-bold uppercase tracking-wider rounded-xl justify-start transition-all"
+                    >
+                      <Link href={buildHref({ doctor: null })}>
+                        All instructors
+                      </Link>
+                    </Button>
+                    {courseDoctors.map((courseDoctor) => (
                       <Button
+                        key={courseDoctor.id}
                         size="sm"
-                        variant={!doctor ? "secondary" : "ghost"}
+                        variant={
+                          doctor === courseDoctor.id ? "secondary" : "ghost"
+                        }
                         asChild
                         className="h-8 text-[11px] px-3 font-bold uppercase tracking-wider rounded-xl justify-start transition-all"
                       >
-                        <Link href={buildHref({ doctor: null })}>
-                          All instructors
+                        <Link href={buildHref({ doctor: courseDoctor.id })}>
+                          {courseDoctor.name_en}
                         </Link>
                       </Button>
-                      {courseDoctors.map((courseDoctor) => (
-                        <Button
-                          key={courseDoctor.id}
-                          size="sm"
-                          variant={
-                            doctor === courseDoctor.id ? "secondary" : "ghost"
-                          }
-                          asChild
-                          className="h-8 text-[11px] px-3 font-bold uppercase tracking-wider rounded-xl justify-start transition-all"
-                        >
-                          <Link href={buildHref({ doctor: courseDoctor.id })}>
-                            {courseDoctor.name_en}
-                          </Link>
-                        </Button>
-                      ))}
-                    </div>
+                    ))}
                   </div>
+                </div>
 
-                  {isVerifiedOrAdmin && (
-                    <div className="pt-4 border-t border-border/5">
-                        <ResourceDialog courseId={courseId} doctors={doctors} isAdmin={isAdmin} />
-                    </div>
-                  )}
-               </div>
+                {isVerifiedOrAdmin && (
+                  <div className="pt-4 border-t border-border/5">
+                    <ResourceDialog
+                      courseId={courseId}
+                      doctors={doctors}
+                      isAdmin={isAdmin}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </aside>
         </div>

@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Plus, Check, ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +23,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -23,23 +35,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { cn } from "@/lib/utils";
-import type { College, Major, YearLevel } from "@/lib/data/catalog";
+import { Textarea } from "@/components/ui/textarea";
 import { getBackendUrl } from "@/lib/api/backend-url";
+import type { College, Major, YearLevel } from "@/lib/data/catalog";
 import { getAccessToken } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 type Props = {
   colleges: College[];
@@ -49,14 +49,14 @@ type Props = {
 
 export function CourseDialog({ colleges, majors, yearLevels }: Props) {
   const defaultCollege = colleges.find(
-    (c) => c.slug === "fee" || c.name_en.toLowerCase().includes("electronic")
+    (c) => c.slug === "fee" || c.name_en.toLowerCase().includes("electronic"),
   );
 
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [selectedCollegeId, setSelectedCollegeId] = useState<string>(
-    defaultCollege?.id ?? ""
+    defaultCollege?.id ?? "",
   );
   const [selectedMajorId, setSelectedMajorId] = useState<string>("");
 
@@ -65,7 +65,9 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
 
   const router = useRouter();
 
-  const filteredMajors = majors.filter((m) => m.college_id === selectedCollegeId);
+  const filteredMajors = majors.filter(
+    (m) => m.college_id === selectedCollegeId,
+  );
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -73,7 +75,7 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
       alert("Please select a major.");
       return;
     }
-    
+
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -90,9 +92,9 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
 
       const res = await fetch(`${getBackendUrl()}/api/data/courses`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -130,13 +132,18 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
           <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-1">
             <div className="grid gap-2">
               <Label htmlFor="name_en">Course Name (English) *</Label>
-              <Input id="name_en" name="name_en" required placeholder="e.g. Data Structures" />
+              <Input
+                id="name_en"
+                name="name_en"
+                required
+                placeholder="e.g. Data Structures"
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="code">Course Code</Label>
               <Input id="code" name="code" placeholder="e.g. CS101" />
             </div>
-            
+
             <div className="grid gap-2">
               <Label>College *</Label>
               <Popover open={openCollege} onOpenChange={setOpenCollege}>
@@ -149,7 +156,8 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
                   >
                     <span className="truncate">
                       {selectedCollegeId
-                        ? colleges.find((c) => c.id === selectedCollegeId)?.name_en
+                        ? colleges.find((c) => c.id === selectedCollegeId)
+                            ?.name_en
                         : "Select college..."}
                     </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -176,7 +184,7 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
                                 "mr-2 h-4 w-4",
                                 selectedCollegeId === college.id
                                   ? "opacity-100"
-                                  : "opacity-0"
+                                  : "opacity-0",
                               )}
                             />
                             {college.name_en}
@@ -191,7 +199,12 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
 
             <div className="grid gap-2">
               <Label>Major *</Label>
-              <input type="hidden" name="major_id" value={selectedMajorId} required />
+              <input
+                type="hidden"
+                name="major_id"
+                value={selectedMajorId}
+                required
+              />
               <Popover open={openMajor} onOpenChange={setOpenMajor}>
                 <PopoverTrigger asChild>
                   <Button
@@ -203,7 +216,8 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
                   >
                     <span className="truncate">
                       {selectedMajorId
-                        ? filteredMajors.find((m) => m.id === selectedMajorId)?.name_en
+                        ? filteredMajors.find((m) => m.id === selectedMajorId)
+                            ?.name_en
                         : "Select major..."}
                     </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -229,7 +243,7 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
                                 "mr-2 h-4 w-4",
                                 selectedMajorId === major.id
                                   ? "opacity-100"
-                                  : "opacity-0"
+                                  : "opacity-0",
                               )}
                             />
                             {major.name_en}
@@ -259,7 +273,11 @@ export function CourseDialog({ colleges, majors, yearLevels }: Props) {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea id="description" name="description" placeholder="Brief description of the course..." />
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Brief description of the course..."
+              />
             </div>
           </div>
           <DialogFooter>
