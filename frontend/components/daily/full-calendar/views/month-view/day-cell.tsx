@@ -97,6 +97,20 @@ export function DayCell({ cell, events }: IProps) {
   }, [data, dateStr]);
 
   const tasks = logData?.tasks || [];
+  const focusSessions = logData?.pomodoro_sessions || [];
+
+  const totalFocusMinutes = useMemo(() => {
+    const seconds = focusSessions.reduce((acc: number, s: any) => acc + (s.actual_duration_seconds || 0), 0);
+    return Math.round(seconds / 60);
+  }, [focusSessions]);
+
+  const heatmapOpacity = useMemo(() => {
+    if (totalFocusMinutes === 0) return 0;
+    if (totalFocusMinutes < 60) return 0.05;
+    if (totalFocusMinutes < 120) return 0.1;
+    if (totalFocusMinutes < 240) return 0.2;
+    return 0.3;
+  }, [totalFocusMinutes]);
 
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,11 +175,14 @@ export function DayCell({ cell, events }: IProps) {
       <ContextMenuTrigger asChild>
         <motion.div
           className={cn(
-            "flex h-full lg:min-h-[160px] flex-col gap-1 border-l border-t relative group/cell cursor-pointer",
+            "flex h-full lg:min-h-[160px] flex-col gap-1 border-l border-t relative group/cell cursor-pointer transition-colors duration-500",
             isSunday(date) && "border-l-0",
             !currentMonth && "bg-muted/5 opacity-40",
             logData && "bg-primary/[0.02]",
           )}
+          style={{
+            backgroundColor: heatmapOpacity > 0 ? `rgba(var(--primary-rgb), ${heatmapOpacity})` : undefined
+          }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={transition}
@@ -188,9 +205,19 @@ export function DayCell({ cell, events }: IProps) {
                 {day}
               </span>
 
-              {logData?.rating && (
-                <span className="text-xs">{logData.rating}</span>
-              )}
+              <div className="flex items-center gap-1.5">
+                {totalFocusMinutes > 0 && (
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/10 border border-primary/10">
+                    <HistoryIcon className="size-2 text-primary" />
+                    <span className="text-[9px] font-bold text-primary">
+                      {totalFocusMinutes >= 60 ? `${(totalFocusMinutes / 60).toFixed(1)}h` : `${totalFocusMinutes}m`}
+                    </span>
+                  </div>
+                )}
+                {logData?.rating && (
+                  <span className="text-xs">{logData.rating}</span>
+                )}
+              </div>
             </div>
 
             <div className="flex-1 space-y-1 overflow-hidden">

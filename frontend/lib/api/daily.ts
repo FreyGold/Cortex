@@ -22,6 +22,7 @@ export type DailyLogItem = {
   created_at: string;
   updated_at: string;
   tasks?: DailyTaskItem[];
+  pomodoro_sessions?: PomodoroSession[];
 };
 
 export type HabitItem = {

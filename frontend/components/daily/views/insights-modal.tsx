@@ -44,21 +44,24 @@ export function InsightsModal({ isOpen, onOpenChange }: InsightsModalProps) {
   if (!isOpen) return null;
 
   const s = data?.stats;
-  const weeklyData = s?.weeklyData || [];
+  const tasks = s?.tasks || {};
+  const habits = s?.habits || {};
+  const pomodoro = s?.pomodoro || {};
+  const weeklyData = tasks.weeklyData || [];
 
   const stats = [
     {
       label: "Completion Rate",
-      value: `${s?.completionRate ?? 0}%`,
+      value: `${tasks.completionRate ?? 0}%`,
       icon: "completion",
     },
-    { label: "Current Streak", value: `${s?.streak ?? 0} days`, icon: "streak" },
+    { label: "Current Streak", value: `${tasks.streak ?? 0} days`, icon: "streak" },
     {
       label: "Focus Score",
-      value: `${s?.focusScore ?? 0}%`,
+      value: `${pomodoro.focusScore ?? 0}%`,
       icon: "focus",
     },
-    { label: "Total Logs", value: s?.totalLogs ?? 0, icon: "logs" },
+    { label: "Total Logs", value: tasks.totalLogs ?? 0, icon: "logs" },
   ];
 
   return (
@@ -116,6 +119,12 @@ export function InsightsModal({ isOpen, onOpenChange }: InsightsModalProps) {
               >
                 Tasks
               </TabsTrigger>
+              <TabsTrigger
+                value="focus"
+                className="flex-1 text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all"
+              >
+                Focus
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -133,11 +142,11 @@ export function InsightsModal({ isOpen, onOpenChange }: InsightsModalProps) {
                       <div className="space-y-1">
                         <div className="flex items-center justify-between py-2.5 border-b border-border/5">
                           <span className="text-[12px] text-muted-foreground font-medium">Consistency</span>
-                          <span className="text-[13px] font-bold text-foreground">{data?.stats?.habits?.consistency ?? 0}%</span>
+                          <span className="text-[13px] font-bold text-foreground">{habits.consistency ?? 0}%</span>
                         </div>
                         <div className="flex items-center justify-between py-2.5 border-b border-border/5">
                           <span className="text-[12px] text-muted-foreground font-medium">Longest Streak</span>
-                          <span className="text-[13px] font-bold text-foreground">{data?.stats?.habits?.longestStreak ?? 0} days</span>
+                          <span className="text-[13px] font-bold text-foreground">{habits.longestStreak ?? 0} days</span>
                         </div>
                       </div>
 
@@ -183,6 +192,47 @@ export function InsightsModal({ isOpen, onOpenChange }: InsightsModalProps) {
                           })}
                         </div>
                       </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* Focus Tab */}
+                  <TabsContent value="focus" className="mt-0 h-full flex flex-col">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-primary/60 mb-1">Total Time</p>
+                          <p className="text-2xl font-bold tracking-tight">
+                            {pomodoro.focusTimeHours ?? 0}h {pomodoro.focusTimeMinutes ?? 0}m
+                          </p>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-muted/30 border border-border/5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">Sessions</p>
+                          <p className="text-2xl font-bold tracking-tight">{pomodoro.totalSessions ?? 0}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Recent Activity</h3>
+                        <div className="space-y-2">
+                          {(pomodoro.recentSessions || []).map((session: any) => (
+                            <div key={session.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/5">
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[12px] font-bold text-foreground">{session.type}</span>
+                                <span className="text-[10px] font-medium text-muted-foreground/60">{session.timestamp}</span>
+                              </div>
+                              <span className="text-[11px] font-bold text-primary/60">{session.duration}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Message from="assistant">
+                        <MessageContent>
+                          <MessageResponse>
+                            You focus best on Mondays. Your most productive subject this week is Frontend Development.
+                          </MessageResponse>
+                        </MessageContent>
+                      </Message>
                     </div>
                   </TabsContent>
                 </ConversationContent>

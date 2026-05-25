@@ -6,7 +6,7 @@ export class DailyRepository {
   async getDailyLogs(userId: string, monthStart: string, monthEnd: string, workspaceId?: string) {
     let query = this.supabase
       .from("daily_logs")
-      .select("*, tasks:daily_tasks(*)")
+      .select("*, tasks:daily_tasks(*), pomodoro_sessions:pomodoro_sessions(*)")
       .eq("user_id", userId)
       .gte("date", monthStart)
       .lte("date", monthEnd);
@@ -25,7 +25,7 @@ export class DailyRepository {
   async getDailyLogDetail(userId: string, date: string, workspaceId?: string) {
     let query = this.supabase
       .from("daily_logs")
-      .select("*, tasks:daily_tasks(*, habit:habits(frequency, week_days, month_days))")
+      .select("*, tasks:daily_tasks(*, habit:habits(frequency, week_days, month_days)), pomodoro_sessions:pomodoro_sessions(*)")
       .eq("user_id", userId)
       .eq("date", date);
 

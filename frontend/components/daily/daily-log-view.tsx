@@ -31,6 +31,8 @@ import {
   useDeleteDailyTask,
   useUpdateDailyLog,
   useUpdateDailyTask,
+  usePomodoroSessions,
+  useUserSubjects,
 } from "@/hooks/use-daily";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +47,7 @@ function extractPlateText(nodes: any[]): string {
   return parts.join(" ").trim();
 }
 
-type TaskTab = "habits" | "tasks";
+type TaskTab = "habits" | "tasks" | "focus";
 
 function FrequencyTag({
   frequency,
@@ -191,6 +193,14 @@ export function DailyLogView({
   const [editorContent, setEditorContent] = useState<any[] | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [isEditorMaximized, setIsEditorMaximized] = useState(false);
+
+  const { data: pomodoroData } = usePomodoroSessions(date);
+  const { data: subjectsData } = useUserSubjects();
+  const sessions = pomodoroData?.sessions || [];
+  const subjects = subjectsData?.subjects || [];
+
+  const totalFocusSeconds = sessions.reduce((acc: number, s: any) => acc + (s.actual_duration_seconds || 0), 0);
+  const totalFocusMinutes = Math.round(totalFocusSeconds / 60);
 
   const log = data?.log;
 
@@ -370,7 +380,7 @@ export function DailyLogView({
       {/* Tab Bar */}
       <div className="px-5 pt-4 pb-0 shrink-0">
         <div className="flex items-center gap-1 p-1 bg-muted/30 rounded-xl w-fit">
-          {(["tasks", "habits"] as TaskTab[]).map((t) => (
+          {(["tasks", "habits", "focus"] as TaskTab[]).map((t) => (
             <button
               type="button"
               key={t}
@@ -391,7 +401,7 @@ export function DailyLogView({
                       : "text-muted-foreground/40",
                   )}
                 />
-              ) : (
+              ) : t === "habits" ? (
                 <Target
                   className={cn(
                     "size-3.5",
@@ -400,8 +410,17 @@ export function DailyLogView({
                       : "text-muted-foreground/40",
                   )}
                 />
+              ) : (
+                <History
+                  className={cn(
+                    "size-3.5",
+                    tab === "focus"
+                      ? "text-primary"
+                      : "text-muted-foreground/40",
+                  )}
+                />
               )}
-              {t === "tasks" ? "Tasks" : "Habits"}
+              {t === "tasks" ? "Tasks" : t === "habits" ? "Habits" : "Focus"}
               {t === "tasks" && manualTasks.length > 0 && (
                 <span
                   className={cn(
@@ -428,6 +447,18 @@ export function DailyLogView({
                   {habitTasks.length}
                 </span>
               )}
+              {t === "focus" && sessions.length > 0 && (
+                <span
+                  className={cn(
+                    "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
+                    tab === "focus"
+                      ? "bg-primary/15 text-primary"
+                      : "bg-muted text-muted-foreground/60",
+                  )}
+                >
+                  {sessions.length}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -436,7 +467,71 @@ export function DailyLogView({
       {/* Task List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-3">
         <AnimatePresence mode="wait">
-          {currentTasks.length === 0 && tab === "habits" ? (
+          {tab === "focus" ? (
+            <motion.div
+              key="focus-timeline"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="space-y-6"
+            >
+              {/* Focus Summary Card */}
+              <div className="grid grid-cols-2 gap-3 mb-2">
+                <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-primary/60 mb-1">Total Focus</p>
+                  <p className="text-xl font-bold tracking-tight">{totalFocusMinutes}m</p>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/30 border border-border/5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">Sessions</p>
+                  <p className="text-xl font-bold tracking-tight">{sessions.length}</p>
+                </div>
+              </div>
+
+              {sessions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="size-14 rounded-2xl bg-muted/20 flex items-center justify-center mb-4">
+                    <History className="size-6 text-muted-foreground/20" />
+                  </div>
+                  <p className="text-[13px] font-semibold text-foreground mb-1">No focus sessions</p>
+                  <p className="text-[12px] text-muted-foreground/60 max-w-[200px]">Time focused on this day will appear here</p>
+                </div>
+              ) : (
+                <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[1.5px] before:bg-border/10">
+                  {sessions.map((session: any) => {
+                    const subject = subjects.find(s => s.id === session.subject_id);
+                    const startStr = format(parseISO(session.start_time), "h:mm a");
+                    const endStr = session.end_time ? format(parseISO(session.end_time), "h:mm a") : "?";
+                    const durationMins = Math.round((session.actual_duration_seconds || 0) / 60);
+
+                    return (
+                      <div key={session.id} className="relative">
+                        <div className="absolute -left-[20px] top-1.5 size-[11px] rounded-full bg-background border-[2px] border-primary shadow-[0_0_0_3px_rgba(var(--primary-rgb),0.1)]" />
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[13px] font-bold text-foreground">
+                              {session.type}
+                            </span>
+                            <span className="text-[11px] font-medium text-muted-foreground/60">
+                              {startStr} — {endStr}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {subject && (
+                              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-muted/40 border border-border/5">
+                                <div className="size-1.5 rounded-full" style={{ backgroundColor: subject.color }} />
+                                <span className="text-[10px] font-bold text-muted-foreground/80">{subject.name}</span>
+                              </div>
+                            )}
+                            <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">{durationMins}m Focused</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          ) : currentTasks.length === 0 && tab === "habits" ? (
             <motion.div
               key="empty-habits"
               initial={{ opacity: 0, y: 8 }}
