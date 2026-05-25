@@ -271,11 +271,8 @@ export const aiChatPlugin = AIChatPlugin.extend({
           });
 
           const cursorPath = editor.selection!.focus.path.slice(0, 1);
-          const storedOriginalPath = editor.getOption(AIChatPlugin, "_originalPath") as number[] | null;
-          const originalPath = storedOriginalPath || cursorPath;
-          if (!storedOriginalPath) {
-            editor.setOption(AIChatPlugin, "_originalPath" as any, originalPath);
-          }
+          editor.setOption(AIChatPlugin, "_originalPath" as any, cursorPath);
+          const originalPath = cursorPath;
 
           editor.tf.withoutSaving(() => {
             const targetPath = PathApi.next(originalPath);
@@ -318,14 +315,13 @@ export const aiChatPlugin = AIChatPlugin.extend({
         editor.getTransforms(AIChatPlugin).aiChat.accept();
         editor.tf.focus({ edge: "end" });
         editor.setOption(AIChatPlugin, "streaming", false);
+        editor.setOption(AIChatPlugin, "mode", "chat");
+        editor.setOption(AIChatPlugin, "toolName", "generate");
         editor.setOption(AIChatPlugin, "_blockChunks", "");
-        editor.setOption(AIChatPlugin, "_blockPath" as any, null);
-        editor.setOption(AIChatPlugin, "_streamEndPath" as any, null);
         editor.setOption(AIChatPlugin, "_originalPath" as any, null);
         editor.setOption(AIChatPlugin, "_mdxName", null);
         editor.setOption(AIChatPlugin, "_rawMarkdown" as any, "");
-        editor.setOption(AIChatPlugin, "_lastInsertedLength" as any, 1);
-        editor.setOption(AIChatPlugin, "_lastRenderTime" as any, 0);
+        editor.getApi(AIChatPlugin).aiChat.show();
       },
     });
   },

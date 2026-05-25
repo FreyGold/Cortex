@@ -1,6 +1,9 @@
 {
   "name": "frontend",
   "version": "0.1.0",
+  "registries": {
+    "@plate": "https://platejs.org/r/{name}.json"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev",

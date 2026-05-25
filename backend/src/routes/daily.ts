@@ -6,6 +6,15 @@ export const dailyRouter = Router();
 
 dailyRouter.use(authMiddleware);
 
+// Pomodoro
+dailyRouter.get("/pomodoro", DailyController.getPomodoroSessions);
+dailyRouter.post("/pomodoro", DailyController.logPomodoroSession);
+
+// Subjects
+dailyRouter.get("/subjects", DailyController.getSubjects);
+dailyRouter.post("/subjects", DailyController.createSubject);
+dailyRouter.delete("/subjects/:subjectId", DailyController.deleteSubject);
+
 // Habits
 dailyRouter.get("/habits", DailyController.getHabits);
 dailyRouter.post("/habits", DailyController.createHabit);
@@ -29,3 +38,4 @@ dailyRouter.put("/logs/:logId", DailyController.updateDailyLog);
 dailyRouter.post("/tasks", DailyController.createDailyTask);
 dailyRouter.put("/tasks/:taskId", DailyController.updateDailyTask);
 dailyRouter.delete("/tasks/:taskId", DailyController.deleteDailyTask);
+

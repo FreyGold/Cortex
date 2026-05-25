@@ -150,8 +150,39 @@ export function AIMenu() {
   });
 
   const isLoading = status === "streaming" || status === "submitted";
+  const justFinished = !isLoading && status === "finished";
+  const hasContent = messages && messages.length > 0;
+  const showAcceptMenu = hasContent || (toolName === "generate" && mode === "insert" && justFinished);
 
   React.useEffect(() => {
+    if ((mode === "insert" || mode === "chat") && toolName === "generate" && !isLoading && hasContent) {
+      const aiNodes: NodeEntry[] = [];
+      editor.api.nodes({
+        match: (n) => !!n[KEYS.ai],
+      }).forEach((entry) => aiNodes.push(entry));
+      
+      if (aiNodes.length > 0) {
+        const lastAINode = aiNodes[aiNodes.length - 1];
+        const block = editor.api.block({ at: lastAINode[1] });
+        if (block) {
+          const domNode = editor.api.toDOMNode(block[0]);
+          if (domNode) {
+            setAnchorElement(domNode);
+            return;
+          }
+        }
+      }
+      
+      const lastBlock = editor.children.at(-1);
+      if (lastBlock) {
+        const domNode = editor.api.toDOMNode(lastBlock);
+        if (domNode) {
+          setAnchorElement(domNode);
+          return;
+        }
+      }
+    }
+
     if (toolName === "edit" && mode === "chat" && !isLoading) {
       let anchorNode = editor.api.node({
         at: [],
@@ -172,7 +203,7 @@ export function AIMenu() {
       setAnchorElement(editor.api.toDOMNode(block![0]!)!);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
+  }, [isLoading, status]);
 
   if (isLoading && mode === "insert") return null;
 
@@ -180,15 +211,21 @@ export function AIMenu() {
 
   if (toolName === "edit" && mode === "chat" && isLoading) return null;
 
+  const menuStyle = showAcceptMenu
+    ? {
+        width: anchorElement?.offsetWidth || 400,
+      }
+    : {
+        width: anchorElement?.offsetWidth,
+      };
+
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverAnchor virtualRef={{ current: anchorElement! }} />
 
       <PopoverContent
         className="border-none bg-transparent p-0 shadow-none"
-        style={{
-          width: anchorElement?.offsetWidth,
-        }}
+        style={menuStyle}
         onEscapeKeyDown={(e) => {
           e.preventDefault();
 
@@ -299,7 +336,11 @@ const aiChatItems = {
           .aiChat.replaceSelection(aiEditor);
       }
 
+      editor.setOption(AIChatPlugin, "_blockPath" as any, null);
+      editor.setOption(AIChatPlugin, "_streamEndPath" as any, null);
+      editor.setOption(AIChatPlugin, "_lastInsertedLength" as any, 1);
       editor.getTransforms(AIChatPlugin).aiChat.accept();
+      editor.getApi(AIChatPlugin).aiChat.hide();
       editor.tf.focus({ edge: "end" });
     },
   },
@@ -347,6 +388,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor }) => {
       editor.getTransforms(AIPlugin).ai.undo();
       editor.getApi(AIChatPlugin).aiChat.hide();
+      editor.tf.focus({ edge: "end" });
     },
   },
   emojify: {
@@ -688,7 +730,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          "-translate-x-1/2 absolute bottom-4 left-1/2 z-20 flex items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300",
+          "-translate-x-1/2 fixed bottom-4 left-1/2 z-20 flex items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300",
         )}
       >
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />

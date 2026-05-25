@@ -18,6 +18,11 @@ import {
   updateDailyLog,
   updateDailyTask,
   updateHabit,
+  getPomodoroSessions,
+  logPomodoroSession,
+  getSubjects,
+  createSubject,
+  deleteSubject
 } from "@/lib/api/daily";
 import { createClient } from "@/lib/supabase/client";
 
@@ -268,6 +273,89 @@ export function useToggleHabitLog() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["habit-logs"] });
+    },
+  });
+}
+
+// ── Pomodoro Hooks ─────────────────────────────────────────
+
+export function usePomodoroSessions(date: string) {
+  return useQuery({
+    queryKey: ["pomodoro-sessions", date],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getPomodoroSessions(token, date);
+    },
+    enabled: !!date,
+  });
+}
+
+export function useLogPomodoroSession() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      duration,
+      type,
+      startTime,
+      endTime,
+      subjectId,
+      actualDurationSeconds,
+      logId,
+      notes,
+    }: {
+      duration: number;
+      type: string;
+      startTime: string;
+      endTime: string;
+      subjectId?: string;
+      actualDurationSeconds?: number;
+      logId?: string;
+      notes?: string;
+    }) => {
+      const token = await getAccessToken();
+      return logPomodoroSession(token, duration, type, startTime, endTime, subjectId, actualDurationSeconds, logId, notes);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pomodoro-sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["daily-stats"] });
+    },
+  });
+}
+
+export function useUserSubjects() {
+  return useQuery({
+    queryKey: ["user-subjects"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getSubjects(token);
+    },
+  });
+}
+
+export function useCreateSubject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ name, color }: { name: string; color?: string }) => {
+      const token = await getAccessToken();
+      return createSubject(token, name, color);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-subjects"] });
+    },
+  });
+}
+
+export function useDeleteSubject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (subjectId: string) => {
+      const token = await getAccessToken();
+      return deleteSubject(token, subjectId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-subjects"] });
+      queryClient.invalidateQueries({ queryKey: ["pomodoro-sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["daily-stats"] });
     },
   });
 }

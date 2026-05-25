@@ -651,7 +651,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all group select-none overflow-hidden",
+        "will-change-transform w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all group select-none overflow-hidden",
         active
           ? "bg-accent text-foreground"
           : "text-muted-foreground/70 hover:bg-accent/40 hover:text-foreground",

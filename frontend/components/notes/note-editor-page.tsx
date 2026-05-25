@@ -2,7 +2,7 @@
 
 import { PanelRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { PlateEditor } from "@/components/editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -172,6 +172,9 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
   const [shareCanEdit, setShareCanEdit] = useState(false);
   const [shareRole, setShareRole] = useState<"viewer" | "editor">("viewer");
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const isSavingRef = useRef(false);
+  const needsResaveRef = useRef(false);
+
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [resourceOpen, setResourceOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState("");
@@ -265,16 +268,33 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
   }, [detailQuery.data]);
 
   useEffect(() => {
-    if (isIntroRoute || !dirty || !editorContent) return;
+    if (isIntroRoute || !editorContent) return;
+
+    if (isSavingRef.current) {
+      if (dirty) needsResaveRef.current = true;
+      return;
+    }
+
+    if (!dirty) return;
+
     const timer = setTimeout(async () => {
-      await updateNote.mutateAsync({
-        title: title.trim() || "Untitled note",
-        content: editorContent,
-        contentText,
-        folderId: folderId || null,
-      });
-      setLastSavedAt(new Date());
-      setDirty(false);
+      isSavingRef.current = true;
+      needsResaveRef.current = false;
+      try {
+        await updateNote.mutateAsync({
+          title: title.trim() || "Untitled note",
+          content: editorContent,
+          contentText,
+          folderId: folderId || null,
+        });
+        setLastSavedAt(new Date());
+        setDirty(false);
+      } finally {
+        isSavingRef.current = false;
+        if (needsResaveRef.current) {
+          setDirty(true);
+        }
+      }
     }, 1000);
     return () => clearTimeout(timer);
   }, [
@@ -376,6 +396,25 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
                   setTitle(e.target.value);
                   setDirty(true);
                 }}
+                onBlur={async () => {
+                  if (isSavingRef.current || !editorContent) return;
+                  isSavingRef.current = true;
+                  needsResaveRef.current = false;
+                  try {
+                    await updateNote.mutateAsync({
+                      title: title.trim() || "Untitled note",
+                      content: editorContent,
+                      contentText,
+                      folderId: folderId || null,
+                    });
+                    setLastSavedAt(new Date());
+                    setDirty(false);
+                  } finally {
+                    isSavingRef.current = false;
+                    if (needsResaveRef.current) setDirty(true);
+                  }
+                }}
+                readOnly={updateNote.isPending}
                 placeholder="Untitled note"
                 className="w-full bg-transparent text-4xl md:text-5xl font-bold placeholder:text-muted-foreground/10 focus:outline-none tracking-tight leading-tight mb-8"
               />

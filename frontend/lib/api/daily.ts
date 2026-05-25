@@ -43,6 +43,29 @@ export type HabitLogItem = {
   completed: boolean;
 };
 
+export type PomodoroSession = {
+  id: string;
+  user_id: string;
+  start_time: string;
+  end_time: string | null;
+  duration: number;
+  completed: boolean;
+  type: string;
+  log_id: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PomodoroSubject = {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export function getDailyLogs(
   accessToken: string,
   monthStart: string,
@@ -205,4 +228,54 @@ export function toggleHabitLog(
     headers: { Authorization: `Bearer ${accessToken}` },
     body: { date, completed },
   });
+}
+
+// ── Pomodoro ────────────────────────────────────────────
+
+export function getSubjects(accessToken: string) {
+  return apiRequest<{ subjects: PomodoroSubject[] }>("/api/daily/subjects", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function createSubject(accessToken: string, name: string, color?: string) {
+  return apiRequest<{ subject: PomodoroSubject }>("/api/daily/subjects", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: { name, color },
+  });
+}
+
+export function deleteSubject(accessToken: string, subjectId: string) {
+  return apiRequest<{ success: boolean }>(`/api/daily/subjects/${subjectId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export function logPomodoroSession(
+  accessToken: string,
+  duration: number,
+  type: string,
+  startTime: string,
+  endTime: string,
+  subjectId?: string,
+  actualDurationSeconds?: number,
+  logId?: string,
+  notes?: string,
+) {
+  return apiRequest<{ session: PomodoroSession }>("/api/daily/pomodoro", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: { duration, type, startTime, endTime, subjectId, actualDurationSeconds, logId, notes, completed: true },
+  });
+}
+
+export function getPomodoroSessions(accessToken: string, date: string) {
+  return apiRequest<{ sessions: PomodoroSession[] }>(
+    `/api/daily/pomodoro?date=${date}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 }

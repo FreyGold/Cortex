@@ -177,6 +177,67 @@ export class DailyController {
     }
   }
 
+  // --- Subjects Endpoints ---
+
+  static async getSubjects(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const subjects = await service.getSubjects(req.user!.id);
+      return res.status(200).json({ subjects });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async createSubject(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const { name, color } = req.body;
+      if (!name) return res.status(400).json({ error: "Name is required" });
+      const subject = await service.createSubject(req.user!.id, name, color);
+      return res.status(201).json({ subject });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async deleteSubject(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const { subjectId } = req.params;
+      await service.deleteSubject(req.user!.id, subjectId as string);
+      return res.status(204).send();
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // --- Pomodoro Endpoints ---
+
+  static async logPomodoroSession(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const { duration, type, startTime, endTime, subjectId, actualDurationSeconds, logId, notes } = req.body;
+      if (!duration || !type || !startTime || !endTime) return res.status(400).json({ error: "duration, type, startTime, and endTime are required" });
+      const session = await service.logPomodoroSession(req.user!.id, duration, type, startTime, endTime, subjectId, actualDurationSeconds, logId, notes);
+      return res.status(201).json({ session });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getPomodoroSessions(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const { date } = req.query;
+      if (!date) return res.status(400).json({ error: "Date is required" });
+      const sessions = await service.getPomodoroSessions(req.user!.id, date as string);
+      return res.status(200).json({ sessions });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   // --- AI Endpoints ---
   static async searchDailyLogs(req: Request, res: Response) {
     try {

@@ -104,6 +104,30 @@ export class DailyService {
     return this.repo.getDailyStats(userId);
   }
 
+  // --- Pomodoro Subjects ---
+
+  async getSubjects(userId: string) {
+    return this.repo.getSubjects(userId);
+  }
+
+  async createSubject(userId: string, name: string, color?: string) {
+    return this.repo.createSubject(userId, name, color);
+  }
+
+  async deleteSubject(userId: string, subjectId: string) {
+    await this.repo.deleteSubject(userId, subjectId);
+  }
+
+  // --- Pomodoro Methods ---
+
+  async logPomodoroSession(userId: string, duration: number, type: string, startTime: string, endTime: string, subjectId?: string, actualDurationSeconds?: number, logId?: string, notes?: string) {
+    return this.repo.logPomodoroSession(userId, duration, type, startTime, endTime, subjectId, actualDurationSeconds, logId, notes);
+  }
+
+  async getPomodoroSessions(userId: string, date: string) {
+    return this.repo.getPomodoroSessions(userId, date);
+  }
+
   // --- AI Methods ---
 
   async searchDailyLogs(userId: string, query: string, threshold = 0.5, limit = 10) {

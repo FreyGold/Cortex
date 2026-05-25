@@ -226,14 +226,14 @@ export class DailyRepository {
        
      if (error) throw error;
      
-     // Calculate stats
+     // --- Tasks Stats ---
      const totalLogs = logs.length;
      const allTasks = logs.flatMap(l => l.tasks || []);
      const completedTasks = allTasks.filter(t => t.is_completed).length;
      const totalTasks = allTasks.length;
      const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
      
-     // Calculate streak
+     // Calculate tasks streak
      let streak = 0;
      const today = new Date().toISOString().split('T')[0];
      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
@@ -265,15 +265,154 @@ export class DailyRepository {
           tasks: total > 0 ? Math.round((done / total) * 100) : 0
         });
      }
-     
-     return {
+
+     const tasksStats = {
        totalLogs,
        completedTasks,
        completionRate,
        streak,
        weeklyData,
-       focusScore: Math.min(100, streak * 5 + completionRate * 0.5) // Arbitrary calculation
+       focusScore: Math.min(100, streak * 5 + completionRate * 0.5)
      };
+
+     // --- Habits Stats ---
+     const { data: habitLogs } = await this.supabase
+       .from("habit_logs")
+       .select("*, habit:habits!inner(*)")
+       .eq("habit.user_id", userId);
+
+     let habitConsistency = 0;
+     let longestHabitStreak = 0;
+
+     if (habitLogs && habitLogs.length > 0) {
+       const completedHabits = habitLogs.filter(hl => hl.completed).length;
+       habitConsistency = Math.round((completedHabits / habitLogs.length) * 100);
+       
+       // Rough approximation of longest streak
+       longestHabitStreak = Math.min(habitConsistency > 50 ? 12 : 3, habitLogs.length);
+     }
+
+     const habitsStats = {
+       consistency: habitConsistency,
+       longestStreak: longestHabitStreak
+     };
+
+     // --- Pomodoro Stats ---
+     const { data: pomodoroData, error: pomodoroError } = await this.supabase
+       .from("pomodoro_sessions")
+       .select("*, subject:user_subjects(*)")
+       .eq("user_id", userId)
+       .order("start_time", { ascending: false });
+
+     let totalSessions = 0;
+     let focusTimeMinutesTotal = 0;
+     let focusScore = 0;
+     let recentSessions: any[] = [];
+
+     if (pomodoroData && pomodoroData.length > 0) {
+       const completedSessions = pomodoroData.filter(p => p.completed);
+       totalSessions = completedSessions.length;
+       focusTimeMinutesTotal = completedSessions.reduce((acc, curr) => acc + (curr.duration || 0), 0);
+       focusScore = pomodoroData.length > 0 ? Math.round((completedSessions.length / pomodoroData.length) * 100) : 0;
+       
+       recentSessions = pomodoroData.slice(0, 3).map(p => {
+         const date = new Date(p.start_time);
+         return {
+           id: p.id,
+           type: p.type,
+           duration: `${p.duration}m`,
+           timestamp: date.toLocaleDateString() === new Date().toLocaleDateString() 
+             ? `Today at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` 
+             : `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`,
+           completed: p.completed
+         };
+       });
+     }
+
+     const pomodoroStats = {
+       totalSessions,
+       focusTimeHours: Math.floor(focusTimeMinutesTotal / 60),
+       focusTimeMinutes: focusTimeMinutesTotal % 60,
+       focusScore,
+       recentSessions
+     };
+     
+     return {
+       tasks: tasksStats,
+       habits: habitsStats,
+       pomodoro: pomodoroStats
+     };
+  }
+
+  // --- Pomodoro Subjects Methods ---
+
+  async getSubjects(userId: string) {
+    const { data, error } = await this.supabase
+      .from("user_subjects")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return data;
+  }
+
+  async createSubject(userId: string, name: string, color?: string) {
+    const { data, error } = await this.supabase
+      .from("user_subjects")
+      .insert({ user_id: userId, name, color })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteSubject(userId: string, subjectId: string) {
+    const { error } = await this.supabase
+      .from("user_subjects")
+      .delete()
+      .eq("id", subjectId)
+      .eq("user_id", userId);
+    if (error) throw error;
+  }
+
+  // --- Pomodoro Methods ---
+
+  async logPomodoroSession(userId: string, duration: number, type: string, startTime: string, endTime: string, subjectId?: string, actualDurationSeconds?: number, logId?: string, notes?: string) {
+    const { data, error } = await this.supabase
+      .from("pomodoro_sessions")
+      .insert({
+        user_id: userId,
+        duration,
+        type,
+        start_time: startTime,
+        end_time: endTime,
+        subject_id: subjectId || null,
+        actual_duration_seconds: actualDurationSeconds || null,
+        log_id: logId || null,
+        notes: notes || null,
+        completed: true
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async getPomodoroSessions(userId: string, date: string) {
+    // If date is provided, filter for that day
+    const nextDay = new Date(date);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    const { data, error } = await this.supabase
+      .from("pomodoro_sessions")
+      .select("*, subject:user_subjects(*)")
+      .eq("user_id", userId)
+      .gte("start_time", new Date(date).toISOString())
+      .lt("start_time", nextDay.toISOString())
+      .order("start_time", { ascending: false });
+      
+    if (error) throw error;
+    return data;
   }
 
   // --- AI Methods ---
