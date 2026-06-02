@@ -89,17 +89,17 @@ export default function DailyCalendarPage() {
           <div className="flex items-center justify-between shrink-0">
             <h1 className="text-xl font-bold tracking-tight">Daily</h1>
             <Tabs value={activeTab} onValueChange={handleTabChange}>
-              <TabsList className="h-9 bg-muted/50 p-1">
+              <TabsList className="h-10 bg-muted/40 p-1 rounded-full border border-border/5 shadow-inner">
                 <TabsTrigger 
                   value="calendar" 
-                  className="gap-2 text-[12px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="px-4 rounded-full gap-2 text-[12px] font-bold uppercase tracking-widest data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-300"
                 >
                   <CalendarIcon className="size-3.5" />
                   Calendar
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pomodoro" 
-                  className="gap-2 text-[12px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="px-4 rounded-full gap-2 text-[12px] font-bold uppercase tracking-widest data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-300"
                 >
                   <Target className="size-3.5" />
                   Pomodoro

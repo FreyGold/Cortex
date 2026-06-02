@@ -26,7 +26,7 @@ interface EditorHeaderProps {
   title?: string;
 }
 
-export function EditorHeader({
+function EditorHeader({
   lastSaved,
   onExport,
   onSave,

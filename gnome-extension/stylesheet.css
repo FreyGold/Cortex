@@ -1,0 +1,614 @@
+/* ── Panel ─────────────────────────────────────────────── */
+
+.panel-status-menu-box {
+  spacing: 4px;
+}
+
+.system-status-icon {
+  icon-size: 16px;
+}
+
+.tmt-panel {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  padding: 0 4px;
+  text-align: center;
+}
+
+/* ── Popup shell ────────────────────────────────────────── */
+
+.tmt-popup {
+  padding: 0;
+  background: rgba(18, 18, 22, 0.98);
+  border-radius: 12px;
+  border: 1px solid rgba(63, 63, 70, 0.5);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.tmt-bar {
+  spacing: 0;
+  border-bottom: 1px solid rgba(63, 63, 70, 0.5);
+  padding: 0 6px;
+}
+
+.tmt-tab {
+  padding: 9px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #71717a;
+  border-bottom: 2px solid transparent;
+  transition: all 100ms;
+}
+
+.tmt-tab:hover {
+  color: #d4d4d8;
+}
+
+.tmt-tab.on {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+/* ── Content area ──────────────────────────────────────── */
+
+.tmt-cnt {
+  padding: 14px;
+  spacing: 12px;
+}
+
+.tmt-soc-cnt {
+  padding: 10px 14px 14px;
+  spacing: 14px;
+}
+
+.tmt-scroll {
+  max-height: 440px;
+}
+
+.tmt-emp {
+  font-size: 12px;
+  color: #52525b;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.tmt-err {
+  color: #ef4444;
+}
+
+/* ── Timer ──────────────────────────────────────────────── */
+
+.tmt-mb {
+  spacing: 4px;
+  background: rgba(39, 39, 42, 0.7);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.tmt-mbtn {
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #a1a1aa;
+  text-align: center;
+}
+
+.tmt-mbtn.on {
+  background: rgba(24, 24, 27, 0.95);
+  color: #f4f4f5;
+}
+
+.tmt-mbtn:hover:not(.on) {
+  color: #d4d4d8;
+}
+
+.tmt-display {
+  font-size: 48px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  text-align: center;
+  color: #f4f4f5;
+  padding: 10px 0 6px;
+  min-width: 4.5ch;
+}
+
+.tmt-stq {
+  justify-content: center;
+}
+
+.tmt-stql {
+  font-size: 11px;
+  color: #52525b;
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+
+.tmt-act {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  min-height: 34px;
+}
+
+.tmt-act.go {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.tmt-act.go:hover {
+  background: #2563eb;
+}
+
+.tmt-act.st {
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.tmt-act.st:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.tmt-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  min-height: 28px;
+}
+
+.tmt-btn.go {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.tmt-btn.go:hover {
+  background: #2563eb;
+}
+
+.tmt-btn.st {
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.tmt-btn.st:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.tmt-sbtn {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  min-height: 24px;
+}
+
+.tmt-sbtn.go {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.tmt-sbtn.go:hover {
+  background: #2563eb;
+}
+
+.tmt-sbtn.st {
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.tmt-sbtn.st:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ── Input ──────────────────────────────────────────────── */
+
+.tmt-in {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(39, 39, 42, 0.6);
+  color: #f4f4f5;
+  font-size: 12px;
+  selection-background-color: #3b82f6;
+  selected-color: #fff;
+  caret-color: #60a5fa;
+}
+
+.tmt-in:focus {
+  background: rgba(39, 39, 42, 0.85);
+}
+
+/* ── Login Screen ────────────────────────────────────────── */
+
+.tmt-login {
+  spacing: 16px;
+  padding: 28px 24px;
+}
+
+.tmt-login-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #f4f4f5;
+  text-align: center;
+}
+
+.tmt-login-sub {
+  font-size: 12px;
+  color: #71717a;
+  text-align: center;
+}
+
+.tmt-login-error {
+  font-size: 11px;
+  color: #ef4444;
+  text-align: center;
+}
+
+.tmt-link-btn {
+  font-size: 11px;
+  color: #60a5fa;
+  background: transparent;
+  border: none;
+  text-align: center;
+}
+
+.tmt-link-btn:hover {
+  color: #93bbfd;
+}
+
+/* ── Subject chips ───────────────────────────────────────── */
+
+.tmt-subject-row {
+  spacing: 6px;
+}
+
+.tmt-chip-row {
+  spacing: 4px;
+  flex-wrap: wrap;
+}
+
+.tmt-chip {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  background: rgba(59, 130, 246, 0.15);
+  color: #93bbfd;
+}
+
+.tmt-chip:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+/* ── History subject ─────────────────────────────────────── */
+
+.tmt-logsub {
+  font-size: 10px;
+  color: #60a5fa;
+  font-weight: 500;
+}
+
+/* ── Sections ────────────────────────────────────────────── */
+
+.tmt-section {
+  spacing: 6px;
+}
+
+.tmt-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 0 4px;
+}
+
+.tmt-row {
+  spacing: 8px;
+  padding: 5px 8px;
+  background: rgba(39, 39, 42, 0.35);
+  border-radius: 6px;
+}
+
+/* ── Duration grid ───────────────────────────────────────── */
+
+.tmt-dur-grid {
+  spacing: 8px;
+}
+
+.tmt-dur-item {
+  spacing: 4px;
+}
+
+.tmt-dur-label {
+  font-size: 10px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+.tmt-dur-in {
+  width: 60px;
+  text-align: center;
+}
+
+/* ── Blocker domain name ─────────────────────────────────── */
+
+.tmt-dname {
+  font-size: 11px;
+  color: #d4d4d8;
+}
+
+/* ── Social sub-tabs ────────────────────────────────────── */
+
+.tmt-sbar {
+  spacing: 0;
+  border-bottom: 1px solid rgba(63, 63, 70, 0.4);
+  padding: 0 6px;
+  background: rgba(24, 24, 27, 0.5);
+}
+
+.tmt-stab {
+  padding: 7px 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #71717a;
+  border-bottom: 2px solid transparent;
+  text-align: center;
+}
+
+.tmt-stab:hover {
+  color: #d4d4d8;
+}
+
+.tmt-stab.on {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+}
+
+/* ── Log sub-tab ───────────────────────────────────────── */
+
+.tmt-logh {
+  spacing: 8px;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.tmt-sh {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f4f4f5;
+}
+
+.tmt-sh2 {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a1a1aa;
+  padding: 6px 0 4px;
+  border-bottom: 1px solid rgba(63, 63, 70, 0.3);
+  margin-bottom: 2px;
+}
+
+.tmt-logo {
+  font-size: 12px;
+  color: #a1a1aa;
+  font-variant-numeric: tabular-nums;
+}
+
+.tmt-logls {
+  spacing: 3px;
+}
+
+.tmt-logi {
+  spacing: 8px;
+  padding: 5px 8px;
+  background: rgba(39, 39, 42, 0.4);
+  border-radius: 6px;
+}
+
+.tmt-logty {
+  font-size: 11px;
+  color: #a1a1aa;
+  min-width: 5em;
+}
+
+.tmt-logtm {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #f4f4f5;
+  min-width: 4em;
+}
+
+.tmt-logrg {
+  font-size: 11px;
+  color: #52525b;
+}
+
+/* ── Groups sub-tab ────────────────────────────────────── */
+
+.tmt-slist {
+  spacing: 6px;
+}
+
+.tmt-grp {
+  spacing: 2px;
+  background: rgba(39, 39, 42, 0.35);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.tmt-grph {
+  spacing: 8px;
+  justify-content: space-between;
+}
+
+.tmt-grpt {
+  font-size: 12px;
+  font-weight: 500;
+  color: #f4f4f5;
+}
+
+.tmt-grpc {
+  font-size: 11px;
+  color: #60a5fa;
+  font-weight: 500;
+  min-width: 2ch;
+  text-align: right;
+}
+
+.tmt-grpd {
+  spacing: 4px;
+  padding: 4px 0 2px 8px;
+  border-left: 2px solid rgba(63, 63, 70, 0.4);
+  margin: 4px 0 2px 2px;
+}
+
+/* ── Friends sub-tab ───────────────────────────────────── */
+
+.tmt-frow {
+  spacing: 6px;
+  padding: 5px 8px;
+  background: rgba(39, 39, 42, 0.35);
+  border-radius: 6px;
+}
+
+.tmt-frn {
+  font-size: 11px;
+  font-weight: 500;
+  color: #d4d4d8;
+}
+
+.tmt-frp {
+  font-size: 10px;
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+/* ── Leaderboard ────────────────────────────────────────── */
+
+.tmt-lrow {
+  spacing: 8px;
+  padding: 5px 8px;
+  background: rgba(39, 39, 42, 0.35);
+  border-radius: 6px;
+}
+
+.tmt-lrow.top {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.tmt-lr {
+  font-size: 11px;
+  font-weight: 600;
+  color: #71717a;
+  min-width: 2.5ch;
+  text-align: center;
+}
+
+.tmt-lrn {
+  font-size: 11px;
+  font-weight: 500;
+  color: #d4d4d8;
+}
+
+.tmt-lrt {
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #a1a1aa;
+  text-align: right;
+}
+
+/* ── Members ────────────────────────────────────────────── */
+
+.tmt-mrow {
+  spacing: 8px;
+  padding: 3px 6px;
+}
+
+.tmt-mrn {
+  font-size: 11px;
+  color: #d4d4d8;
+}
+
+.tmt-mrr {
+  font-size: 10px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+/* ── Blocker ────────────────────────────────────────────── */
+
+.tmt-blh {
+  spacing: 8px;
+  justify-content: space-between;
+}
+
+.tmt-bd {
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: rgba(39, 39, 42, 0.7);
+  color: #71717a;
+  font-weight: 500;
+}
+
+.tmt-bd.on {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+
+.tmt-desc {
+  font-size: 11px;
+  color: #52525b;
+}
+
+.tmt-glist {
+  spacing: 3px;
+}
+
+.tmt-drow {
+  spacing: 8px;
+  padding: 5px 8px;
+  background: rgba(39, 39, 42, 0.4);
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.tmt-rm {
+  font-size: 11px;
+  color: #ef4444;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.tmt-rm:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* ── Add row ────────────────────────────────────────────── */
+
+.tmt-ar {
+  spacing: 6px;
+}
+
+/* ── Settings ───────────────────────────────────────────── */
+
+.tmt-userbox {
+  padding: 8px 0;
+  justify-content: center;
+}
+
+.tmt-user {
+  font-size: 12px;
+  color: #a1a1aa;
+}

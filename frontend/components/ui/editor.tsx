@@ -116,7 +116,7 @@ export const Editor = ({
 
 Editor.displayName = "Editor";
 
-export function EditorView({
+function EditorView({
   className,
   variant,
   ...props

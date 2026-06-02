@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function useDisclosure({
+function useDisclosure({
   defaultIsOpen = false,
 }: {
   defaultIsOpen?: boolean;
@@ -50,7 +50,7 @@ export const useLocalStorage = <T>(
   return [storedValue, setValue];
 };
 
-export function useMediaQuery(query: string): boolean {
+function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {

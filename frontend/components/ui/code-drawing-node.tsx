@@ -123,7 +123,7 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
   };
 }
 
-export function CodeDrawingElement(
+function CodeDrawingElement(
   props: PlateElementProps<TCodeDrawingElement>,
 ) {
   const isMobile = useIsMobile();

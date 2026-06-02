@@ -30,4 +30,3 @@ function Switch({
   );
 }
 
-export { Switch };

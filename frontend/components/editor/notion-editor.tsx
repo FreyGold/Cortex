@@ -22,7 +22,7 @@ interface NotionEditorProps {
   hideFooter?: boolean;
 }
 
-export function NotionEditor({
+function NotionEditor({
   content = "",
   onChange,
   className,

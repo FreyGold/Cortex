@@ -22,7 +22,27 @@ import {
   logPomodoroSession,
   getSubjects,
   createSubject,
-  deleteSubject
+  deleteSubject,
+  getGroups,
+  createGroup,
+  deleteGroup,
+  addGroupMember,
+  removeGroupMember,
+  getFriends,
+  getFriendRequests,
+  sendFriendRequest,
+  respondToFriendRequest,
+  removeFriend,
+  getLeaderboard,
+  getGroupLeaderboard,
+  getFriendsLeaderboard,
+  getUserMonthlyLog,
+  getUserYearlyLog,
+  createGroupInvitation,
+  getGroupInvitations,
+  respondToGroupInvitation,
+  joinGroupByCode,
+  getGroupByInviteCode,
 } from "@/lib/api/daily";
 import { createClient } from "@/lib/supabase/client";
 
@@ -213,7 +233,7 @@ export function useCreateHabit() {
   });
 }
 
-export function useUpdateHabit() {
+function useUpdateHabit() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -318,6 +338,9 @@ export function useLogPomodoroSession() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pomodoro-sessions"] });
       queryClient.invalidateQueries({ queryKey: ["daily-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["friends-leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["group-leaderboard"] });
     },
   });
 }
@@ -342,6 +365,247 @@ export function useCreateSubject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-subjects"] });
     },
+  });
+}
+
+// ── Social Hooks ──────────────────────────────────────────
+
+export function useGroups() {
+  return useQuery({
+    queryKey: ["groups"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getGroups(token);
+    },
+  });
+}
+
+export function useCreateGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ name, description }: { name: string; description?: string }) => {
+      const token = await getAccessToken();
+      return createGroup(token, name, description);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
+export function useDeleteGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (groupId: string) => {
+      const token = await getAccessToken();
+      return deleteGroup(token, groupId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
+function useAddGroupMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, email }: { groupId: string; email: string }) => {
+      const token = await getAccessToken();
+      return addGroupMember(token, groupId, email);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
+export function useRemoveGroupMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, memberUserId }: { groupId: string; memberUserId: string }) => {
+      const token = await getAccessToken();
+      return removeGroupMember(token, groupId, memberUserId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
+export function useCreateGroupInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, email }: { groupId: string; email: string }) => {
+      const token = await getAccessToken();
+      return createGroupInvitation(token, groupId, email);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
+function useGetGroupInvitations(groupId: string | null) {
+  return useQuery({
+    queryKey: ["group-invitations", groupId],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getGroupInvitations(token, groupId!);
+    },
+    enabled: !!groupId,
+  });
+}
+
+function useRespondToGroupInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ invitationId, status }: { invitationId: string; status: "accepted" | "rejected" }) => {
+      const token = await getAccessToken();
+      return respondToGroupInvitation(token, invitationId, status);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
+export function useJoinGroupByCode() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (code: string) => {
+      const token = await getAccessToken();
+      return joinGroupByCode(token, code);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    },
+  });
+}
+
+function useGetGroupByInviteCode(code: string | null) {
+  return useQuery({
+    queryKey: ["group-lookup", code],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getGroupByInviteCode(token, code!);
+    },
+    enabled: !!code,
+  });
+}
+
+export function useFriends() {
+  return useQuery({
+    queryKey: ["friends"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getFriends(token);
+    },
+  });
+}
+
+export function useFriendRequests() {
+  return useQuery({
+    queryKey: ["friend-requests"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getFriendRequests(token);
+    },
+  });
+}
+
+export function useSendFriendRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const token = await getAccessToken();
+      return sendFriendRequest(token, email);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+    },
+  });
+}
+
+export function useRespondToFriendRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ requestId, status }: { requestId: string; status: "accepted" | "rejected" }) => {
+      const token = await getAccessToken();
+      return respondToFriendRequest(token, requestId, status);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+    },
+  });
+}
+
+export function useRemoveFriend() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (friendId: string) => {
+      const token = await getAccessToken();
+      return removeFriend(token, friendId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friends"] });
+    },
+  });
+}
+
+export function useLeaderboard() {
+  return useQuery({
+    queryKey: ["leaderboard"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getLeaderboard(token);
+    },
+    refetchInterval: 60_000,
+  });
+}
+
+export function useGroupLeaderboard(groupId: string | null) {
+  return useQuery({
+    queryKey: ["group-leaderboard", groupId],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getGroupLeaderboard(token, groupId!);
+    },
+    enabled: !!groupId,
+    refetchInterval: 60_000,
+  });
+}
+
+export function useFriendsLeaderboard() {
+  return useQuery({
+    queryKey: ["friends-leaderboard"],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getFriendsLeaderboard(token);
+    },
+    refetchInterval: 60_000,
+  });
+}
+
+export function useUserMonthlyLog(userId: string, year: number, month: number) {
+  return useQuery({
+    queryKey: ["user-monthly-log", userId, year, month],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getUserMonthlyLog(token, userId, year, month);
+    },
+    enabled: !!userId && !!year && !!month,
+  });
+}
+
+export function useUserYearlyLog(userId: string, year: number) {
+  return useQuery({
+    queryKey: ["user-yearly-log", userId, year],
+    queryFn: async () => {
+      const token = await getAccessToken();
+      return getUserYearlyLog(token, userId, year);
+    },
+    enabled: !!userId && !!year,
   });
 }
 

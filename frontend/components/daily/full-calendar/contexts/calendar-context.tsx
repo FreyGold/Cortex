@@ -46,10 +46,10 @@ interface CalendarSettings {
   agendaModeGroupBy: "date" | "color";
 }
 
-export const MIN_SCROLL_HOUR = 0;
+const MIN_SCROLL_HOUR = 0;
 // With a fixed calendar height, having 16h on top
 // of the frame allows to see the rest of the day
-export const MAX_SCROLL_HOUR = 16;
+const MAX_SCROLL_HOUR = 16;
 
 const DEFAULT_SETTINGS: CalendarSettings = {
   badgeVariant: "colored",

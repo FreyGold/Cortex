@@ -4,7 +4,7 @@ import type { TextStreamPart, ToolSet } from "ai";
  * Transform chunks to ensure valid Markdown reaches the editor.
  * Line-buffers all content. Tables are buffered completely.
  */
-export const markdownJoinerTransform =
+const markdownJoinerTransform =
   <TOOLS extends ToolSet>() =>
   () => {
     const joiner = new MarkdownJoiner();
@@ -52,7 +52,7 @@ export const markdownJoinerTransform =
     });
   };
 
-export class MarkdownJoiner {
+class MarkdownJoiner {
   processText(text: string): string {
     return text;
   }

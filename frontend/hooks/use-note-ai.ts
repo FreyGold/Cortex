@@ -34,7 +34,7 @@ export function useEmbedNote() {
   });
 }
 
-export function useSemanticSearch() {
+function useSemanticSearch() {
   return useMutation({
     mutationFn: async (input: {
       query: string;
@@ -140,7 +140,7 @@ export function useGenerateSummary(noteId: string) {
   });
 }
 
-export function useNoteAITools(noteId: string) {
+function useNoteAITools(noteId: string) {
   return {
     summarize: useGenerateSummary(noteId),
     suggestTags: useSuggestTags(noteId),
@@ -156,7 +156,7 @@ export function useSuggestTags(noteId: string) {
   });
 }
 
-export function useGeneralAiAsk() {
+function useGeneralAiAsk() {
   return useMutation({
     mutationFn: async (question: string) => {
       const token = await getAuthToken();

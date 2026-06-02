@@ -51,7 +51,7 @@ const mediaCategoryIcons: Record<AttachmentMediaCategory, typeof ImageIcon> = {
 // Utility Functions
 // ============================================================================
 
-export const getMediaCategory = (
+const getMediaCategory = (
   data: AttachmentData,
 ): AttachmentMediaCategory => {
   if (data.type === "source-document") {
@@ -76,7 +76,7 @@ export const getMediaCategory = (
   return "unknown";
 };
 
-export const getAttachmentLabel = (data: AttachmentData): string => {
+const getAttachmentLabel = (data: AttachmentData): string => {
   if (data.type === "source-document") {
     return data.title || data.filename || "Source";
   }
@@ -131,10 +131,10 @@ const AttachmentContext = createContext<AttachmentContextValue | null>(null);
 // Hooks
 // ============================================================================
 
-export const useAttachmentsContext = () =>
+const useAttachmentsContext = () =>
   useContext(AttachmentsContext) ?? { variant: "grid" as const };
 
-export const useAttachmentContext = () => {
+const useAttachmentContext = () => {
   const ctx = useContext(AttachmentContext);
   if (!ctx) {
     throw new Error("Attachment components must be used within <Attachment>");
@@ -283,7 +283,7 @@ export type AttachmentInfoProps = HTMLAttributes<HTMLDivElement> & {
   showMediaType?: boolean;
 };
 
-export const AttachmentInfo = ({
+const AttachmentInfo = ({
   showMediaType = false,
   className,
   ...props
@@ -371,7 +371,7 @@ export const AttachmentRemove = ({
 
 export type AttachmentHoverCardProps = ComponentProps<typeof HoverCard>;
 
-export const AttachmentHoverCard = ({
+const AttachmentHoverCard = ({
   openDelay = 0,
   closeDelay = 0,
   ...props
@@ -383,7 +383,7 @@ export type AttachmentHoverCardTriggerProps = ComponentProps<
   typeof HoverCardTrigger
 >;
 
-export const AttachmentHoverCardTrigger = (
+const AttachmentHoverCardTrigger = (
   props: AttachmentHoverCardTriggerProps,
 ) => <HoverCardTrigger {...props} />;
 
@@ -391,7 +391,7 @@ export type AttachmentHoverCardContentProps = ComponentProps<
   typeof HoverCardContent
 >;
 
-export const AttachmentHoverCardContent = ({
+const AttachmentHoverCardContent = ({
   align = "start",
   className,
   ...props
@@ -409,7 +409,7 @@ export const AttachmentHoverCardContent = ({
 
 export type AttachmentEmptyProps = HTMLAttributes<HTMLDivElement>;
 
-export const AttachmentEmpty = ({
+const AttachmentEmpty = ({
   className,
   children,
   ...props

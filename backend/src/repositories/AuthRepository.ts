@@ -10,4 +10,8 @@ export class AuthRepository {
   async signIn(payload: any) {
     return this.supabase.auth.signInWithPassword(payload);
   }
+
+  async refresh(refreshToken: string) {
+    return this.supabase.auth.refreshSession({ refresh_token: refreshToken });
+  }
 }

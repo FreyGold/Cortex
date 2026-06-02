@@ -134,4 +134,112 @@ export class DailyService {
     const embedding = await embedText(`query: ${query.trim()}`);
     return this.repo.searchDailyLogs(embedding, userId, threshold, limit);
   }
+
+  // ── Groups ───────────────────────────────────────────
+
+  async getGroups(userId: string) {
+    return this.repo.getGroups(userId);
+  }
+
+  async createGroup(userId: string, name: string, description?: string) {
+    if (!name?.trim()) throw new Error("Group name is required");
+    return this.repo.createGroup(userId, name.trim(), description?.trim());
+  }
+
+  async updateGroup(userId: string, groupId: string, payload: Record<string, any>) {
+    await this.repo.updateGroup(userId, groupId, payload);
+  }
+
+  async deleteGroup(userId: string, groupId: string) {
+    await this.repo.deleteGroup(userId, groupId);
+  }
+
+  async getGroupMembers(groupId: string) {
+    return this.repo.getGroupMembers(groupId);
+  }
+
+  async addGroupMember(userId: string, groupId: string, memberUserId: string) {
+    return this.repo.addGroupMember(userId, groupId, memberUserId);
+  }
+
+  async addGroupMemberByEmail(userId: string, groupId: string, email: string) {
+    const profile = await this.repo.getProfilesByEmail(email);
+    if (!profile) throw new Error("User with this email not found");
+    return this.repo.addGroupMember(userId, groupId, profile.id);
+  }
+
+  async removeGroupMember(groupId: string, memberUserId: string) {
+    await this.repo.removeGroupMember(groupId, memberUserId);
+  }
+
+  async createGroupInvitation(userId: string, groupId: string, email: string) {
+    if (!email?.trim()) throw new Error("Email is required");
+    return this.repo.createGroupInvitation(userId, groupId, email.trim().toLowerCase());
+  }
+
+  async getGroupInvitations(groupId: string) {
+    return this.repo.getGroupInvitations(groupId);
+  }
+
+  async respondToGroupInvitation(invitationId: string, userId: string, status: "accepted" | "rejected") {
+    await this.repo.respondToGroupInvitation(invitationId, userId, status);
+  }
+
+  async joinGroupByCode(userId: string, code: string) {
+    if (!code?.trim()) throw new Error("Invite code is required");
+    return this.repo.joinGroupByCode(userId, code.trim());
+  }
+
+  async getGroupByInviteCode(code: string) {
+    return this.repo.getGroupByInviteCode(code);
+  }
+
+  // ── Friends ──────────────────────────────────────────
+
+  async getFriends(userId: string) {
+    return this.repo.getFriends(userId);
+  }
+
+  async getFriendRequests(userId: string) {
+    return this.repo.getFriendRequests(userId);
+  }
+
+  async sendFriendRequest(userId: string, recipientEmail: string) {
+    if (!recipientEmail?.trim()) throw new Error("Recipient email is required");
+    return this.repo.sendFriendRequest(userId, recipientEmail.trim().toLowerCase());
+  }
+
+  async respondToFriendRequest(requestId: string, userId: string, status: "accepted" | "rejected") {
+    await this.repo.respondToFriendRequest(requestId, userId, status);
+  }
+
+  async cancelFriendRequest(requestId: string, userId: string) {
+    await this.repo.cancelFriendRequest(requestId, userId);
+  }
+
+  async removeFriend(userId: string, friendId: string) {
+    await this.repo.removeFriend(userId, friendId);
+  }
+
+  // ── Leaderboard ──────────────────────────────────────
+
+  async getLeaderboard() {
+    return this.repo.getLeaderboard();
+  }
+
+  async getGroupLeaderboard(groupId: string) {
+    return this.repo.getGroupLeaderboard(groupId);
+  }
+
+  async getFriendsLeaderboard(userId: string) {
+    return this.repo.getFriendsLeaderboard(userId);
+  }
+
+  async getUserMonthlyLog(targetUserId: string, year: number, month: number) {
+    return this.repo.getUserMonthlyLog(targetUserId, year, month);
+  }
+
+  async getUserYearlyLog(targetUserId: string, year: number) {
+    return this.repo.getUserYearlyLog(targetUserId, year);
+  }
 }

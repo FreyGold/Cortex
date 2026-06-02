@@ -417,15 +417,326 @@ export class DailyRepository {
 
   // --- AI Methods ---
   
-  async searchDailyLogs(embedding: number[], userId: string, threshold: number, limit: number) {
-     const { data, error } = await this.supabase.rpc("search_daily_logs", {
-       query_embedding: embedding,
-       user_id_filter: userId,
-       match_threshold: threshold,
-       match_count: limit
-     });
-     
-     if (error) throw error;
-     return data;
-  }
+   async searchDailyLogs(embedding: number[], userId: string, threshold: number, limit: number) {
+      const { data, error } = await this.supabase.rpc("search_daily_logs", {
+        query_embedding: embedding,
+        user_id_filter: userId,
+        match_threshold: threshold,
+        match_count: limit
+      });
+      
+      if (error) throw error;
+      return data;
+   }
+
+   // ── Groups Methods ─────────────────────────────────────
+
+   async getGroups(userId: string) {
+      const { data, error } = await this.supabase
+        .from("groups")
+        .select("*, group_members(*, profile:profiles(id, email, name))");
+      if (error) throw error;
+      return data;
+   }
+
+   async createGroup(userId: string, name: string, description?: string) {
+      const { data, error } = await this.supabase
+        .from("groups")
+        .insert({ name, description, created_by: userId })
+        .select()
+        .single();
+      if (error) throw error;
+
+      // Auto-add creator as admin member
+      const { error: memberError } = await this.supabase
+        .from("group_members")
+        .insert({ group_id: data.id, user_id: userId, role: "admin" });
+      if (memberError) throw memberError;
+
+      return data;
+   }
+
+   async updateGroup(userId: string, groupId: string, payload: Record<string, any>) {
+      const { error } = await this.supabase
+        .from("groups")
+        .update({ ...payload, updated_at: new Date().toISOString() })
+        .eq("id", groupId)
+        .eq("created_by", userId);
+      if (error) throw error;
+   }
+
+   async deleteGroup(userId: string, groupId: string) {
+      const { error } = await this.supabase
+        .from("groups")
+        .delete()
+        .eq("id", groupId)
+        .eq("created_by", userId);
+      if (error) throw error;
+   }
+
+   async getGroupMembers(groupId: string) {
+      const { data, error } = await this.supabase
+        .from("group_members")
+        .select("*, profile:profiles(id, email, name)")
+        .eq("group_id", groupId);
+      if (error) throw error;
+      return data;
+   }
+
+   async addGroupMember(userId: string, groupId: string, memberUserId: string) {
+      const { data, error } = await this.supabase
+        .from("group_members")
+        .insert({ group_id: groupId, user_id: memberUserId, role: "member" })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+   }
+
+   async removeGroupMember(groupId: string, memberUserId: string) {
+      const { error } = await this.supabase
+        .from("group_members")
+        .delete()
+        .eq("group_id", groupId)
+        .eq("user_id", memberUserId);
+      if (error) throw error;
+   }
+
+   async getProfilesByEmail(email: string) {
+      const { data, error } = await this.supabase
+        .from("profiles")
+        .select("id, email")
+        .eq("email", email)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+   }
+
+   // ── Friends Methods ────────────────────────────────────
+
+   async getFriends(userId: string) {
+      const { data, error } = await this.supabase
+        .from("friends")
+        .select("*, user1:profiles!friends_user_id_1_fkey(id, email), user2:profiles!friends_user_id_2_fkey(id, email)")
+        .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`);
+      if (error) throw error;
+      return data.map((f: any) => {
+        const friend = f.user_id_1 === userId ? f.user2 : f.user1;
+        return { id: f.id, friend, created_at: f.created_at };
+      });
+   }
+
+   async getFriendRequests(userId: string) {
+      const { data, error } = await this.supabase
+        .from("friend_requests")
+        .select("*")
+        .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+   }
+
+   async sendFriendRequest(userId: string, recipientEmail: string) {
+      // Check if recipient exists
+      const profile = await this.getProfilesByEmail(recipientEmail);
+      const recipientId = profile?.id || null;
+
+      // Check if already friends
+      if (recipientId) {
+        const userA = userId < recipientId ? userId : recipientId;
+        const userB = userId < recipientId ? recipientId : userId;
+        const { data: existing } = await this.supabase
+          .from("friends")
+          .select("id")
+          .eq("user_id_1", userA)
+          .eq("user_id_2", userB)
+          .maybeSingle();
+        if (existing) throw new Error("Already friends with this user");
+      }
+
+      // Check existing pending request
+      const { data: existingReq } = await this.supabase
+        .from("friend_requests")
+        .select("id")
+        .eq("sender_id", userId)
+        .eq("recipient_email", recipientEmail)
+        .eq("status", "pending")
+        .maybeSingle();
+      if (existingReq) throw new Error("Friend request already sent");
+
+      const { data, error } = await this.supabase
+        .from("friend_requests")
+        .insert({ sender_id: userId, recipient_email: recipientEmail, recipient_id: recipientId })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+   }
+
+   async respondToFriendRequest(requestId: string, userId: string, status: "accepted" | "rejected") {
+      const { data: request } = await this.supabase
+        .from("friend_requests")
+        .select("*")
+        .eq("id", requestId)
+        .single();
+      if (!request) throw new Error("Friend request not found");
+      if (request.recipient_id !== userId) throw new Error("Unauthorized");
+
+      if (status === "accepted") {
+        const userA = request.sender_id < userId ? request.sender_id : userId;
+        const userB = request.sender_id < userId ? userId : request.sender_id;
+        const { error: friendError } = await this.supabase
+          .from("friends")
+          .insert({ user_id_1: userA, user_id_2: userB });
+        if (friendError) throw friendError;
+      }
+
+      const { error } = await this.supabase
+        .from("friend_requests")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", requestId);
+      if (error) throw error;
+   }
+
+   async cancelFriendRequest(requestId: string, userId: string) {
+      const { error } = await this.supabase
+        .from("friend_requests")
+        .delete()
+        .eq("id", requestId)
+        .eq("sender_id", userId);
+      if (error) throw error;
+   }
+
+   async removeFriend(userId: string, friendId: string) {
+      const userA = userId < friendId ? userId : friendId;
+      const userB = userId < friendId ? friendId : userId;
+      const { error } = await this.supabase
+        .from("friends")
+        .delete()
+        .eq("user_id_1", userA)
+        .eq("user_id_2", userB);
+      if (error) throw error;
+   }
+
+   // ── Leaderboard Methods ────────────────────────────────
+
+   async getLeaderboard() {
+      const { data, error } = await this.supabase.rpc("get_leaderboard");
+      if (error) throw error;
+      return data;
+   }
+
+   // ── Group Invitations ──────────────────────────────────
+
+   async createGroupInvitation(userId: string, groupId: string, email: string) {
+      const profile = await this.getProfilesByEmail(email);
+      const { data, error } = await this.supabase
+        .from("group_invitations")
+        .insert({
+          group_id: groupId,
+          invited_email: email,
+          invited_by: userId,
+          invited_user_id: profile?.id || null,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+   }
+
+   async getGroupInvitations(groupId: string) {
+      const { data, error } = await this.supabase
+        .from("group_invitations")
+        .select("*")
+        .eq("group_id", groupId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+   }
+
+   async respondToGroupInvitation(invitationId: string, userId: string, status: "accepted" | "rejected") {
+      const { data: invitation } = await this.supabase
+        .from("group_invitations")
+        .select("*")
+        .eq("id", invitationId)
+        .single();
+      if (!invitation) throw new Error("Invitation not found");
+      if (invitation.invited_user_id !== userId) throw new Error("Unauthorized");
+
+      if (status === "accepted") {
+        await this.addGroupMember(userId, invitation.group_id, userId);
+      }
+
+      const { error } = await this.supabase
+        .from("group_invitations")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", invitationId);
+      if (error) throw error;
+   }
+
+   async joinGroupByCode(userId: string, code: string) {
+      const { data: group, error } = await this.supabase
+        .from("groups")
+        .select("id")
+        .eq("invite_code", code.toUpperCase())
+        .maybeSingle();
+      if (error) throw error;
+      if (!group) throw new Error("Invalid invite code");
+
+      // Check if already a member
+      const { data: existing } = await this.supabase
+        .from("group_members")
+        .select("id")
+        .eq("group_id", group.id)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (existing) throw new Error("Already a member of this group");
+
+      return this.addGroupMember(userId, group.id, userId);
+   }
+
+   async getGroupByInviteCode(code: string) {
+      const { data, error } = await this.supabase
+        .from("groups")
+        .select("id, name, invite_code")
+        .eq("invite_code", code.toUpperCase())
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+   }
+
+   async getGroupLeaderboard(groupId: string) {
+      const { data, error } = await this.supabase.rpc("get_group_leaderboard", {
+        p_group_id: groupId
+      });
+      if (error) throw error;
+      return data;
+   }
+
+   async getFriendsLeaderboard(userId: string) {
+      const { data, error } = await this.supabase.rpc("get_friends_leaderboard", {
+        p_user_id: userId
+      });
+      if (error) throw error;
+      return data;
+   }
+
+   async getUserMonthlyLog(targetUserId: string, year: number, month: number) {
+      const { data, error } = await this.supabase.rpc("get_user_monthly_log", {
+        p_user_id: targetUserId,
+        p_year: year,
+        p_month: month
+      });
+      if (error) throw error;
+      return data;
+   }
+
+   async getUserYearlyLog(targetUserId: string, year: number) {
+      const { data, error } = await this.supabase.rpc("get_user_yearly_log", {
+        p_user_id: targetUserId,
+        p_year: year
+      });
+      if (error) throw error;
+      return data;
+   }
 }

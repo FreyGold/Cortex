@@ -17,7 +17,7 @@ const headingVariants = cva("relative mb-1", {
   },
 });
 
-export function HeadingElementStatic({
+function HeadingElementStatic({
   variant = "h1",
   ...props
 }: SlateElementProps & VariantProps<typeof headingVariants>) {

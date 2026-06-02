@@ -220,7 +220,7 @@ export const models: Model[] = [
   { label: "Gemma 2 9B (Groq)", value: "groq/gemma2-9b-it" },
 ];
 
-export function SettingsDialog() {
+function SettingsDialog() {
   const editor = useEditorRef();
   const { settings, updateSettings } = useAISettings();
 

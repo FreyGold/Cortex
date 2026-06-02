@@ -11,12 +11,12 @@ import type { EasingDefinition, Variants } from "framer-motion";
    ───────────────────────────────────────────── */
 
 export const EASE_OUT: EasingDefinition = [0.23, 1, 0.32, 1];
-export const EASE_IN_OUT: EasingDefinition = [0.77, 0, 0.175, 1];
-export const EASE_STANDARD: EasingDefinition = [0.4, 0, 0.2, 1];
+const EASE_IN_OUT: EasingDefinition = [0.77, 0, 0.175, 1];
+const EASE_STANDARD: EasingDefinition = [0.4, 0, 0.2, 1];
 
-export const DURATION_FAST = 0.15;
+const DURATION_FAST = 0.15;
 export const DURATION_STANDARD = 0.2;
-export const DURATION_SLOW = 0.3;
+const DURATION_SLOW = 0.3;
 
 /* ── Enter / Exit Variants ── */
 export const fadeIn: Variants = {
@@ -25,7 +25,7 @@ export const fadeIn: Variants = {
   exit: { opacity: 0 },
 };
 
-export const fadeInScale: Variants = {
+const fadeInScale: Variants = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.95 },
@@ -37,30 +37,30 @@ export const slideFromLeft: Variants = {
   exit: { x: 16, opacity: 0 },
 };
 
-export const slideFromRight: Variants = {
+const slideFromRight: Variants = {
   initial: { x: 16, opacity: 0 },
   animate: { x: 0, opacity: 1 },
   exit: { x: -16, opacity: 0 },
 };
 
-export const slideFromBottom: Variants = {
+const slideFromBottom: Variants = {
   initial: { y: 12, opacity: 0 },
   animate: { y: 0, opacity: 1 },
   exit: { y: -8, opacity: 0 },
 };
 
 /* ── Transition presets (use with Framer Motion) ── */
-export const transitionFast = {
+const transitionFast = {
   duration: DURATION_FAST,
   ease: EASE_OUT,
 };
 
-export const transitionStandard = {
+const transitionStandard = {
   duration: DURATION_STANDARD,
   ease: EASE_OUT,
 };
 
-export const transitionSlow = {
+const transitionSlow = {
   duration: DURATION_SLOW,
   ease: EASE_IN_OUT,
 };
@@ -75,7 +75,7 @@ export const staggerContainer: Variants = {
   },
 };
 
-export const staggerContainerSlow: Variants = {
+const staggerContainerSlow: Variants = {
   animate: {
     transition: {
       staggerChildren: 0.1,
@@ -98,14 +98,14 @@ export const buttonHover: Variants = {
 };
 
 /* ── Overlay / Backdrop ── */
-export const overlayIn: Variants = {
+const overlayIn: Variants = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
 };
 
 /* ── Spring (drag/gesture only — not for standard UI) ── */
-export const springGesture = {
+const springGesture = {
   type: "spring" as const,
   mass: 1,
   stiffness: 150,

@@ -35,4 +35,13 @@ export class AuthService {
       message: "Signed in successfully.",
     };
   }
+
+  async refresh(refreshToken: string) {
+    const { data, error } = await this.repo.refresh(refreshToken);
+    if (error) throw error;
+    return {
+      session: data.session,
+      user: data.user,
+    };
+  }
 }

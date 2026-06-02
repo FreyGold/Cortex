@@ -145,7 +145,7 @@ export function suggestTagsFromText(content: string) {
     .map(([word]) => word);
 }
 
-export function decodeHtmlEntities(text: string) {
+function decodeHtmlEntities(text: string) {
   return text
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
@@ -155,11 +155,11 @@ export function decodeHtmlEntities(text: string) {
     .replace(/&#39;/g, "'");
 }
 
-export function normalizePlainText(text: string) {
+function normalizePlainText(text: string) {
   return decodeHtmlEntities(text).replace(/\s+/g, " ").trim();
 }
 
-export function tokenizeQuestion(question: string) {
+function tokenizeQuestion(question: string) {
   const stopWords = new Set([
     "what", "are", "is", "the", "a", "an", "of", "to", "in", "for", "and",
     "on", "with", "how", "does", "do", "be", "can", "common", "types", "type",

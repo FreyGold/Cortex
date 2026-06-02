@@ -1,0 +1,8 @@
+{
+  "name": "Tamatem",
+  "description": "Focus timer, site blocker, and session tracker synced with your College Knowledge Hub account.",
+  "uuid": "tamatem@frey.dev",
+  "shell-version": ["48", "49", "50"],
+  "version": 1,
+  "url": "https://github.com/frey/college-knowledge-hub"
+}

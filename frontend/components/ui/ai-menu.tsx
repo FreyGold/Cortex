@@ -618,7 +618,7 @@ const menuStateItems: Record<
   ],
 };
 
-export const AIMenuItems = ({
+const AIMenuItems = ({
   input,
   setInput,
   setValue,

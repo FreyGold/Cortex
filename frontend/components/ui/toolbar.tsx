@@ -27,7 +27,7 @@ export function Toolbar({
   );
 }
 
-export function ToolbarToggleGroup({
+function ToolbarToggleGroup({
   className,
   ...props
 }: React.ComponentProps<typeof ToolbarPrimitive.ToolbarToggleGroup>) {
@@ -39,7 +39,7 @@ export function ToolbarToggleGroup({
   );
 }
 
-export function ToolbarLink({
+function ToolbarLink({
   className,
   ...props
 }: React.ComponentProps<typeof ToolbarPrimitive.Link>) {
@@ -51,7 +51,7 @@ export function ToolbarLink({
   );
 }
 
-export function ToolbarSeparator({
+function ToolbarSeparator({
   className,
   ...props
 }: React.ComponentProps<typeof ToolbarPrimitive.Separator>) {
@@ -246,7 +246,7 @@ export function ToolbarSplitButtonSecondary({
   );
 }
 
-export function ToolbarToggleItem({
+function ToolbarToggleItem({
   className,
   size = "sm",
   variant,

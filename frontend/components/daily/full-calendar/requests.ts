@@ -3,10 +3,10 @@ import {
   USERS_MOCK,
 } from "@/components/daily/full-calendar/mocks";
 
-export const getEvents = async () => {
+const getEvents = async () => {
   return CALENDAR_ITEMS_MOCK;
 };
 
-export const getUsers = async () => {
+const getUsers = async () => {
   return USERS_MOCK;
 };

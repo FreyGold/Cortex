@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function MonthViewSkeleton() {
+function MonthViewSkeleton() {
   return (
     <div className="flex h-full flex-col">
       <div className="grid grid-cols-7 border-b py-2">

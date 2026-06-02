@@ -179,7 +179,7 @@ export const PlaceholderElement = withHOC(
   },
 );
 
-export function ImageProgress({
+function ImageProgress({
   className,
   file,
   imageRef,

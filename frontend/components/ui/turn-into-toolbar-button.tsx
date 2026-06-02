@@ -34,7 +34,7 @@ import {
 
 import { ToolbarButton, ToolbarMenuGroup } from "./toolbar";
 
-export const turnIntoItems = [
+const turnIntoItems = [
   {
     icon: <PilcrowIcon />,
     keywords: ["paragraph"],

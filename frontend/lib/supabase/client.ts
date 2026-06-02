@@ -30,3 +30,11 @@ export async function getAccessToken() {
   } = await supabase.auth.getSession();
   return session?.access_token || null;
 }
+
+export async function getUserId() {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.user?.id || null;
+}

@@ -41,4 +41,19 @@ export class AuthController {
       return res.status(401).json({ error: error.message });
     }
   }
+
+  static async refresh(req: Request, res: Response) {
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        return res.status(400).json({ error: "Refresh token is required." });
+      }
+
+      const service = getService();
+      const result = await service.refresh(refreshToken);
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return res.status(401).json({ error: error.message });
+    }
+  }
 }

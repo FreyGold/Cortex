@@ -28,9 +28,16 @@ const limiter = rateLimit({
 app.use(limiter);
 
 const frontendOrigin = process.env.FRONTEND_ORIGIN;
+const allowedOrigins = frontendOrigin ? frontendOrigin.split(",").map((o) => o.trim()) : [];
 app.use(
   cors({
-    origin: frontendOrigin ? frontendOrigin.split(",").map((o) => o.trim()) : true,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || origin.startsWith("chrome-extension://")) {
+        callback(null, true);
+      } else {
+        callback(null, allowedOrigins.length > 0 ? false : true);
+      }
+    },
     credentials: true,
   }),
 );

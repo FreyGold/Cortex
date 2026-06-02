@@ -66,7 +66,7 @@ export const MessageContent = ({
 
 export type MessageActionsProps = ComponentProps<"div">;
 
-export const MessageActions = ({
+const MessageActions = ({
   className,
   children,
   ...props
@@ -81,7 +81,7 @@ export type MessageActionProps = ComponentProps<typeof Button> & {
   label?: string;
 };
 
-export const MessageAction = ({
+const MessageAction = ({
   tooltip,
   children,
   label,
@@ -342,7 +342,7 @@ MessageResponse.displayName = "MessageResponse";
 
 export type MessageToolbarProps = ComponentProps<"div">;
 
-export const MessageToolbar = ({
+const MessageToolbar = ({
   className,
   children,
   ...props

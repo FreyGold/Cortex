@@ -102,10 +102,10 @@ export function useUploadFile({
   };
 }
 
-export const { uploadFiles, useUploadThing } =
+const { uploadFiles, useUploadThing } =
   generateReactHelpers<OurFileRouter>();
 
-export function getErrorMessage(err: unknown) {
+function getErrorMessage(err: unknown) {
   const unknownError = "Something went wrong, please try again later.";
 
   if (err instanceof z.ZodError) {
@@ -119,7 +119,7 @@ export function getErrorMessage(err: unknown) {
   return unknownError;
 }
 
-export function showErrorToast(err: unknown) {
+function showErrorToast(err: unknown) {
   const errorMessage = getErrorMessage(err);
 
   return toast.error(errorMessage);

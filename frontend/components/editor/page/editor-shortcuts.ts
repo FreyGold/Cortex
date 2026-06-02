@@ -7,7 +7,7 @@ export interface EditorShortcut {
   description: string;
 }
 
-export const EDITOR_SHORTCUTS: EditorShortcut[] = [
+const EDITOR_SHORTCUTS: EditorShortcut[] = [
   { id: "bold", key: "b", ctrl: true, description: "Bold" },
   { id: "italic", key: "i", ctrl: true, description: "Italic" },
   { id: "underline", key: "u", ctrl: true, description: "Underline" },

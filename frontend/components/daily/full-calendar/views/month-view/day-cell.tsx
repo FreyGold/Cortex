@@ -52,7 +52,7 @@ interface IProps {
   eventPositions: Record<string, number>;
 }
 
-export const dayCellVariants = cva("text-white", {
+const dayCellVariants = cva("text-white", {
   variants: {
     color: {
       blue: "bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-400 ",

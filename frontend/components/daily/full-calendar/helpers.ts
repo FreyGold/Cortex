@@ -36,7 +36,7 @@ import type {
 } from "@/components/daily/full-calendar/types";
 
 const FORMAT_STRING = "MMM d, yyyy";
-export const HOUR_HEIGHT_PX = 96;
+const HOUR_HEIGHT_PX = 96;
 
 export function rangeText(view: TCalendarView, date: Date): string {
   let start: Date;
@@ -84,7 +84,7 @@ export function navigateDate(
   return operations[view](date, 1);
 }
 
-export function getEventsCount(
+function getEventsCount(
   events: IEvent[],
   date: Date,
   view: TCalendarView,
@@ -102,7 +102,7 @@ export function getEventsCount(
     .length;
 }
 
-export function groupEvents(dayEvents: IEvent[]): IEvent[][] {
+function groupEvents(dayEvents: IEvent[]): IEvent[][] {
   const sortedEvents = dayEvents.sort(
     (a, b) => parseISO(a.startDate).getTime() - parseISO(b.startDate).getTime(),
   );
@@ -129,7 +129,7 @@ export function groupEvents(dayEvents: IEvent[]): IEvent[][] {
   return groups;
 }
 
-export function getEventBlockStyle(
+function getEventBlockStyle(
   event: IEvent,
   day: Date,
   groupIndex: number,
@@ -180,7 +180,7 @@ export function getCalendarCells(selectedDate: Date): ICalendarCell[] {
   return [...prevMonthCells, ...currentMonthCells, ...nextMonthCells];
 }
 
-export function calculateMonthEventPositions(
+function calculateMonthEventPositions(
   multiDayEvents: IEvent[],
   singleDayEvents: IEvent[],
   selectedDate: Date,
@@ -250,7 +250,7 @@ export function calculateMonthEventPositions(
   return eventPositions;
 }
 
-export function getMonthCellEvents(
+function getMonthCellEvents(
   date: Date,
   events: IEvent[],
   eventPositions: Record<string, number>,
@@ -279,7 +279,7 @@ export function getMonthCellEvents(
     });
 }
 
-export function formatTime(
+function formatTime(
   date: Date | string,
   use24HourFormat: boolean,
 ): string {
@@ -288,14 +288,14 @@ export function formatTime(
   return format(parsedDate, use24HourFormat ? "HH:mm" : "h:mm a");
 }
 
-export const getFirstLetters = (str: string): string => {
+const getFirstLetters = (str: string): string => {
   if (!str) return "";
   const words = str.split(" ");
   if (words.length === 1) return words[0].charAt(0).toUpperCase();
   return `${words[0].charAt(0).toUpperCase()}${words[1].charAt(0).toUpperCase()}`;
 };
 
-export const getEventsForDay = (
+const getEventsForDay = (
   events: IEvent[],
   date: Date,
   isWeek = false,
@@ -334,12 +334,12 @@ export const getEventsForDay = (
     });
 };
 
-export const getWeekDates = (date: Date): Date[] => {
+const getWeekDates = (date: Date): Date[] => {
   const startDate = startOfWeek(date, { weekStartsOn: 1 });
   return Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 };
 
-export const getEventsForWeek = (events: IEvent[], date: Date): IEvent[] => {
+const getEventsForWeek = (events: IEvent[], date: Date): IEvent[] => {
   const weekDates = getWeekDates(date);
   const startOfWeekDate = weekDates[0];
   const endOfWeekDate = weekDates[6];
@@ -356,7 +356,7 @@ export const getEventsForWeek = (events: IEvent[], date: Date): IEvent[] => {
   });
 };
 
-export const getEventsForMonth = (events: IEvent[], date: Date): IEvent[] => {
+const getEventsForMonth = (events: IEvent[], date: Date): IEvent[] => {
   const startOfMonthDate = startOfMonth(date);
   const endOfMonthDate = endOfMonth(date);
 
@@ -372,7 +372,7 @@ export const getEventsForMonth = (events: IEvent[], date: Date): IEvent[] => {
   });
 };
 
-export const getEventsForYear = (events: IEvent[], date: Date): IEvent[] => {
+const getEventsForYear = (events: IEvent[], date: Date): IEvent[] => {
   if (!events || !Array.isArray(events) || !isValid(date)) return [];
 
   const startOfYearDate = startOfYear(date);
@@ -390,7 +390,7 @@ export const getEventsForYear = (events: IEvent[], date: Date): IEvent[] => {
   });
 };
 
-export const getColorClass = (color: string): string => {
+const getColorClass = (color: string): string => {
   const colorClasses: Record<TEventColor, string> = {
     red: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300",
     yellow:
@@ -406,7 +406,7 @@ export const getColorClass = (color: string): string => {
   return colorClasses[color as TEventColor] || "";
 };
 
-export const getBgColor = (color: string): string => {
+const getBgColor = (color: string): string => {
   const colorClasses: Record<TEventColor, string> = {
     red: "bg-red-400 dark:bg-red-600",
     yellow: "bg-yellow-400 dark:bg-yellow-600",
@@ -418,7 +418,7 @@ export const getBgColor = (color: string): string => {
   return colorClasses[color as TEventColor] || "";
 };
 
-export const useGetEventsByMode = (events: IEvent[]) => {
+const useGetEventsByMode = (events: IEvent[]) => {
   const { view, selectedDate } = useCalendar();
 
   switch (view) {
@@ -436,12 +436,12 @@ export const useGetEventsByMode = (events: IEvent[]) => {
   }
 };
 
-export const toCapitalize = (str: string): string => {
+const toCapitalize = (str: string): string => {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export const useScrollPosition = () => {
+const useScrollPosition = () => {
   const { startOfDayHour } = useCalendar();
   return startOfDayHour * HOUR_HEIGHT_PX;
 };

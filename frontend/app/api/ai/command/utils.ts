@@ -13,7 +13,7 @@ import type { ChatMessage } from "@/components/editor/use-chat";
  *   {content}
  *   </tools>
  */
-export const tag = (tag: string, content?: string | null) => {
+const tag = (tag: string, content?: string | null) => {
   if (!content) return "";
 
   return [`<${tag}>`, content, `</${tag}>`].join("\n");
@@ -25,18 +25,18 @@ export const tag = (tag: string, content?: string | null) => {
  * @example
  *   <tools>{content}</tools>
  */
-export const inlineTag = (tag: string, content?: string | null) => {
+const inlineTag = (tag: string, content?: string | null) => {
   if (!content) return "";
 
   return [`<${tag}>`, content, `</${tag}>`].join("");
 };
 
 // Sections split by double newlines
-export const sections = (sections: (boolean | string | null | undefined)[]) =>
+const sections = (sections: (boolean | string | null | undefined)[]) =>
   sections.filter(Boolean).join("\n\n");
 
 // List items split by newlines
-export const list = (items: string[] | undefined) =>
+const list = (items: string[] | undefined) =>
   items
     ? items
         .filter(Boolean)
@@ -152,7 +152,7 @@ export const buildStructuredPrompt = ({
   ]);
 };
 
-export function getTextFromMessage(message: UIMessage): string {
+function getTextFromMessage(message: UIMessage): string {
   return message.parts
     .filter((part) => part.type === "text")
     .map((part) => part.text)

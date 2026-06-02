@@ -6,7 +6,7 @@ interface EditorFooterProps {
   isFullWidth: boolean;
 }
 
-export function EditorFooter({ isFullWidth }: EditorFooterProps) {
+function EditorFooter({ isFullWidth }: EditorFooterProps) {
   return (
     <footer className="border-t border-border py-4 bg-background">
       <div
