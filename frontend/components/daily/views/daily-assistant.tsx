@@ -156,30 +156,31 @@ export function DailyAssistant({ onClose }: DailyAssistantProps) {
                   )}
                 >
                   {msg.role === "assistant" ? (
-                    <MarkdownRenderer
-                      remarkPlugins={[remarkGfm] as any}
-                      className="break-words"
-                      components={{
-                        p: ({ node, ...props }: any) => <p className="mb-2 last:mb-0" {...props} />,
-                        ul: ({ node, ...props }: any) => <ul className="list-disc pl-4 mb-2 space-y-1" {...props} />,
-                        ol: ({ node, ...props }: any) => <ol className="list-decimal pl-4 mb-2 space-y-1" {...props} />,
-                        li: ({ node, ...props }: any) => <li className="mb-0.5" {...props} />,
-                        h1: ({ node, ...props }: any) => <h1 className="text-base font-bold mt-4 mb-1 text-foreground" {...props} />,
-                        h2: ({ node, ...props }: any) => <h2 className="text-sm font-bold mt-3 mb-1 text-foreground" {...props} />,
-                        h3: ({ node, ...props }: any) => <h3 className="text-[13px] font-bold mt-3 mb-1 text-foreground" {...props} />,
-                        h4: ({ node, ...props }: any) => <h4 className="text-xs font-bold mt-2 mb-1 text-foreground" {...props} />,
-                        a: ({ node, ...props }: any) => <a className="text-primary hover:underline" {...props} />,
-                        code: ({ node, className, children, ...props }: any) => (
-                          <code className={cn("px-1 py-0.5 rounded bg-muted/65 font-mono text-[11px]", className)} {...props}>
-                            {children}
-                          </code>
-                        ),
-                        pre: ({ node, ...props }: any) => <pre className="p-2.5 rounded-lg bg-muted/50 font-mono text-[11.5px] overflow-x-auto mb-2 border border-border/5" {...props} />,
-                        hr: ({ node, ...props }: any) => <hr className="my-3 border-border/10" {...props} />,
-                      } as any}
-                    >
-                      {msg.content}
-                    </MarkdownRenderer>
+                    <div className="break-words">
+                      <MarkdownRenderer
+                        remarkPlugins={[remarkGfm] as any}
+                        components={{
+                          p: ({ node, ...props }: any) => <p className="mb-2 last:mb-0" {...props} />,
+                          ul: ({ node, ...props }: any) => <ul className="list-disc pl-4 mb-2 space-y-1" {...props} />,
+                          ol: ({ node, ...props }: any) => <ol className="list-decimal pl-4 mb-2 space-y-1" {...props} />,
+                          li: ({ node, ...props }: any) => <li className="mb-0.5" {...props} />,
+                          h1: ({ node, ...props }: any) => <h1 className="text-base font-bold mt-4 mb-1 text-foreground" {...props} />,
+                          h2: ({ node, ...props }: any) => <h2 className="text-sm font-bold mt-3 mb-1 text-foreground" {...props} />,
+                          h3: ({ node, ...props }: any) => <h3 className="text-[13px] font-bold mt-3 mb-1 text-foreground" {...props} />,
+                          h4: ({ node, ...props }: any) => <h4 className="text-xs font-bold mt-2 mb-1 text-foreground" {...props} />,
+                          a: ({ node, ...props }: any) => <a className="text-primary hover:underline" {...props} />,
+                          code: ({ node, className, children, ...props }: any) => (
+                            <code className={cn("px-1 py-0.5 rounded bg-muted/65 font-mono text-[11px]", className)} {...props}>
+                              {children}
+                            </code>
+                          ),
+                          pre: ({ node, ...props }: any) => <pre className="p-2.5 rounded-lg bg-muted/50 font-mono text-[11.5px] overflow-x-auto mb-2 border border-border/5" {...props} />,
+                          hr: ({ node, ...props }: any) => <hr className="my-3 border-border/10" {...props} />,
+                        } as any}
+                      >
+                        {msg.content}
+                      </MarkdownRenderer>
+                    </div>
                   ) : (
                     msg.content
                   )}
