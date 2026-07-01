@@ -140,6 +140,27 @@ export class DailyRepository {
       .eq("id", taskId);
     if (error) throw error;
   }
+
+  async getDailyTaskById(taskId: string) {
+    const { data, error } = await this.supabase
+      .from("daily_tasks")
+      .select("*")
+      .eq("id", taskId)
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async getDailyLogById(userId: string, logId: string) {
+    const { data, error } = await this.supabase
+      .from("daily_logs")
+      .select("*, tasks:daily_tasks(*)")
+      .eq("id", logId)
+      .eq("user_id", userId)
+      .single();
+    if (error) throw error;
+    return data;
+  }
   
   // --- Habits Methods ---
 

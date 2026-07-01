@@ -65,7 +65,7 @@ export class DailyController {
       const service = getService(req);
       const { logId, text } = req.body;
       if (!logId || !text) return res.status(400).json({ error: "logId and text are required" });
-      const task = await service.createDailyTask(logId, text);
+      const task = await service.createDailyTask(req.user!.id, logId, text);
       return res.status(201).json({ task });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -76,7 +76,7 @@ export class DailyController {
     try {
       const service = getService(req);
       const { taskId } = req.params;
-      await service.updateDailyTask(taskId as string, req.body);
+      await service.updateDailyTask(req.user!.id, taskId as string, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -87,7 +87,7 @@ export class DailyController {
     try {
       const service = getService(req);
       const { taskId } = req.params;
-      await service.deleteDailyTask(taskId as string);
+      await service.deleteDailyTask(req.user!.id, taskId as string);
       return res.status(204).send();
     } catch (error: any) {
       return res.status(500).json({ error: error.message });

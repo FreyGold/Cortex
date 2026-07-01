@@ -49,29 +49,52 @@ export class DailyService {
       finalPayload.content_text = extractPlateText(payload.content);
     }
 
-    const textForEmbedding = `${finalPayload.highlight || ""}\n${finalPayload.content_text || ""}`.trim();
-    if (textForEmbedding) {
-      try {
-        const embedding = await embedText(`passage: ${textForEmbedding}`);
-        finalPayload.embedding = embedding;
-      } catch (e) {
-        console.error("Failed to generate embedding for daily log", e);
-      }
-    }
-
     await this.repo.updateDailyLog(userId, logId, finalPayload);
+    await this.syncLogEmbedding(userId, logId);
   }
 
-  async createDailyTask(logId: string, text: string) {
-    return this.repo.createDailyTask(logId, text);
+  async syncLogEmbedding(userId: string, logId: string) {
+    try {
+      const log = await this.repo.getDailyLogById(userId, logId);
+      if (!log) return;
+
+      const textParts: string[] = [];
+      if (log.highlight) textParts.push(`Highlight: ${log.highlight}`);
+      if (log.content_text) textParts.push(`Note: ${log.content_text}`);
+      if (log.tasks && log.tasks.length > 0) {
+        const taskTexts = log.tasks.map((t: any) => `- [${t.is_completed ? "x" : " "}] ${t.text}`).join("\n");
+        textParts.push(`Tasks:\n${taskTexts}`);
+      }
+
+      const textForEmbedding = textParts.join("\n\n").trim();
+      if (textForEmbedding) {
+        const embedding = await embedText(`passage: ${textForEmbedding}`);
+        await this.repo.updateDailyLog(userId, logId, { embedding });
+      }
+    } catch (e) {
+      console.error("Failed to sync daily log embedding:", e);
+    }
   }
 
-  async updateDailyTask(taskId: string, payload: Record<string, any>) {
+  async createDailyTask(userId: string, logId: string, text: string) {
+    const task = await this.repo.createDailyTask(logId, text);
+    await this.syncLogEmbedding(userId, logId);
+    return task;
+  }
+
+  async updateDailyTask(userId: string, taskId: string, payload: Record<string, any>) {
     await this.repo.updateDailyTask(taskId, payload);
+    const task = await this.repo.getDailyTaskById(taskId);
+    if (task) {
+      await this.syncLogEmbedding(userId, task.log_id);
+    }
   }
 
-  async deleteDailyTask(taskId: string) {
+  async deleteDailyTask(userId: string, taskId: string) {
+    const task = await this.repo.getDailyTaskById(taskId);
+    if (!task) return;
     await this.repo.deleteDailyTask(taskId);
+    await this.syncLogEmbedding(userId, task.log_id);
   }
 
   // --- Habits Methods ---
