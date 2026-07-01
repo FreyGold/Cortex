@@ -417,7 +417,7 @@ export class DailyRepository {
 
   // --- AI Methods ---
   
-   async searchDailyLogs(embedding: number[], userId: string, threshold: number, limit: number) {
+    async searchDailyLogs(embedding: number[], userId: string, threshold: number, limit: number) {
       const { data, error } = await this.supabase.rpc("search_daily_logs", {
         query_embedding: embedding,
         user_id_filter: userId,
@@ -427,7 +427,19 @@ export class DailyRepository {
       
       if (error) throw error;
       return data;
-   }
+    }
+
+    async getRecentDailyLogs(userId: string, limit = 30) {
+      const { data, error } = await this.supabase
+        .from("daily_logs")
+        .select("*, tasks:daily_tasks(*), pomodoro_sessions:pomodoro_sessions(*)")
+        .eq("user_id", userId)
+        .order("date", { ascending: false })
+        .limit(limit);
+        
+      if (error) throw error;
+      return data;
+    }
 
    // ── Groups Methods ─────────────────────────────────────
 

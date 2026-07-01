@@ -524,4 +524,16 @@ export class DailyController {
       return res.status(500).json({ error: error.message });
     }
   }
+
+  static async askAssistant(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const { question, messages = [] } = req.body;
+      if (!question) return res.status(400).json({ error: "question is required" });
+      const result = await service.askAssistant(req.user!.id, question, messages);
+      return res.status(200).json(result);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 }

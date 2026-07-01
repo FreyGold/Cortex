@@ -130,9 +130,101 @@ export class DailyService {
 
   // --- AI Methods ---
 
-  async searchDailyLogs(userId: string, query: string, threshold = 0.5, limit = 10) {
+  async searchDailyLogs(userId: string, query: string, threshold = 0.15, limit = 10) {
     const embedding = await embedText(`query: ${query.trim()}`);
     return this.repo.searchDailyLogs(embedding, userId, threshold, limit);
+  }
+
+  async askAssistant(userId: string, question: string, messages: any[]) {
+    // 1. Semantic search for specific matching logs
+    const embedding = await embedText(`query: ${question.trim()}`);
+    const searchMatches = await this.repo.searchDailyLogs(embedding, userId, 0.15, 10);
+
+    // 2. Fetch recent daily logs (last 30 logs) for temporal/summary queries
+    const recentLogs = await this.repo.getRecentDailyLogs(userId, 30);
+
+    // 3. Construct the context block
+    let contextBlock = "";
+
+    if (searchMatches && searchMatches.length > 0) {
+      contextBlock += "--- SEMANTIC SEARCH MATCHES (RELEVANT ENTRIES) ---\n";
+      for (const m of searchMatches) {
+        contextBlock += `[Date: ${m.date}] Highlight: ${m.highlight || "None"}. Note: ${m.content_text || "None"}\n`;
+      }
+      contextBlock += "\n";
+    }
+
+    if (recentLogs && recentLogs.length > 0) {
+      contextBlock += "--- RECENT DAILY LOGS (CHRONOLOGICAL HISTORY) ---\n";
+      // We sort ascending for the LLM to read chronologically
+      const sortedLogs = [...recentLogs].reverse();
+      for (const log of sortedLogs) {
+        contextBlock += `[Date: ${log.date}] Highlight: ${log.highlight || "None"}. Note: ${log.content_text || "None"}\n`;
+        if (log.tasks && log.tasks.length > 0) {
+          contextBlock += "Tasks:\n";
+          for (const t of log.tasks) {
+            contextBlock += `- [${t.is_completed ? "x" : " "}] ${t.text}\n`;
+          }
+        }
+        if (log.pomodoro_sessions && log.pomodoro_sessions.length > 0) {
+          contextBlock += "Pomodoro Sessions:\n";
+          for (const s of log.pomodoro_sessions) {
+            contextBlock += `- ${s.type} session: ${s.duration} minutes (${s.completed ? "completed" : "incomplete"}). Notes: ${s.notes || "None"}\n`;
+          }
+        }
+        contextBlock += "\n";
+      }
+    }
+
+    if (!contextBlock) {
+      contextBlock = "No daily logs or history found for this user.";
+    }
+
+    // 4. Send to Gemini
+    const chatHistory = [...messages, { role: "user", content: question }];
+    const { answer, model } = await this.chatGeminiWithContext(chatHistory, contextBlock);
+
+    return { answer, model };
+  }
+
+  private async chatGeminiWithContext(messages: any[], context: string) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
+
+    const model = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
+    const contents = messages.map(m => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }]
+    }));
+
+    const systemPrompt = `You are a helpful Daily Tracker Assistant for a student's personal knowledge base.
+Answer the user's questions about their daily tracking logs, tasks, pomodoro study sessions, habits, and progress.
+Use the provided context containing relevant daily logs and chronological history. If the user asks for a summary of last month or a specific timeframe, summarize the logs from the context.
+Answer accurately, friendly, and in the same language as the user. Do not make up information; base your answers strictly on the context.
+
+USER DAILY LOGS CONTEXT:
+${context}`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-goog-api-key": apiKey },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents,
+          generationConfig: { temperature: 0.45, topP: 0.9, maxOutputTokens: 2048 },
+        }),
+      }
+    );
+
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error?.message ?? "Gemini Chat request failed.");
+
+    const answer = payload.candidates?.[0]?.content?.parts?.map((p: any) => p.text ?? "").join("").trim() ?? "";
+    if (!answer) throw new Error("Gemini returned no response.");
+
+    return { answer, model };
   }
 
   // ── Groups ───────────────────────────────────────────

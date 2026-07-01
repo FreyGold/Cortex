@@ -14,6 +14,7 @@ import {
   getHabits,
   type HabitItem,
   searchDailyLogs,
+  askDailyAssistant,
   toggleHabitLog,
   updateDailyLog,
   updateDailyTask,
@@ -184,6 +185,21 @@ export function useSearchDailyLogs() {
     mutationFn: async (query: string) => {
       const token = await getAccessToken();
       return searchDailyLogs(token, query);
+    },
+  });
+}
+
+export function useAskDailyAssistant() {
+  return useMutation({
+    mutationFn: async ({
+      question,
+      messages,
+    }: {
+      question: string;
+      messages: any[];
+    }) => {
+      const token = await getAccessToken();
+      return askDailyAssistant(token, question, messages);
     },
   });
 }

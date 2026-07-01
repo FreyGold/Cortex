@@ -7,6 +7,7 @@ import { EASE_OUT } from "@/components/daily/full-calendar/animations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useAskDailyAssistant } from "@/hooks/use-daily";
 
 interface Message {
   id: string;
@@ -32,6 +33,7 @@ export function DailyAssistant({ onClose }: DailyAssistantProps) {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const askMutation = useAskDailyAssistant();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -39,8 +41,8 @@ export function DailyAssistant({ onClose }: DailyAssistantProps) {
     }
   }, [messages, isTyping]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isTyping) return;
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -53,17 +55,35 @@ export function DailyAssistant({ onClose }: DailyAssistantProps) {
     setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const history = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const res = await askMutation.mutateAsync({
+        question: input,
+        messages: history,
+      });
+
       const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
+        id: Date.now().toString(),
         role: "assistant",
-        content:
-          "I'm currently being integrated with your daily logs. Soon I'll be able to analyze your tasks and provide deep insights!",
+        content: res.answer,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMsg]);
+    } catch (e: any) {
+      const aiErrorMsg: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: `Sorry, I encountered an error: ${e.message || "Failed to connect to the assistant."}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiErrorMsg]);
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   return (

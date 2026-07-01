@@ -163,6 +163,18 @@ export function searchDailyLogs(accessToken: string, query: string) {
   });
 }
 
+export function askDailyAssistant(
+  accessToken: string,
+  question: string,
+  messages: any[],
+) {
+  return apiRequest<{ answer: string; model: string }>("/api/daily/assistant", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: { question, messages },
+  });
+}
+
 export function getDailyStats(accessToken: string) {
   return apiRequest<{ stats: any }>("/api/daily/stats", {
     method: "GET",
