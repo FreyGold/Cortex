@@ -13,12 +13,12 @@ export async function embedText(text: string) {
   if (!apiKey) throw new Error("Missing GEMINI_API_KEY for embeddings");
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-goog-api-key": apiKey },
       body: JSON.stringify({
-        model: "models/text-embedding-004",
+        model: "models/gemini-embedding-001",
         content: { parts: [{ text }] },
         outputDimensionality: 384,
       }),
