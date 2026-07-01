@@ -1,5 +1,5 @@
 import { AppShell } from "@/components/app-shell";
-import { SettingsLayoutClient } from "@/components/settings/settings-layout-client";
+import { DashboardLayoutClient } from "@/components/dashboard-layout-client";
 
 export default function SettingsLayout({
   children,
@@ -8,7 +8,7 @@ export default function SettingsLayout({
 }) {
   return (
     <AppShell>
-      <SettingsLayoutClient>{children}</SettingsLayoutClient>
+      <DashboardLayoutClient>{children}</DashboardLayoutClient>
     </AppShell>
   );
 }

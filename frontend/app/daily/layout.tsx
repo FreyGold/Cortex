@@ -1,5 +1,5 @@
 import { AppShell } from "@/components/app-shell";
-import { DailyLayoutClient } from "@/components/daily/daily-layout-client";
+import { DashboardLayoutClient } from "@/components/dashboard-layout-client";
 
 export default function DailyLayout({
   children,
@@ -8,7 +8,7 @@ export default function DailyLayout({
 }) {
   return (
     <AppShell>
-      <DailyLayoutClient>{children}</DailyLayoutClient>
+      <DashboardLayoutClient>{children}</DashboardLayoutClient>
     </AppShell>
   );
 }

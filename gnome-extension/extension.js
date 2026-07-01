@@ -635,7 +635,7 @@ class TamatemPopup {
     box.add_child(new St.Label({text: 'Sign in to track your focus sessions', style_class: 'tmt-login-sub'}));
 
     const emailInput = this._input('Email');
-    const passInput = this._input('Password', {visibility: false});
+    const passInput = this._input('Password');
     passInput.clutter_text.set_password_char('•');
 
     const errorLabel = new St.Label({text: '', style_class: 'tmt-login-error'});
@@ -684,7 +684,7 @@ class TamatemPopup {
     if (email) emailField.set_text(email);
     container.add_child(emailField);
 
-    const passField = this._input('Password', {visibility: false});
+    const passField = this._input('Password');
     passField.clutter_text.set_password_char('•');
     container.add_child(passField);
 
