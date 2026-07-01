@@ -33,16 +33,6 @@ export function AssistantModal({ isOpen, onOpenChange }: AssistantModalProps) {
         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-modal overflow-hidden flex flex-col"
         style={{ width: "42vw", height: "80vh" }}
       >
-        <div className="flex items-center justify-end px-4 py-2.5 border-b border-border/5 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onOpenChange(false)}
-            className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
-          >
-            <X className="size-3.5" />
-          </Button>
-        </div>
         <div className="flex-1 overflow-hidden">
           <DailyAssistant onClose={() => onOpenChange(false)} />
         </div>

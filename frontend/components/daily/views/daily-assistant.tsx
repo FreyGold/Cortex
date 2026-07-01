@@ -91,7 +91,7 @@ export function DailyAssistant({ onClose }: DailyAssistantProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background border-l border-border/10 w-80 shrink-0">
+    <div className="flex flex-col h-full bg-background w-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border/10 shrink-0">
         <div className="flex items-center gap-2">
