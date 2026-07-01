@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useSearchDailyLogs } from "@/hooks/use-daily";
+import { useSearchDailyLogs, useRebuildDailyEmbeddings } from "@/hooks/use-daily";
 import { useDebounce } from "@/hooks/use-debounce";
 
 const SUGGESTIONS = [
@@ -38,6 +38,14 @@ export function SearchModal({ isOpen, onOpenChange }: SearchModalProps) {
       searchMutation.mutate(searchQuery.trim());
     }
   };
+
+  const rebuildMutation = useRebuildDailyEmbeddings();
+
+  useEffect(() => {
+    if (isOpen) {
+      rebuildMutation.mutate();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (debouncedQuery.length > 2) {

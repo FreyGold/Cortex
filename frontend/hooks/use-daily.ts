@@ -15,6 +15,7 @@ import {
   type HabitItem,
   searchDailyLogs,
   askDailyAssistant,
+  rebuildDailyEmbeddings,
   toggleHabitLog,
   updateDailyLog,
   updateDailyTask,
@@ -200,6 +201,19 @@ export function useAskDailyAssistant() {
     }) => {
       const token = await getAccessToken();
       return askDailyAssistant(token, question, messages);
+    },
+  });
+}
+
+export function useRebuildDailyEmbeddings() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const token = await getAccessToken();
+      return rebuildDailyEmbeddings(token);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["daily-logs"] });
     },
   });
 }

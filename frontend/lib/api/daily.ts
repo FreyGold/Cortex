@@ -175,6 +175,13 @@ export function askDailyAssistant(
   });
 }
 
+export function rebuildDailyEmbeddings(accessToken: string) {
+  return apiRequest<{ success: boolean; processed: number }>("/api/daily/rebuild-embeddings", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
 export function getDailyStats(accessToken: string) {
   return apiRequest<{ stats: any }>("/api/daily/stats", {
     method: "GET",

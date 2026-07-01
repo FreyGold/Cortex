@@ -536,4 +536,14 @@ export class DailyController {
       return res.status(500).json({ error: error.message });
     }
   }
+
+  static async rebuildEmbeddings(req: Request, res: Response) {
+    try {
+      const service = getService(req);
+      const processed = await service.rebuildUserEmbeddings(req.user!.id);
+      return res.status(200).json({ success: true, processed });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 }

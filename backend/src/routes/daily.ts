@@ -31,6 +31,7 @@ dailyRouter.get("/stats", DailyController.getDailyStats);
 // AI Features
 dailyRouter.post("/search", DailyController.searchDailyLogs);
 dailyRouter.post("/assistant", DailyController.askAssistant);
+dailyRouter.post("/rebuild-embeddings", DailyController.rebuildEmbeddings);
 
 // Groups
 dailyRouter.get("/groups", DailyController.getGroups);

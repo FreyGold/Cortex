@@ -357,4 +357,15 @@ ${context}`;
   async getUserYearlyLog(targetUserId: string, year: number) {
     return this.repo.getUserYearlyLog(targetUserId, year);
   }
+
+  async rebuildUserEmbeddings(userId: string) {
+    const logs = await this.repo.getRecentDailyLogs(userId, 100);
+    if (!logs) return 0;
+    let count = 0;
+    for (const log of logs) {
+      await this.syncLogEmbedding(userId, log.id);
+      count++;
+    }
+    return count;
+  }
 }
