@@ -33,9 +33,15 @@ export function SearchModal({ isOpen, onOpenChange }: SearchModalProps) {
   const debouncedQuery = useDebounce(query, 500);
   const searchMutation = useSearchDailyLogs();
 
+  const handleSearch = (searchQuery: string) => {
+    if (searchQuery.trim().length > 0) {
+      searchMutation.mutate(searchQuery.trim());
+    }
+  };
+
   useEffect(() => {
     if (debouncedQuery.length > 2) {
-      searchMutation.mutate(debouncedQuery);
+      handleSearch(debouncedQuery);
     }
   }, [debouncedQuery]);
 
@@ -87,7 +93,13 @@ export function SearchModal({ isOpen, onOpenChange }: SearchModalProps) {
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="px-5 py-4 space-y-4">
             {/* Search Bar */}
-            <div className="relative">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch(query);
+              }}
+              className="relative"
+            >
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/30 pointer-events-none z-10" />
               <Input
                 value={query}
@@ -109,7 +121,7 @@ export function SearchModal({ isOpen, onOpenChange }: SearchModalProps) {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </form>
 
             {/* Empty state suggestions */}
             <AnimatePresence mode="wait">
@@ -139,13 +151,41 @@ export function SearchModal({ isOpen, onOpenChange }: SearchModalProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setQuery(s)}
+                          onClick={() => {
+                            setQuery(s);
+                            handleSearch(s);
+                          }}
                           className="h-7 rounded-lg px-3 text-[11px] bg-muted/40 border-border/10 hover:bg-accent/50 transition-colors"
                         >
                           {s}
                         </Button>
                       </motion.div>
                     ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Empty State / No Results */}
+            <AnimatePresence mode="wait">
+              {query.trim().length > 2 && !isSearching && results.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.2, ease: EASE_OUT }}
+                  className="flex flex-col items-center justify-center py-16 text-center space-y-4"
+                >
+                  <div className="size-12 rounded-2xl bg-muted/20 flex items-center justify-center">
+                    <Search className="size-6 text-muted-foreground/35" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-muted-foreground">
+                      No results found
+                    </p>
+                    <p className="text-xs text-muted-foreground/45 max-w-xs">
+                      We couldn't find any memories matching &ldquo;{query}&rdquo;. Try another keyword.
+                    </p>
                   </div>
                 </motion.div>
               )}
