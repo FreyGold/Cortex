@@ -129,47 +129,8 @@ Detailed documentation for each of the 7 presentation chapters is located in the
 
 For a complete layout map, see the [Documentation Index README](./docs/README.md).
 
----
-
 ## 🛠️ Getting Started
 
-### Prerequisites
-* Node.js v20+
-* PostgreSQL with `pgvector` extension
-* Redis
+For a comprehensive step-by-step guide on how to configure your local environments, spin up the frontend and backend servers concurrently, and load the Chrome and GNOME extensions, please refer to the:
 
-### 1. Database Setup
-Ensure you have a PostgreSQL database and run the migrations found in the `supabase/migrations` folder, or link to your Supabase project:
-```bash
-npx supabase link --project-ref <your-project-ref>
-npx supabase db push
-```
-
-### 2. Backend Setup
-1. Navigate to `/backend`:
-   ```bash
-   cd backend
-   ```
-2. Create `.env` from template and fill in variables:
-   ```bash
-   cp .env.example .env
-   ```
-3. Run npm commands:
-   ```bash
-   npm install
-   # Run development server
-   npm run dev
-   ```
-
-### 3. Frontend Setup
-1. Navigate to `/frontend`:
-   ```bash
-   cd frontend
-   ```
-2. Create `.env.local` and add endpoints and client keys.
-3. Run npm commands:
-   ```bash
-   npm install
-   # Run local Next.js client
-   npm run dev
-   ```
+👉 **[Local Running and Development Guide (DEVELOPMENT.md)](./DEVELOPMENT.md)**
