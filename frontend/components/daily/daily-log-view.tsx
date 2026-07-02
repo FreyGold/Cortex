@@ -678,8 +678,7 @@ export function DailyLogView({
         <AnimatePresence mode="wait">
           {isEditorMaximized && (
             <DialogContent
-              className="rounded-2xl border-border/10 shadow-modal flex flex-col bg-background overflow-hidden min-w-[70vw]"
-
+              className="rounded-2xl border-border/10 shadow-modal flex flex-col bg-background overflow-hidden w-full max-w-[calc(100%-2rem)] sm:max-w-[85vw] md:max-w-[80vw] lg:max-w-[75vw] h-[85vh]"
             >
               <DialogTitle className="sr-only">Reflection Editor</DialogTitle>
               <div className="flex items-center justify-between px-5 py-3 border-b border-border/5 shrink-0">

@@ -79,8 +79,7 @@ export function InsightsModal({ isOpen, onOpenChange }: InsightsModalProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: 12 }}
         transition={{ duration: 0.2, ease: EASE_OUT }}
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-xl overflow-hidden flex flex-col border border-border/5"
-        style={{ width: "420px", height: "640px" }}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-xl overflow-hidden flex flex-col border border-border/5 w-full max-w-[calc(100%-2rem)] sm:max-w-2xl h-[80vh] max-h-[720px]"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 shrink-0">

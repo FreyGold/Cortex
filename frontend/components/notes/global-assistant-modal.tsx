@@ -391,7 +391,7 @@ export function GlobalAssistantModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-[90vh] max-h-[90vh] flex-col p-0 sm:max-w-[90vw] md:max-w-[1000px] border-none shadow-2xl overflow-visible">
+      <DialogContent className="flex h-[85vh] max-h-[850px] flex-col p-0 w-full max-w-[calc(100%-2rem)] sm:max-w-[85vw] md:max-w-[950px] border-none shadow-2xl overflow-visible">
         <DialogTitle className="sr-only">
           Library Research Assistant
         </DialogTitle>

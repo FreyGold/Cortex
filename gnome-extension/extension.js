@@ -328,17 +328,26 @@ class Blocker {
 
   async _resolve(doms) {
     const ips = [];
-    for (const d of doms) {
-      try {
-        const [ok, out] = GLib.spawn_command_line_sync(`getent hosts ${d}`);
-        if (ok && out) {
-          for (const l of new TextDecoder('utf-8').decode(out).trim().split('\n')) {
-            const ip = l.split(/\s+/)[0];
-            if (ip && !ip.includes(':')) ips.push(ip);
+    const resolver = Gio.Resolver.get_default();
+    const promises = doms.map(d => {
+      return new Promise((resolve) => {
+        resolver.lookup_by_name_async(d, null, (res, task) => {
+          try {
+            const addresses = res.lookup_by_name_finish(task);
+            const resolvedIps = addresses
+              .filter(addr => addr.get_family() === Gio.SocketFamily.IPV4)
+              .map(addr => addr.to_string());
+            resolve(resolvedIps);
+          } catch (_) {
+            resolve([]);
           }
-        }
-      } catch (_) {}
-    }
+        });
+      });
+    });
+    const results = await Promise.all(promises);
+    results.forEach(resolvedIps => {
+      ips.push(...resolvedIps);
+    });
     return [...new Set(ips)];
   }
 
@@ -351,6 +360,7 @@ class Blocker {
       '  chain out {',
       '    type filter hook output priority 0; policy drop;',
       '    ct state related,established accept',
+      '    oifname lo accept',
       ...ips.map(ip => `    tcp dport { 80, 443 } ip daddr ${ip} accept`),
       '    udp dport 53 accept',
       '    tcp dport 53 accept',
@@ -369,13 +379,16 @@ class Blocker {
 
   _pkexec(a) {
     return new Promise((resolve, reject) => {
-      const p = Gio.Subprocess.new(['pkexec', ...a], Gio.SubprocessFlags.NONE);
-      p.wait_async(null, (proc, res) => {
-        try {
-          if (proc.wait_finish(res)) resolve();
-          else reject(new Error('pkexec failed'));
-        } catch (e) { reject(e); }
-      });
+      try {
+        const p = Gio.Subprocess.new(['pkexec', ...a], Gio.SubprocessFlags.NONE);
+        p.wait_async(null, (proc, res) => {
+          try {
+            proc.wait_finish(res);
+            if (proc.get_successful()) resolve();
+            else reject(new Error(`Command failed with exit code ${proc.get_exit_status()}`));
+          } catch (e) { reject(e); }
+        });
+      } catch (e) { reject(e); }
     });
   }
 }
@@ -517,7 +530,7 @@ class TamatemPopup {
   }
 
   _build() {
-    this._main = new St.BoxLayout({vertical: true, style_class: 'tmt-popup', width: 360});
+    this._main = new St.BoxLayout({vertical: true, style_class: 'tmt-popup', width: 420});
 
     // Tab bar (only when authenticated)
     this._tabBar = new St.BoxLayout({style_class: 'tmt-bar'});
@@ -581,7 +594,7 @@ class TamatemPopup {
   }
 
   _showError(msg) {
-    Main.notifyError('Tamatem', msg);
+    Main.notify('Tamatem', msg);
   }
 
   _btn(label, cls, cb) {
@@ -601,8 +614,10 @@ class TamatemPopup {
       style_class: 'tmt-scroll',
       hscrollbar_policy: St.PolicyType.NEVER,
       vscrollbar_policy: St.PolicyType.AUTOMATIC,
+      x_expand: true,
+      y_expand: true,
     });
-    sw.add_actor(child);
+    sw.set_child(child);
     return sw;
   }
 
@@ -896,8 +911,11 @@ class TamatemPopup {
     box.add_child(new St.Label({text: 'Loading...', style_class: 'tmt-emp'}));
     this._content.add_child(box);
 
+    const currentTab = this._tab;
+
     try {
       const r = await this._api.getSessions(today());
+      if (this._tab !== currentTab) return;
       const sessions = r?.sessions ?? [];
 
       box.destroy_all_children();
@@ -938,6 +956,7 @@ class TamatemPopup {
       }
       box.add_child(this._scroller(list));
     } catch {
+      if (this._tab !== currentTab) return;
       box.destroy_all_children();
       box.add_child(new St.Label({text: 'Could not load sessions.', style_class: 'tmt-emp tmt-err'}));
     }
@@ -966,6 +985,7 @@ class TamatemPopup {
     outer.add_child(sbar);
 
     const content = new St.BoxLayout({vertical: true, style_class: 'tmt-cnt'});
+    this._socialContentBox = content;
     outer.add_child(this._scroller(content));
     this._content.add_child(outer);
 
@@ -978,26 +998,23 @@ class TamatemPopup {
   }
 
   _renderSocialContent() {
-    // Find the content box inside social tab
-    const outer = this._content.get_last_child();
-    if (!outer) return;
-    const children = outer.get_children();
-    const content = children.length > 1 ? children[1] : null;
-    if (!content) return;
-
-    content.destroy_all_children();
+    if (!this._socialContentBox) return;
+    this._socialContentBox.destroy_all_children();
 
     switch (this._socialSub) {
-      case 0: this._loadLeaderboard(content); break;
-      case 1: this._loadFriends(content); break;
-      case 2: this._loadGroups(content); break;
+      case 0: this._loadLeaderboard(this._socialContentBox); break;
+      case 1: this._loadFriends(this._socialContentBox); break;
+      case 2: this._loadGroups(this._socialContentBox); break;
     }
   }
 
   async _loadLeaderboard(container) {
+    const currentTab = this._tab;
+    const currentSub = this._socialSub;
     container.add_child(new St.Label({text: '...', style_class: 'tmt-emp'}));
     try {
       const groupsResult = await this._api.getGroups().catch(() => ({groups: []}));
+      if (this._tab !== currentTab || this._socialSub !== currentSub) return;
       const groups = groupsResult?.groups ?? [];
       const scope = this._leaderboardScope ?? {type: 'global'};
 
@@ -1061,12 +1078,15 @@ class TamatemPopup {
       let board = [];
       if (scope.type === 'global') {
         const r = await this._api.getLeaderboard();
+        if (this._tab !== currentTab || this._socialSub !== currentSub) return;
         board = r?.leaderboard ?? [];
       } else if (scope.type === 'friends') {
         const r = await this._api.getFriendsLeaderboard();
+        if (this._tab !== currentTab || this._socialSub !== currentSub) return;
         board = r?.leaderboard ?? [];
       } else if (scope.type === 'group') {
         const r = await this._api.getGroupLeaderboard(scope.groupId);
+        if (this._tab !== currentTab || this._socialSub !== currentSub) return;
         board = r?.leaderboard ?? [];
       }
 
@@ -1086,7 +1106,8 @@ class TamatemPopup {
       board.sort((a, b) => b.total_seconds - a.total_seconds);
       board.forEach((e, i) => {
         const isTop3 = i < 3;
-        const row = new St.BoxLayout({style_class: `tmt-lrow${isTop3 ? ' top' : ''}`});
+        const rankClass = i === 0 ? ' gold' : i === 1 ? ' silver' : i === 2 ? ' bronze' : '';
+        const row = new St.BoxLayout({style_class: `tmt-lrow${isTop3 ? ' top' : ''}${rankClass}`});
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
         row.add_child(new St.Label({text: medal, style_class: 'tmt-lr'}));
         row.add_child(new St.Label({text: e.name || e.email, x_expand: true, style_class: 'tmt-lrn'}));
@@ -1095,18 +1116,22 @@ class TamatemPopup {
       });
       container.add_child(list);
     } catch {
+      if (this._tab !== currentTab || this._socialSub !== currentSub) return;
       container.destroy_all_children();
       container.add_child(new St.Label({text: 'Could not load leaderboard.', style_class: 'tmt-emp tmt-err'}));
     }
   }
 
   async _loadFriends(container) {
+    const currentTab = this._tab;
+    const currentSub = this._socialSub;
     container.add_child(new St.Label({text: '...', style_class: 'tmt-emp'}));
     try {
       const [fr, rqr] = await Promise.all([
         this._api.getFriends(),
         this._api.getFriendRequests(),
       ]);
+      if (this._tab !== currentTab || this._socialSub !== currentSub) return;
       const friends = fr?.friends ?? [];
       const requests = rqr?.requests ?? [];
 
@@ -1186,15 +1211,19 @@ class TamatemPopup {
       }
       container.add_child(fsec);
     } catch {
+      if (this._tab !== currentTab || this._socialSub !== currentSub) return;
       container.destroy_all_children();
       container.add_child(new St.Label({text: 'Could not load friends.', style_class: 'tmt-emp tmt-err'}));
     }
   }
 
   async _loadGroups(container) {
+    const currentTab = this._tab;
+    const currentSub = this._socialSub;
     container.add_child(new St.Label({text: '...', style_class: 'tmt-emp'}));
     try {
       const r = await this._api.getGroups();
+      if (this._tab !== currentTab || this._socialSub !== currentSub) return;
       const groups = r?.groups ?? [];
 
       container.destroy_all_children();
@@ -1258,6 +1287,7 @@ class TamatemPopup {
       }
       container.add_child(list);
     } catch {
+      if (this._tab !== currentTab || this._socialSub !== currentSub) return;
       container.destroy_all_children();
       container.add_child(new St.Label({text: 'Could not load groups.', style_class: 'tmt-emp tmt-err'}));
     }
@@ -1382,6 +1412,20 @@ class TamatemPopup {
     });
     box.add_child(saveBtn);
 
+    // Developer Tools
+    const devSec = this._section('Developer Tools');
+    const reloadBtn = this._btn('Reload Extension', 'st', () => {
+      const extensionSystem = Main.extensionManager;
+      const uuid = 'tamatem@frey.dev';
+      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+        extensionSystem.enableExtension(uuid);
+        return GLib.SOURCE_REMOVE;
+      });
+      extensionSystem.disableExtension(uuid);
+    });
+    devSec.add_child(reloadBtn);
+    box.add_child(devSec);
+
     // Sign out
     const logoutBtn = this._btn('Sign Out', 'st', () => {
       this._timer.stop();
@@ -1406,17 +1450,23 @@ class TamatemPopup {
 var Indicator = GObject.registerClass(
 class Indicator extends PanelMenu.Button {
   _init(path) {
-    super._init(0.0, 'Tamatem', false);
+    super._init(0.5, 'Tamatem', false);
+    this._path = path;
+
+    try {
+      this.setMenuAlignment(0.5);
+    } catch (_) {}
+    try {
+      if (this.menu) {
+        this.menu.sourceAlignment = 0.5;
+      }
+    } catch (_) {}
 
     this._box = new St.BoxLayout({
       style_class: 'panel-status-menu-box',
     });
 
-    const iconPath = Gio.File.new_for_path(`${path}/tamatem-icon.svg`);
-    const gicon = Gio.Icon.new_for_string(iconPath.get_path());
-
     this._icon = new St.Icon({
-      gicon,
       style_class: 'system-status-icon',
     });
     this._box.add_child(this._icon);
@@ -1431,6 +1481,30 @@ class Indicator extends PanelMenu.Button {
     this._box.add_child(this._label);
 
     this.add_child(this._box);
+
+    this._updateIcon();
+
+    try {
+      this._settings = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' });
+      this._settingsId = this._settings.connect('changed::color-scheme', () => {
+        this._updateIcon();
+      });
+    } catch (_) {}
+  }
+
+  _updateIcon() {
+    if (!this._icon || this._icon.already_disposed) return;
+    let isDarkMode = true;
+    try {
+      const settings = this._settings || new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' });
+      const scheme = settings.get_string('color-scheme');
+      isDarkMode = scheme !== 'prefer-light';
+    } catch (_) {}
+
+    const filename = isDarkMode ? 'tamatem-icon-dark.svg' : 'tamatem-icon-light.svg';
+    const iconPath = Gio.File.new_for_path(`${this._path}/${filename}`);
+    const gicon = Gio.Icon.new_for_string(iconPath.get_path());
+    this._icon.gicon = gicon;
   }
 
   setTimerLabel(t) {
@@ -1441,6 +1515,13 @@ class Indicator extends PanelMenu.Button {
     } else {
       this._label.hide();
     }
+  }
+
+  destroy() {
+    if (this._settings && this._settingsId) {
+      this._settings.disconnect(this._settingsId);
+    }
+    super.destroy();
   }
 });
 
@@ -1461,8 +1542,10 @@ export default class TamatemExtension extends Extension {
 
     this._popup = new TamatemPopup(this._indicator, this._api, this._blocker, this._timer);
 
-    // Show timer on indicator if running
-    if (this._timer.isRunning) {
+    // Show timer on indicator if running or log if completed while extension was off
+    if (this._timer.isDone) {
+      this._popup._onTimerComplete();
+    } else if (this._timer.isRunning) {
       this._timer.onComplete(() => this._popup._onTimerComplete());
       this._timer.tick((remaining) => {
         this._indicator.setTimerLabel(fmt(remaining));

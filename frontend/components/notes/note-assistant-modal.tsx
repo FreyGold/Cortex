@@ -153,7 +153,7 @@ export function NoteAssistantModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[90vw] sm:h-[90vh] p-0 flex flex-col bg-background border-border/40 shadow-2xl transition-all overflow-hidden">
+      <DialogContent className="flex h-[85vh] max-h-[850px] flex-col p-0 w-full max-w-[calc(100%-2rem)] sm:max-w-[85vw] md:max-w-[950px] bg-background border-border/40 shadow-2xl transition-all overflow-hidden">
         <DialogHeader className="p-6 pb-4 border-b border-border/10 flex flex-row items-center justify-between gap-4 bg-muted/5 z-30">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/5">

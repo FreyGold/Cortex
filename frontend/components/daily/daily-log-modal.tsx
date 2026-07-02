@@ -36,8 +36,7 @@ export function DailyLogModal({
             animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12, rotateX: 5 }}
             transition={{ duration: 0.3, ease: EASE_OUT }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-2xl shadow-black/10 border border-border/20 flex flex-col overflow-hidden"
-            style={{ width: "52vw", height: "80vh" }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-2xl shadow-black/10 border border-border/20 flex flex-col overflow-hidden w-full max-w-[calc(100%-2rem)] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl h-[85vh] max-h-[850px]"
           >
             <DailyLogView date={date} workspaceId={workspaceId} />
           </motion.div>

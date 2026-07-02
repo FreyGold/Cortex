@@ -30,8 +30,7 @@ export function AssistantModal({ isOpen, onOpenChange }: AssistantModalProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 8 }}
         transition={{ duration: 0.25, ease: EASE_OUT }}
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-modal overflow-hidden flex flex-col"
-        style={{ width: "42vw", height: "80vh" }}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-modal overflow-hidden flex flex-col w-full max-w-[calc(100%-2rem)] sm:max-w-3xl h-[85vh] max-h-[850px]"
       >
         <div className="flex-1 overflow-hidden">
           <DailyAssistant onClose={() => onOpenChange(false)} />

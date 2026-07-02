@@ -35,7 +35,8 @@ export default async function SettingsPage(props: {
   const profile = session.profile;
 
   return (
-    <main className="container mx-auto max-w-5xl px-4 py-8 md:py-16 flex-1 overflow-y-auto custom-scrollbar">
+    <div className="w-full h-full overflow-y-auto custom-scrollbar flex-1">
+      <main className="container mx-auto max-w-5xl px-4 py-8 md:py-16">
       <div className="mb-10 space-y-2">
         <h1 className="text-4xl font-bold tracking-tight text-foreground/90">
           {t("title")}
@@ -168,5 +169,6 @@ export default async function SettingsPage(props: {
         )}
       </div>
     </main>
+    </div>
   );
 }

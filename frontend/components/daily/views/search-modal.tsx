@@ -73,8 +73,7 @@ export function SearchModal({ isOpen, onOpenChange }: SearchModalProps) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 8 }}
         transition={{ duration: 0.25, ease: EASE_OUT }}
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-modal overflow-hidden flex flex-col"
-        style={{ width: "44vw", height: "80vh" }}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-2xl shadow-modal overflow-hidden flex flex-col w-full max-w-[calc(100%-2rem)] sm:max-w-3xl h-[85vh] max-h-[850px]"
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-border/5 shrink-0">
           <div className="flex items-center gap-2">
