@@ -7,7 +7,7 @@ interface SelectionIndicatorProps {
   className?: string;
 }
 
-function SelectionIndicator({
+export function SelectionIndicator({
   isSelected,
   className,
 }: SelectionIndicatorProps) {
@@ -30,7 +30,7 @@ interface SelectedRowProps {
   onMouseEnter?: () => void;
 }
 
-function SelectedRow({
+export function SelectedRow({
   isSelected,
   children,
   className,

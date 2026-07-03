@@ -1,16 +1,16 @@
 # Section 1 — Technical Reference
 # System Architecture, Technology Decisions & Project Vision
-**Presenter:** Ahmed Tawfik — Project Architect & Lead Developer
+**Presenter:** Ahmed Tawfik — Team Leader & System Architect
 
 ---
 
-> *"I designed this system, made every architectural decision, built the backend, the frontend, the database layer, the AI integration, the Chrome extension, the GNOME extension, and the deployment pipeline. The other six sections exist because I built a platform large enough to require six people to explain it."*
+> *"We designed this system, made every architectural decision, and built the backend, frontend, database layer, AI integrations, Chrome extension, GNOME extension, and deployment pipeline as a cohesive engineering team. The seven sections of this project exist to cover the complete scope of our collaborative effort."*
 
 ---
 
 ## 1. What Is Cortex?
 
-Cortex is a **bilingual, AI-powered academic workspace** built specifically for Egyptian university students. It is not a note app with extra features. It is a unified platform where five distinct tools — that students currently use in five separate apps — exist as one coherent system that shares data, context, and intelligence between them.
+Cortex is a **bilingual, AI-powered academic workspace** built specifically for Egyptian university students. It is not a note app with extra features. It is a unified platform where five distinct tools — which students currently use in five separate apps — exist as one coherent system that shares data, context, and intelligence.
 
 ### The Five Systems Inside Cortex
 
@@ -49,16 +49,16 @@ This makes Cortex one of the few academic platforms that extends its functionali
 
 ## 3. Why This System Exists
 
-I did not start by picking technologies. I started by living the problem.
+We did not start by picking technologies. We started by living the problem.
 
-As a university student at Menoufia University, my academic life was spread across a dozen disconnected tools:
+As university students at Menoufia University, our academic lives were spread across a dozen disconnected tools:
 - Study notes in Google Docs — no AI, no structure, no connection to courses
 - Lecture materials in a WhatsApp group that expires and is unsearchable
-- A habit tracker on my phone that knows nothing about my curriculum
-- ChatGPT that answers from the internet but has never read my notes
+- A habit tracker on our phone that knows nothing about our curriculum
+- ChatGPT that answers from the internet but has never read our notes
 - No single tool designed for Arabic-speaking university students
 
-Every tool was built for someone else. None of them talked to each other. **Cortex is my answer.** A ground-up system where every feature was designed to work with every other feature, in Arabic and English, from day one.
+Every tool was built for someone else. None of them talked to each other. **Cortex is our answer.** A ground-up system where every feature was designed to work with every other feature, in Arabic and English, from day one.
 
 ---
 
@@ -68,9 +68,9 @@ Every tool was built for someone else. None of them talked to each other. **Cort
 
 The most important decision: **the frontend never calls the database directly**. Everything goes through the Express API.
 
-Supabase provides two access modes: a public anon key (safe), and a service role key that bypasses all security policies and has full admin database access. Many projects use both from the frontend. I explicitly refused.
+Supabase provides two access modes: a public anon key (safe), and a service role key that bypasses all security policies and has full admin database access. Many projects use both from the frontend. We explicitly refused.
 
-The service role key lives only on the Railway backend — a server the browser never contacts. Even if there is a bug in the frontend code, even if an attacker manipulates a network request — the database remains protected because the backend is the only gatekeeper.
+The service role key lives only on the Railway backend — a server the browser never contacts. Even if there is a bug in the frontend code, even if an attacker manipulates a request — the database remains protected because the backend is the only gatekeeper.
 
 This also makes adding new clients trivial. The Chrome extension, the GNOME extension, and a future mobile app all call the same Express API. They do not need to know anything about Supabase. The API is the product.
 
@@ -169,10 +169,10 @@ CORTEX PLATFORM
 
 ## 6. What the Six Sections That Follow Are About
 
-The six presenters after me explain the subsystems I built. Each goes deep on code, schemas, and data flows. The architecture they are presenting, and every decision behind why their feature works the way it does, was mine.
+The six presenters after me explain the subsystems they worked on. Each goes deep on code, schemas, and data flows. The architecture they are presenting, and every decision behind why their feature works the way it does, was designed in alignment with our shared system architecture.
 
-| Section | Domain | What I decided that they explain |
-|---------|--------|----------------------------------|
+| Section | Domain | System Decisions |
+|---------|--------|------------------|
 | 2 — Auth | JWT, sessions, profiles | Two-client Supabase pattern, verified profile via backend, profile-aware redirect |
 | 3 — Notes | Editor, sharing, organization | Plate.js JSON AST, content_text extraction, sharing roles, auto-save debounce |
 | 4 — AI | RAG, embeddings, streaming | pgvector similarity search, three-layer AI design, Gemini for embeddings |

@@ -5,7 +5,7 @@ import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Switch({
+export function Switch({
   className,
   size = "default",
   ...props

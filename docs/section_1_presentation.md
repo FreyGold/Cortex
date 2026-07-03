@@ -1,28 +1,28 @@
 # Section 1 — Presentation Script
 # System Architecture, Technology Decisions & Project Vision
-**Presenter:** Ahmed Tawfik — Project Architect & Lead Developer  
+**Presenter:** Ahmed Tawfik — Team Leader & System Architect  
 **Estimated time:** 14–16 minutes  
-**Tone:** Confident, narrative-driven, owning the room
+**Tone:** Confident, collaborative, professional, visionary
 
 ---
 
 > **Before you step up:**  
-> You built everything in this presentation — and everything in the five presentations after yours. Walk up there knowing that. When you say "I built this," you mean it literally.
+> You led the architectural design and engineering of this project. While presenting the system, emphasize the collaborative effort of the team, showing how your architectural guidance empowered everyone to build a cohesive, integrated workspace.
 
 ---
 
 ## SLIDE 1 — Title Slide
 **Title:** Cortex — A Bilingual AI-Powered Academic Workspace  
 **Subtitle:** Architecture, Vision & Engineering Decisions  
-**Your name:** Ahmed Tawfik — Lead Developer & System Architect
+**Your name:** Ahmed Tawfik — Team Leader & System Architect
 
 **Speaker notes:**  
-"My name is Ahmed Tawfik. I designed and built Cortex from scratch. Every feature you will see in the next six presentations — the notes system, the AI, the resource catalog, the daily planner, the extensions — was built by me.
+"My name is Ahmed Tawfik. I am the team leader and system architect for Cortex. Together with my team, we designed and built Cortex from the ground up as a unified academic platform.
 
-Today I will do two things: show you what Cortex is as a product, and explain every architectural decision that holds it together."
+Today, I will present the core architecture, product vision, and technology decisions that tie this entire platform together. Following my presentation, my teammates will walk you through the deep technical details of the subsystems we built."
 
 *(Pause. Then:)*  
-"Let me start with the problem."
+"Let me start with the problem we set out to solve."
 
 ---
 
@@ -48,10 +48,10 @@ Today I will do two things: show you what Cortex is as a product, and explain ev
 
 These five tools share nothing. They cannot work together. You switch between them constantly, losing context every time.
 
-I was this student. I lived this exact frustration. And instead of looking for a better app, I built one that replaces all five."
+As university students, we lived this exact frustration. And instead of looking for a better app, our team set out to build a unified workspace that replaces all five."
 
 **Timing:** 1.5 minutes  
-**Transition:** "Let me show you what I built."
+**Transition:** "Let me show you the product we created."
 
 ---
 
@@ -112,11 +112,11 @@ And there are two more I haven't mentioned yet."
 - Both connect to the same Express backend with the same authentication
 
 **Speaker notes:**  
-"I didn't stop at the website. I built two native integrations.
+"We didn't stop at the website. We built two native integrations.
 
 The Chrome extension runs the Pomodoro timer in a background process that Chrome keeps alive even when you close the tab. During focus sessions, it activates network-level blocking rules — sites like YouTube are blocked at the HTTP request layer, not through a JavaScript overlay you can bypass.
 
-But I also built a GNOME Shell extension called Tamatem. GNOME is the desktop environment for Ubuntu, Fedora, and most Linux distributions — which many computer science students use. Tamatem puts a live Pomodoro timer directly in the system's top bar. It blocks sites at the operating system level. And it syncs completed sessions to the same Cortex backend through the same API.
+But we also built a GNOME Shell extension called Tamatem. GNOME is the desktop environment for Ubuntu, Fedora, and most Linux distributions — which many computer science students use. Tamatem puts a live Pomodoro timer directly in the system's top bar. It blocks sites at the operating system level. And it syncs completed sessions to the same Cortex backend through the same API.
 
 Think about what that means: a student can use the web app on any device, the Chrome extension in their browser, or the GNOME extension on their Linux desktop — and all three share the same notes, the same leaderboard, the same data. One login. One system."
 
@@ -275,7 +275,7 @@ The social layer is what makes all of this stick. You add friends, you see their
 `Browser → Supabase` ❌ — never, ever
 
 **Speaker notes:**  
-"The architecture I designed has one rule that governs everything: no client — web, Chrome extension, or GNOME extension — ever talks to the database directly. Everything goes through the Express backend.
+"The architecture we designed has one rule that governs everything: no client — web, Chrome extension, or GNOME extension — ever talks to the database directly. Everything goes through the Express backend.
 
 This matters because Supabase has an admin key that bypasses all security. That key lives only on the Railway server. No client, no browser, no extension ever sees it.
 
@@ -288,10 +288,10 @@ Every client — three different clients, three different platforms — calls th
 ---
 
 ## SLIDE 10 — Technology Choices That Were Not Accidents
-**Title:** Why Each Technology — What I Rejected and Why
+**Title:** Why Each Technology — Our Reasoning
 
 **Table:**
-| I chose | Over | Because |
+| We chose | Over | Because |
 |---------|------|---------|
 | **Plate.js** | Quill, TipTap | Produces JSON AST — AI can process it cleanly. Quill produces HTML. |
 | **Google Gemini** | OpenAI, Anthropic | Arabic quality + cheapest + the only provider with both chat AND embedding models |
@@ -304,9 +304,9 @@ Every client — three different clients, three different platforms — calls th
 **Speaker notes:**  
 "None of these choices were defaults. Every one was made after evaluating the alternative.
 
-The most consequential: Plate.js produces structured JSON; Quill produces HTML. This single choice is what made clean AI processing of note content possible. If I had chosen Quill, every AI operation would require parsing and stripping HTML — fragile and slow.
+The most consequential: Plate.js produces structured JSON; Quill produces HTML. This single choice is what made clean AI processing of note content possible. If we had chosen Quill, every AI operation would require parsing and stripping HTML — fragile and slow.
 
-The second most consequential: Gemini over OpenAI. Better Arabic, dramatically cheaper, and the only provider that gives me a quality embedding model alongside a quality chat model in one API.
+The second most consequential: Gemini over OpenAI. Better Arabic, dramatically cheaper, and the only provider that gives us a quality embedding model alongside a quality chat model in one API.
 
 And the separate Express backend — not for complexity's sake, but because three different clients need to share one API without any of them having access to the database admin key."
 
@@ -314,11 +314,11 @@ And the separate Express backend — not for complexity's sake, but because thre
 
 ---
 
-## SLIDE 11 — What I Built — The Whole List
-**Title:** Scope
+## SLIDE 11 — The Scope of Our System
+**Title:** Cortex System Architecture Scope
 
 **Table:**
-| Component | What I built |
+| Component | Scope |
 |-----------|-------------|
 | 44 database migrations | Every table, index, RLS policy, pgvector schema, trigger, SQL RPC function |
 | 7 backend service domains | Auth, Notes, Daily, Data, AI, Admin, Workspace — Controller + Service + Repository each |
@@ -332,9 +332,9 @@ And the separate Express backend — not for complexity's sake, but because thre
 | Production deployment | Vercel + Railway + Supabase — environment variable isolation, CI/CD, health checks |
 
 **Speaker notes:**  
-"This is the full scope of the project. 44 migrations. 50 API endpoints. Three complete client applications. Three AI systems. Two languages. One backend.
+"This represents the full engineering scope of the system we built. 44 migrations, 50 API endpoints, three clients, and three AI subsystems.
 
-I am not presenting the architecture of a project I managed or delegated. I am presenting the architecture of a system I built — every layer, every file, every decision. The six presentations that follow go deep into the subsystems. Any question about why those systems are designed the way they are is a question for me."
+As a team, we divided the engineering tasks across these domains while maintaining a unified, modular architecture. The six presentations that follow go deep into each of these subsystems. As the lead architect, I will be happy to answer any questions about the overall design and system integration."
 
 **Timing:** 1 minute  
 
@@ -352,14 +352,14 @@ I am not presenting the architecture of a project I managed or delegated. I am p
 - **Section 7:** Admin panel, Arabic/English, Chrome + GNOME extensions, deployment
 
 **Speaker notes:**  
-"Everything that follows is a deep dive into decisions I made. I'll take any architecture questions now — or save them for the end."
+"Everything that follows is a deep dive into the subsystems my team implemented under this architecture. I'll take any architecture or design questions now — or save them for the end of the presentation."
 
 ---
 
 ## Q&A Prep
 
 **Q: What is the GNOME extension and why did you build it?**  
-A: GNOME is the desktop environment used by most Linux distributions — Ubuntu, Fedora, and others. A GNOME Shell extension integrates directly into the desktop's top bar. I built Tamatem (`tamatem@frey.dev`) so that Linux users — especially CS students who are likely on Linux — can have a persistent Pomodoro timer in their system tray and site blocking at the OS level, with no browser tab required. It connects to the same Express API with the same JWT authentication as the web app and Chrome extension.
+A: GNOME is the desktop environment used by most Linux distributions — Ubuntu, Fedora, and others. A GNOME Shell extension integrates directly into the desktop's top bar. We built Tamatem (`tamatem@frey.dev`) so that Linux users — especially CS students who are likely on Linux — can have a persistent Pomodoro timer in their system tray and site blocking at the OS level, with no browser tab required. It connects to the same Express API with the same JWT authentication as the web app and Chrome extension.
 
 **Q: Why did you build both a Chrome extension AND a GNOME extension?**  
 A: Different students use different environments. A Windows or macOS student uses the Chrome extension. A Linux student using GNOME gets native OS integration through Tamatem. Both are clients of the same API, so their sessions appear on the same leaderboard regardless of which interface they used.
@@ -367,7 +367,7 @@ A: Different students use different environments. A Windows or macOS student use
 **Q: Why not use Next.js API routes instead of a separate Express backend?**  
 A: Two reasons. First: the database service role key must live on an infrastructure environment completely separate from the frontend deployment — Next.js API routes run on Vercel alongside the frontend, creating key exposure risk. Second: three separate clients (web, Chrome, GNOME) need one shared API. That API should not be a Next.js implementation detail. It is a first-class service.
 
-**Q: How does sharing data across three clients (web, Chrome, GNOME) actually work?**  
+**Q: How does sharing data across three clients (web, Chrome, GNOME) work?**  
 A: All three authenticate using the same JWT from Supabase Auth — stored in a cookie for the web app, in `chrome.storage.local` for the Chrome extension, and in GNOME's settings storage for the GNOME extension. All three make HTTP calls to the same Railway Express backend with `Authorization: Bearer <token>`. The backend does not care which client is calling — it verifies the token and processes the request identically.
 
 **Q: What was the hardest part of building this?**  

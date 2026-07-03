@@ -28,7 +28,7 @@ function formatShortcut(shortcut: KeyboardShortcut): string {
   return parts.join(isMac ? "" : "+");
 }
 
-function KeyboardShortcutBadge({
+export function KeyboardShortcutBadge({
   shortcut,
   variant = "default",
   className,

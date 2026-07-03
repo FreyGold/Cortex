@@ -4,7 +4,7 @@ import { CopilotPlugin } from "@platejs/ai/react";
 import { useElement, usePluginOption } from "platejs/react";
 import * as React from "react";
 
-function GhostText() {
+export function GhostText() {
   const element = useElement();
 
   const isSuggested = usePluginOption(

@@ -194,10 +194,10 @@ export const aiChatPlugin = AIChatPlugin.extend({
             if (newNodes.length === 0) return;
 
             const blockPath = editor.getOption(AIChatPlugin, "_blockPath");
-            const streamEndPath = editor.getOption(
+            const streamEndPath = (editor.getOption(
               AIChatPlugin,
-              "_streamEndPath",
-            );
+              "_streamEndPath" as any,
+            ) as any);
 
             if (!blockPath) return;
 
@@ -226,7 +226,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
                 lastInsertedLength,
               );
             } else {
-              const insertPath = streamEndPath || blockPath;
+              const insertPath = (streamEndPath || blockPath) as any;
 
               editor.tf.insertNodes(newNodes, { at: insertPath, select: true });
 

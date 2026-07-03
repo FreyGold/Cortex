@@ -5,7 +5,7 @@ import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Progress({
+export function Progress({
   className,
   value,
   ...props

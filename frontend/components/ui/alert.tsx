@@ -19,7 +19,7 @@ const alertVariants = cva(
   },
 );
 
-function Alert({
+export function Alert({
   className,
   variant,
   ...props
@@ -47,7 +47,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function AlertDescription({
+export function AlertDescription({
   className,
   ...props
 }: React.ComponentProps<"div">) {

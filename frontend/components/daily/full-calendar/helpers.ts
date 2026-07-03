@@ -84,7 +84,7 @@ export function navigateDate(
   return operations[view](date, 1);
 }
 
-function getEventsCount(
+export function getEventsCount(
   events: IEvent[],
   date: Date,
   view: TCalendarView,

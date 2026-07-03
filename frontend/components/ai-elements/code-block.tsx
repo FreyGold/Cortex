@@ -426,7 +426,7 @@ const CodeBlockContent = ({
   );
 };
 
-const CodeBlock = ({
+export const CodeBlock = ({
   code,
   language,
   showLineNumbers = false,

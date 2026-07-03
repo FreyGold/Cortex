@@ -55,7 +55,7 @@ export type ReasoningProps = ComponentProps<typeof Collapsible> & {
 const AUTO_CLOSE_DELAY = 1000;
 const MS_IN_S = 1000;
 
-const Reasoning = memo(
+export const Reasoning = memo(
   ({
     className,
     isStreaming = false,
@@ -164,7 +164,7 @@ const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number) => {
   return <p>Thought for {duration} seconds</p>;
 };
 
-const ReasoningTrigger = memo(
+export const ReasoningTrigger = memo(
   ({
     className,
     children,
@@ -206,7 +206,7 @@ export type ReasoningContentProps = ComponentProps<
 
 const streamdownPlugins = { cjk, code, math, mermaid };
 
-const ReasoningContent = memo(
+export const ReasoningContent = memo(
   ({ className, children, ...props }: ReasoningContentProps) => (
     <CollapsibleContent
       className={cn(

@@ -1,6 +1,6 @@
 import type { TEventColor } from "@/components/daily/full-calendar/types";
 
-const COLORS: TEventColor[] = [
+export const COLORS: TEventColor[] = [
   "blue",
   "green",
   "red",

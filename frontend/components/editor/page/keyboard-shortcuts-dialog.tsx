@@ -25,7 +25,7 @@ interface KeyboardShortcutsDialogProps {
   shortcuts: EditorShortcut[];
 }
 
-function KeyboardShortcutsDialog({
+export function KeyboardShortcutsDialog({
   open,
   onOpenChange,
   shortcuts,

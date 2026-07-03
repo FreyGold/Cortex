@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import type { EditorShortcut } from "./editor-shortcuts";
 import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog";
 
+export { KeyboardShortcutsDialog };
+
 interface EditorHeaderProps {
   lastSaved: Date | null;
   onExport: () => void;
@@ -26,7 +28,7 @@ interface EditorHeaderProps {
   title?: string;
 }
 
-function EditorHeader({
+export function EditorHeader({
   lastSaved,
   onExport,
   onSave,

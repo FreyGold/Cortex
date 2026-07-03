@@ -4,7 +4,7 @@ import type {
   IUser,
 } from "@/components/daily/full-calendar/interfaces";
 
-const USERS_MOCK: IUser[] = [
+export const USERS_MOCK: IUser[] = [
   {
     id: "f3b035ac-49f7-4e92-a715-35680bf63175",
     name: "Michael Doe",
@@ -195,4 +195,4 @@ const mockGenerator = (numberOfEvents: number): IEvent[] => {
   return result;
 };
 
-const CALENDAR_ITEMS_MOCK: IEvent[] = mockGenerator(80);
+export const CALENDAR_ITEMS_MOCK: IEvent[] = mockGenerator(80);

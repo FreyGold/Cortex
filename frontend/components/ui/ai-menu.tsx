@@ -150,7 +150,7 @@ export function AIMenu() {
   });
 
   const isLoading = status === "streaming" || status === "submitted";
-  const justFinished = !isLoading && status === "finished";
+  const justFinished = !isLoading && (status as string) === "finished";
   const hasContent = messages && messages.length > 0;
   const showAcceptMenu = hasContent || (toolName === "generate" && mode === "insert" && justFinished);
 

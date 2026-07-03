@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export type SuggestionsProps = ComponentProps<typeof ScrollArea>;
 
-const Suggestions = ({
+export const Suggestions = ({
   className,
   children,
   ...props
@@ -26,7 +26,7 @@ export type SuggestionProps = Omit<ComponentProps<typeof Button>, "onClick"> & {
   onClick?: (suggestion: string) => void;
 };
 
-const Suggestion = ({
+export const Suggestion = ({
   suggestion,
   onClick,
   className,

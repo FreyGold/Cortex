@@ -436,7 +436,7 @@ export function useDeleteGroup() {
   });
 }
 
-function useAddGroupMember() {
+export function useAddGroupMember() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ groupId, email }: { groupId: string; email: string }) => {
@@ -475,7 +475,7 @@ export function useCreateGroupInvitation() {
   });
 }
 
-function useGetGroupInvitations(groupId: string | null) {
+export function useGetGroupInvitations(groupId: string | null) {
   return useQuery({
     queryKey: ["group-invitations", groupId],
     queryFn: async () => {

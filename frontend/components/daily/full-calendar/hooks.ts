@@ -50,7 +50,7 @@ export const useLocalStorage = <T>(
   return [storedValue, setValue];
 };
 
-function useMediaQuery(query: string): boolean {
+export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-function CalendarHeaderSkeleton() {
+export function CalendarHeaderSkeleton() {
   return (
     <div className="flex items-center justify-between border-b px-4 py-2">
       <div className="flex items-center gap-2">
