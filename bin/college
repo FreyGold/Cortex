@@ -9,15 +9,16 @@ trap "kill 0" EXIT
 
 echo "🚀 Starting College Knowledge Hub..."
 
-# Start Backend
+# Start Backend (always in dev mode)
 echo "📡 Starting Backend..."
 (cd "$ROOT_DIR/backend" && pnpm dev) &
 
-# Build & Start Frontend
 if [ "$1" == "-dev" ]; then
+  # Start Frontend in Dev Mode (no build)
   echo "💻 Starting Frontend (development)..."
   (cd "$ROOT_DIR/frontend" && pnpm dev) &
 else
+  # Build & Start Frontend in Production Mode
   echo "🏗️  Building Frontend..."
   (cd "$ROOT_DIR/frontend" && pnpm build) || { echo "❌ Frontend build failed"; exit 1; }
 

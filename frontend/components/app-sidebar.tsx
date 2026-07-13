@@ -78,10 +78,7 @@ import {
   useUpdateNote,
 } from "@/hooks/use-notes";
 import { useCurrentProfile } from "@/hooks/use-profile";
-import {
-  useJoinedWorkspaces,
-  useWorkspaces,
-} from "@/hooks/use-workspace";
+import { useJoinedWorkspaces, useWorkspaces } from "@/hooks/use-workspace";
 import { cn } from "@/lib/utils";
 import { GlobalAssistantModal } from "@/components/notes/global-assistant-modal";
 
@@ -830,13 +827,6 @@ export function AppSidebar({
             {/* Quick Actions */}
             <div className="space-y-1">
               <NavButton
-                icon={Star}
-                label="Favorites"
-                onClick={() => navigateTo("/notes/favorites")}
-                active={pathname === "/notes/favorites"}
-                variant="ghost"
-              />
-              <NavButton
                 icon={Search}
                 label="Search"
                 onClick={() => navigateTo("/notes")}
@@ -852,7 +842,8 @@ export function AppSidebar({
             </div>
 
             {/* Favorites List */}
-            {pinnedNotes.filter((n) => n.title !== "Introduction").length > 0 && (
+            {pinnedNotes.filter((n) => n.title !== "Introduction").length >
+              0 && (
               <div className="space-y-1">
                 <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 block mb-1">
                   Favorites

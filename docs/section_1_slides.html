@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cortex — Presentation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --navy:#0a0e1a;
+  --card:#141d35;
+  --indigo:#4f46e5;
+  --violet:#7c3aed;
+  --sky:#38bdf8;
+  --green:#22c55e;
+  --red:#ef4444;
+  --amber:#f59e0b;
+  --white:#f0f4ff;
+  --dim:#8892b0;
+}
+
+html,body{
+  width:100%;height:100%;
+  overflow:hidden;
+  background:var(--navy);
+  color:var(--white);
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+
+/* ── DECK: the viewport ──────────────────────────── */
+#deck{
+  position:relative;
+  width:100vw;
+  height:calc(100vh - 52px); /* leave room for nav */
+  overflow:hidden;
+}
+
+/* ── SLIDES: stack all in same spot ─────────────── */
+.slide{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  padding:40px 64px 24px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  overflow:hidden;
+}
+.slide.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* ── NAV BAR ─────────────────────────────────────── */
+nav{
+  position:fixed;bottom:0;left:0;right:0;
+  height:52px;
+  background:rgba(10,14,26,.95);
+  border-top:1px solid rgba(79,70,229,.3);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  z-index:999;
+}
+nav button{
+  background:rgba(79,70,229,.2);
+  border:1px solid rgba(79,70,229,.5);
+  color:var(--white);
+  padding:6px 22px;border-radius:6px;
+  cursor:pointer;font-size:13px;
+  transition:background .2s;
+}
+nav button:hover{background:rgba(79,70,229,.5)}
+nav button:disabled{opacity:.3;cursor:default}
+#counter{font-size:13px;color:var(--dim)}
+.dots{display:flex;gap:6px}
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,.2);cursor:pointer;
+  transition:all .2s;
+}
+.dot.active{background:var(--indigo);transform:scale(1.3)}
+
+/* ── AMBIENT GLOW ────────────────────────────────── */
+.glow{
+  position:absolute;border-radius:50%;
+  filter:blur(90px);pointer-events:none;
+}
+
+/* ── COMMON ELEMENTS ─────────────────────────────── */
+.slide-num{
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--indigo);font-weight:600;margin-bottom:8px;
+}
+.slide-title{
+  font-size:34px;font-weight:800;line-height:1.15;
+  margin-bottom:24px;
+  background:linear-gradient(135deg,#fff 0%,#c7d2fe 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+/* BULLETS */
+.bullets{list-style:none;display:flex;flex-direction:column;gap:11px}
+.bullets li{
+  display:flex;align-items:flex-start;gap:12px;
+  font-size:15px;line-height:1.5;color:#cbd5e1;
+}
+.bullets li .ic{
+  flex-shrink:0;width:28px;height:28px;
+  background:rgba(79,70,229,.2);border:1px solid rgba(79,70,229,.4);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;margin-top:2px;
+}
+.bullets li strong{color:var(--white)}
+
+/* DIAGRAM IMAGE */
+.diag{width:100%;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+.two-wide{display:grid;grid-template-columns:2fr 3fr;gap:40px;align-items:center}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border:1px solid rgba(79,70,229,.25);
+  border-radius:12px;padding:16px;
+  position:relative;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--indigo),var(--violet));
+}
+.card h3{font-size:14px;font-weight:700;color:var(--white);margin-bottom:5px}
+.card p{font-size:12px;color:var(--dim);line-height:1.5}
+.tag{
+  display:inline-block;margin-top:7px;
+  background:rgba(79,70,229,.2);border:1px solid rgba(79,70,229,.4);
+  border-radius:4px;padding:2px 8px;font-size:11px;color:#a5b4fc;
+}
+.card .ci{font-size:22px;margin-bottom:8px}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+
+/* EXT CARD */
+.ext-card{
+  background:var(--card);border:1px solid rgba(79,70,229,.25);
+  border-radius:14px;padding:22px;
+}
+.ext-card h3{font-size:16px;font-weight:800;margin-bottom:12px;color:var(--white)}
+.ext-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.ext-list li{font-size:13px;color:var(--dim);display:flex;gap:8px;align-items:flex-start}
+.ext-list li::before{content:'▸';color:var(--indigo);flex-shrink:0}
+.ext-list li strong{color:var(--white)}
+
+/* BADGE */
+.badge{
+  display:inline-block;
+  background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);
+  color:var(--green);border-radius:4px;padding:1px 8px;font-size:11px;font-weight:600;
+}
+.badge.am{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);color:var(--amber)}
+
+/* DECISION ROWS */
+.dec-list{display:flex;flex-direction:column;gap:8px}
+.dec-row{
+  display:grid;grid-template-columns:130px 1fr;gap:14px;align-items:center;
+  background:var(--card);border:1px solid rgba(79,70,229,.2);
+  border-radius:10px;padding:10px 16px;
+}
+.dec-row .ch{font-weight:700;font-size:14px;color:var(--white)}
+.dec-row .vs{font-size:11px;color:var(--red);margin-top:2px}
+.dec-row .why{font-size:12px;color:var(--dim);line-height:1.4}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:20px}
+.stat{
+  background:var(--card);border:1px solid rgba(79,70,229,.2);
+  border-radius:12px;padding:20px;text-align:center;
+}
+.stat .n{
+  font-size:40px;font-weight:900;line-height:1;margin-bottom:6px;
+  background:linear-gradient(135deg,var(--indigo),var(--violet));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.stat .l{font-size:12px;color:var(--dim)}
+
+/* DEPLOY */
+.dep{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
+.dep-card{
+  background:var(--card);border:1px solid rgba(79,70,229,.2);
+  border-radius:12px;padding:18px;text-align:center;
+}
+.dep-card .pl{font-size:20px;font-weight:900;color:var(--white);margin-bottom:4px}
+.dep-card .rl{font-size:11px;color:var(--dim);margin-bottom:10px}
+.dep-card ul{list-style:none;font-size:11px;color:#a5b4fc;display:flex;flex-direction:column;gap:3px}
+
+/* INFO BOX */
+.info{
+  background:rgba(79,70,229,.1);border:1px solid rgba(79,70,229,.3);
+  border-radius:8px;padding:11px 18px;font-size:13px;color:#a5b4fc;margin-top:14px;
+}
+.info-g{
+  background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);
+  border-radius:8px;padding:11px 18px;font-size:13px;color:#86efac;margin-top:14px;
+}
+
+/* CODE SNIPPET */
+.snippet{
+  background:rgba(15,22,41,.8);border:1px solid rgba(79,70,229,.2);
+  border-radius:8px;padding:12px 16px;font-family:monospace;font-size:12px;
+  color:#a5b4fc;margin-top:14px;
+}
+
+/* PILL */
+.pill{
+  display:inline-block;
+  background:rgba(79,70,229,.2);border:1px solid rgba(79,70,229,.5);
+  border-radius:999px;padding:5px 16px;font-size:12px;color:#a5b4fc;
+}
+
+/* ─────────────────────────────────────────────────── */
+/* SLIDE 1 — TITLE                                     */
+/* ─────────────────────────────────────────────────── */
+#s1{
+  align-items:center;text-align:center;
+  background:linear-gradient(135deg,#0a0e1a 0%,#0f1629 60%,#0a0e1a 100%);
+  justify-content:center;
+}
+.logo-box{
+  width:76px;height:76px;border-radius:20px;
+  background:linear-gradient(135deg,var(--indigo),var(--violet));
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;margin-bottom:24px;
+  box-shadow:0 0 40px rgba(79,70,229,.5);
+}
+#s1 h1{
+  font-size:72px;font-weight:900;line-height:1;margin-bottom:14px;
+  background:linear-gradient(135deg,#fff 0%,#a5b4fc 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+#s1 .sub{font-size:20px;color:var(--dim);margin-bottom:28px}
+.pill-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+<!-- ══ SLIDE 1 — TITLE ══════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="glow" style="width:500px;height:500px;background:rgba(79,70,229,.25);top:-150px;right:-100px;opacity:.6"></div>
+  <div class="glow" style="width:300px;height:300px;background:rgba(124,58,237,.2);bottom:-80px;left:-60px;opacity:.5"></div>
+  <div class="logo-box">🧠</div>
+  <h1>Cortex</h1>
+  <p class="sub">Bilingual AI-Powered Academic Workspace</p>
+  <div class="pill-row">
+    <span class="pill">🌐 Web App</span>
+    <span class="pill">🔌 Chrome Extension</span>
+    <span class="pill">🐧 GNOME Extension</span>
+    <span class="pill">🤖 AI-Powered</span>
+    <span class="pill">🇸🇦🇬🇧 Arabic + English</span>
+  </div>
+  <p style="margin-top:32px;font-size:13px;color:var(--dim)">Ahmed Tawfik · Team Lead &amp; System Architect</p>
+</div>
+
+<!-- ══ SLIDE 2 — THE PROBLEM ════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="slide-num">01 · The Problem</div>
+  <div class="slide-title">Every student is using 5 broken tools</div>
+  <img src="slide_problem.jpg" class="diag" alt="5 disconnected apps" style="max-height:52%;object-fit:contain"/>
+  <div class="bullets" style="flex-direction:row;flex-wrap:wrap;gap:14px;margin-top:16px">
+    <li style="flex:1;min-width:200px"><span class="ic">📝</span><span>Notes <strong>disconnected</strong> from courses &amp; AI</span></li>
+    <li style="flex:1;min-width:200px"><span class="ic">💬</span><span>Materials in <strong>expiring WhatsApp</strong> groups</span></li>
+    <li style="flex:1;min-width:200px"><span class="ic">🤖</span><span>ChatGPT <strong>never read</strong> your notes</span></li>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3 — THE SOLUTION ═══════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="slide-num">02 · The Solution</div>
+  <div class="slide-title">One platform. Five complete systems.</div>
+  <div class="g5">
+    <div class="card"><div class="ci">📝</div><h3>Notes</h3><p>Rich text editor with inline AI, folders, tags, sharing &amp; publish</p><span class="tag">Plate.js</span></div>
+    <div class="card"><div class="ci">📚</div><h3>Registry</h3><p>University catalog — courses, resources, doctors. Auto-filtered to your curriculum</p><span class="tag">Admin-managed</span></div>
+    <div class="card"><div class="ci">📅</div><h3>Daily Log</h3><p>Per-day journal with tasks, highlights, and AI-embedded content</p><span class="tag">Searchable by AI</span></div>
+    <div class="card"><div class="ci">🍅</div><h3>Pomodoro</h3><p>25 min focus, habits, streaks, friend leaderboard — resets weekly</p><span class="tag">Social</span></div>
+    <div class="card"><div class="ci">🤖</div><h3>AI Library</h3><p>Answers from YOUR notes via RAG — not the internet</p><span class="tag">Gemini + pgvector</span></div>
+  </div>
+  <div class="info">💡 Each system is a standalone product. All five share data, context, and intelligence.</div>
+</div>
+
+<!-- ══ SLIDE 4 — EXTENSIONS ════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="slide-num">03 · Beyond the Browser</div>
+  <div class="slide-title">Cortex lives outside the tab</div>
+  <div class="two-col">
+    <div class="ext-card">
+      <h3>🔌 Chrome Extension <span class="badge am">Manifest V3</span></h3>
+      <ul class="ext-list">
+        <li>Timer runs in <strong>background service worker</strong> — popup can be closed</li>
+        <li>Site blocking via <strong>declarativeNetRequest</strong> — HTTP level, unbypassable</li>
+        <li>5 tabs: Timer · Blocker · Social · History · Settings</li>
+        <li>Same JWT as web app — <strong>one login, one account</strong></li>
+        <li>Sessions sync → same leaderboard as web</li>
+      </ul>
+    </div>
+    <div class="ext-card">
+      <h3>🐧 GNOME Extension <span class="badge">Tamatem · tamatem@frey.dev</span></h3>
+      <ul class="ext-list">
+        <li>Persistent Pomodoro timer in the <strong>Linux system top bar</strong></li>
+        <li><strong>OS-level site blocking</strong> — modifies hosts/DNS, not browser-specific</li>
+        <li>Written in <strong>GJS</strong>, uses GNOME Shell APIs (v48–50)</li>
+        <li>Syncs sessions to same Cortex backend</li>
+        <li>For CS students on Ubuntu/Fedora — <strong>no browser required</strong></li>
+      </ul>
+    </div>
+  </div>
+  <div class="info-g">✅ Three clients · One login · Same data · Same leaderboard</div>
+</div>
+
+<!-- ══ SLIDE 5 — ARCHITECTURE ══════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="slide-num">04 · Architecture</div>
+  <div class="slide-title">Three clients. One backend. One rule.</div>
+  <div class="two-wide">
+    <div>
+      <ul class="bullets">
+        <li><span class="ic">⚠️</span><span><strong>The Rule:</strong> No client ever calls Supabase directly — always through Express</span></li>
+        <li><span class="ic">🔑</span><span><strong>Why:</strong> service role key bypasses ALL security — lives only on Railway</span></li>
+        <li><span class="ic">🏗️</span><span><strong>7 domains:</strong> Auth · Notes · Daily · Data · AI · Admin · Workspace</span></li>
+        <li><span class="ic">🔁</span><span>All 3 clients use same JWT → same Express API → same response</span></li>
+      </ul>
+    </div>
+    <div>
+      <img src="slide_architecture.jpg" class="diag" alt="Architecture diagram"/>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6 — BACKEND PATTERN ═══════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="slide-num">05 · Backend Pattern</div>
+  <div class="slide-title">Every domain — same three layers</div>
+  <div class="two-wide">
+    <div>
+      <ul class="bullets">
+        <li><span class="ic">🎮</span><span><strong>Controller</strong> — HTTP in/out, parse &amp; validate, format response. Zero logic.</span></li>
+        <li><span class="ic">⚙️</span><span><strong>Service</strong> — business logic, orchestration, cross-service calls. No DB.</span></li>
+        <li><span class="ic">🗃️</span><span><strong>Repository</strong> — ALL Supabase queries. Nothing else. Ever.</span></li>
+        <li><span class="ic">✅</span><span>Same structure enforced across all <strong>7 domains</strong></span></li>
+      </ul>
+      <div class="snippet">
+        <span style="color:#64748b">// Strict rule — no exceptions</span><br/>
+        Controller → Service → Repository<br/>
+        <span style="color:var(--red)">No Supabase calls outside Repository</span>
+      </div>
+    </div>
+    <div>
+      <img src="slide_backend.jpg" class="diag" alt="Backend layers"/>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7 — AI / RAG ══════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="slide-num">06 · AI System</div>
+  <div class="slide-title">Answers from your notes, not the internet</div>
+  <img src="slide_rag.jpg" class="diag" alt="RAG pipeline" style="max-height:45%;object-fit:contain;margin-bottom:16px"/>
+  <div class="g3">
+    <div class="card">
+      <h3>✍️ Editor AI</h3>
+      <p>Type <code style="background:rgba(79,70,229,.2);padding:1px 5px;border-radius:3px">/ai</code> or Ctrl+J → response streams into the document word by word</p>
+    </div>
+    <div class="card">
+      <h3>⚡ Note Tools</h3>
+      <p>Summarize &amp; tag suggestions run <strong>locally</strong> — no API call, instant, free</p>
+    </div>
+    <div class="card">
+      <h3>🔍 Library Assistant</h3>
+      <p>RAG over notes + daily logs — cites the exact source note per answer</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8 — TECH DECISIONS ════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="slide-num">07 · Technology Decisions</div>
+  <div class="slide-title">Nothing was a default</div>
+  <div class="dec-list">
+    <div class="dec-row">
+      <div><div class="ch">Plate.js</div><div class="vs">vs Quill, TipTap</div></div>
+      <div class="why">Produces <strong>structured JSON</strong> — backend walks the tree for AI text extraction. Quill produces HTML → brittle to parse.</div>
+    </div>
+    <div class="dec-row">
+      <div><div class="ch">Gemini</div><div class="vs">vs OpenAI, Anthropic</div></div>
+      <div class="why"><strong>Best Arabic quality</strong> · 100–400× cheaper than GPT-4 · only provider with both quality chat AND embedding in one API</div>
+    </div>
+    <div class="dec-row">
+      <div><div class="ch">Supabase</div><div class="vs">vs Firebase, raw PG</div></div>
+      <div class="why"><strong>RLS + pgvector + Auth</strong> bundled. Firebase is NoSQL — incompatible with our 44-migration relational schema.</div>
+    </div>
+    <div class="dec-row">
+      <div><div class="ch">Next.js 15</div><div class="vs">vs Vite SPA</div></div>
+      <div class="why"><strong>Server Components</strong> render catalog on server — instant, no JS loading state. Admin guards run server-side.</div>
+    </div>
+    <div class="dec-row">
+      <div><div class="ch">Separate Express</div><div class="vs">vs Next.js routes</div></div>
+      <div class="why">Service role key must be isolated from Vercel. <strong>3 clients</strong> need one shared API — not a frontend implementation detail.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9 — DEPLOYMENT + NUMBERS ══════════════════════ -->
+<div class="slide" id="s9">
+  <div class="slide-num">08 · Deployment &amp; Scale</div>
+  <div class="slide-title">Three platforms, one system</div>
+  <div class="dep">
+    <div class="dep-card">
+      <div class="pl">Vercel</div><div class="rl">Frontend · Global CDN</div>
+      <ul><li>Next.js 15 + React 19</li><li>Server Components</li><li>Only NEXT_PUBLIC_* vars</li><li>Auto-deploy on push</li></ul>
+    </div>
+    <div class="dep-card">
+      <div class="pl">Railway</div><div class="rl">Backend · Docker</div>
+      <ul><li>Express.js API</li><li>Holds service role key 🔑</li><li>Gemini API key</li><li>Auto-restart on crash</li></ul>
+    </div>
+    <div class="dep-card">
+      <div class="pl">Supabase</div><div class="rl">Database + Auth</div>
+      <ul><li>PostgreSQL 15</li><li>pgvector (768-dim)</li><li>Row-Level Security</li><li>44 SQL migrations</li></ul>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="n">44</div><div class="l">SQL migrations</div></div>
+    <div class="stat"><div class="n">100+</div><div class="l">API endpoints</div></div>
+    <div class="stat"><div class="n">36</div><div class="l">DB tables</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">Client apps</div></div>
+    <div class="stat"><div class="n">15K+</div><div class="l">TypeScript lines</div></div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10 — Q&A ═══════════════════════════════════════ -->
+<div class="slide" id="s10" style="align-items:center;justify-content:center;text-align:center">
+  <div class="glow" style="width:600px;height:600px;background:rgba(79,70,229,.2);top:50%;left:50%;transform:translate(-50%,-50%);position:absolute"></div>
+  <div style="position:relative;z-index:1">
+    <div style="font-size:80px;margin-bottom:20px">🙋</div>
+    <div class="slide-title" style="text-align:center;font-size:52px">Questions?</div>
+    <p style="color:var(--dim);font-size:16px;max-width:520px;margin:0 auto 28px;line-height:1.7">
+      Architecture · Tech choices · Security<br/>RAG pipeline · Extensions · Deployment
+    </p>
+    <div class="pill-row">
+      <span class="pill">Menoufia University · 2026</span>
+      <span class="pill">Ahmed Tawfik — Team Lead</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ── NAV ─────────────────────────────────────────────────── -->
+<nav>
+  <button id="prev" onclick="go(-1)" disabled>← Prev</button>
+  <div style="display:flex;align-items:center;gap:18px">
+    <div class="dots" id="dots"></div>
+    <span id="counter">1 / 10</span>
+  </div>
+  <button id="next" onclick="go(1)">Next →</button>
+</nav>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const dotsEl = document.getElementById('dots');
+let cur = 0;
+
+slides.forEach((_,i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' active':'');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+});
+
+function goTo(n){
+  slides[cur].classList.remove('active');
+  dotsEl.children[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, slides.length-1));
+  slides[cur].classList.add('active');
+  dotsEl.children[cur].classList.add('active');
+  document.getElementById('counter').textContent = `${cur+1} / ${slides.length}`;
+  document.getElementById('prev').disabled = cur===0;
+  document.getElementById('next').disabled = cur===slides.length-1;
+}
+function go(d){ goTo(cur+d); }
+
+document.addEventListener('keydown', e => {
+  if(e.key==='ArrowRight'||e.key===' ') go(1);
+  if(e.key==='ArrowLeft') go(-1);
+});
+</script>
+</body>
+</html>

@@ -846,16 +846,7 @@ export function NotesSidebar({ onToggle }: NotesSidebarProps) {
             <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
               Notes
             </div>
-            <NavButton
-              icon={Star}
-              label="Favorites"
-              onClick={() =>
-                router.push(
-                  `/notes/favorites${currentWorkspaceId ? `?workspaceId=${currentWorkspaceId}` : ""}`,
-                )
-              }
-              active={pathname === "/notes/favorites"}
-            />
+
             <NavButton
               icon={Search}
               label="Search"
