@@ -71,6 +71,11 @@ app.use("/api/daily", dailyRouter);
 
 const port = Number(process.env.PORT ?? 4000);
 
-app.listen(port, () => {
-  console.log(`Backend server running on http://localhost:${port}`);
-});
+// Only start the HTTP server when running locally (not on Vercel)
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
+    console.log(`Backend server running on http://localhost:${port}`);
+  });
+}
+
+export default app;
