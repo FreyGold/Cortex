@@ -76,8 +76,15 @@ export default async function RootLayout({
                   } else if (theme === 'light') {
                     document.documentElement.classList.remove('dark');
                   } else if (theme === 'system') {
-                    if (supportDarkMode) document.documentElement.classList.add('dark');
+                    if (supportDarkMode) {
+                      document.documentElement.classList.add('dark');
+                    } else {
+                      document.documentElement.classList.remove('dark');
+                    }
                   }
+
+                  var appTheme = localStorage.getItem('app-theme') || 'midnight';
+                  document.documentElement.setAttribute('data-theme', appTheme);
                 } catch (e) {}
               })();
             `,

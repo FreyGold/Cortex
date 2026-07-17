@@ -65,7 +65,10 @@ export default async function Home() {
   ];
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background min-h-screen bg-dot-pattern relative overflow-hidden">
+      {/* Decorative top-center glow */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[380px] w-[600px] -translate-x-1/2 rounded-full bg-primary/10 blur-[120px] dark:bg-primary/5" />
+      
       <SiteHeader
         navItems={headerLinks.map((item) => ({
           ...item,
@@ -136,7 +139,7 @@ export default async function Home() {
                   description: t("highlights.profile.description"),
                 },
               ].map((item) => (
-                <Card key={item.title} className="shadow-none">
+                <Card key={item.title} className="bg-card/65 backdrop-blur-md border-border/45 hover:border-primary/35 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]">
                   <CardHeader className="space-y-2">
                     <div className="flex items-center gap-2 text-primary">
                       <Zap className="size-4" />
@@ -156,7 +159,7 @@ export default async function Home() {
             </div>
           </div>
 
-          <Card className="border-border/60 shadow-none">
+          <Card className="bg-card/75 backdrop-blur-md border-border/45 hover:border-primary/20 hover:shadow-lg transition-all duration-300 border-border/60">
             <CardHeader className="space-y-2 border-b border-border/60 pb-5">
               <div className="flex items-center gap-2 text-primary">
                 <ShieldCheck className="size-5" />
@@ -189,7 +192,7 @@ export default async function Home() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="flex items-start justify-between gap-4 rounded-lg border border-border/50 bg-background p-3"
+                  className="flex items-start justify-between gap-4 rounded-xl border border-border/45 bg-background/50 p-3 hover:bg-background/80 transition-all duration-200"
                 >
                   <div className="space-y-1">
                     <p className="text-sm font-semibold">{item.label}</p>
@@ -225,7 +228,7 @@ export default async function Home() {
             ].map((title, index) => {
               const Icon = featureIcons[index];
               return (
-                <Card key={title} className="shadow-none">
+                <Card key={title} className="bg-card/65 backdrop-blur-md border-border/45 hover:border-primary/35 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]">
                   <CardHeader className="space-y-3">
                     <Icon className="size-5 text-primary" />
                     <CardTitle className="text-base font-semibold">

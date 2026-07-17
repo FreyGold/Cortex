@@ -2,6 +2,7 @@ import {
   Globe,
   GraduationCap,
   Moon,
+  Palette,
   Settings2,
   User,
   Users,
@@ -14,6 +15,7 @@ import { ProfileSetupForm } from "@/components/profile/profile-setup-form";
 import { ProfileStatusCard } from "@/components/profile/profile-status-card";
 import { AIIntegrationForm } from "@/components/settings/ai-integration-form";
 import { WorkspaceTeam } from "@/components/settings/workspace-team";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getServerSession } from "@/lib/auth";
@@ -125,43 +127,52 @@ export default async function SettingsPage(props: {
         )}
 
         {tab === "preferences" && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight mb-1">
                 Application Settings
               </h2>
               <p className="text-sm text-muted-foreground">
-                Customize your viewing experience and language preferences.
+                Customize your viewing experience, interface theme, and language preferences.
               </p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid gap-6">
               <div className="rounded-2xl border border-border/40 bg-card p-8 space-y-6 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                    <Moon className="size-5" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                      <Palette className="size-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">Interface Appearance</h3>
+                      <p className="text-sm text-muted-foreground/80">
+                        Choose between light/dark mode and select your custom visual theme.
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold">
-                    {t("appearance.theme")}
-                  </h3>
+                  <ThemeToggle />
                 </div>
-                <p className="text-sm text-muted-foreground/80 leading-relaxed">
-                  {t("appearance.themeSubtitle")}
-                </p>
-                <ThemeToggle />
+                
+                <div className="border-t border-border/40 pt-6">
+                  <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Predefined Themes</h4>
+                  <ThemeSwitcher />
+                </div>
               </div>
 
               <div className="rounded-2xl border border-border/40 bg-card p-8 space-y-6 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <div className="p-2 rounded-xl bg-primary/10 text-primary">
                     <Globe className="size-5" />
                   </div>
-                  <h3 className="text-lg font-semibold">
-                    {t("localization.language")}
-                  </h3>
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {t("localization.language")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground/80 leading-relaxed">
+                      {t("localization.languageSubtitle")}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground/80 leading-relaxed">
-                  {t("localization.languageSubtitle")}
-                </p>
                 <LanguageSwitcher />
               </div>
             </div>
