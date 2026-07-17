@@ -648,7 +648,7 @@ function NoteCard({ note, workspaceId }: { note: any; workspaceId?: string }) {
       href={`/notes/${note.id}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`}
       className="group/card block h-full active:scale-[0.98] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
     >
-      <div className="relative flex flex-col h-full p-6 rounded-3xl border border-border/40 bg-card hover:border-primary/25 transition-all duration-300 hover:shadow-[0_12px_30px_-4px_rgba(91,76,219,0.08)] overflow-hidden">
+      <div className="relative flex flex-col h-full p-6 rounded-2xl border border-border/30 bg-card/65 backdrop-blur-md hover:border-primary/25 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99] overflow-hidden">
         <div className="flex items-center justify-between mb-5 relative z-10">
           <div className="size-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-all duration-300 shadow-sm">
             <FileText className="size-5 shrink-0" />
@@ -785,7 +785,7 @@ function NoteRow({ note, workspaceId }: { note: any; workspaceId?: string }) {
       href={`/notes/${note.id}${workspaceId ? `?workspaceId=${workspaceId}` : ""}`}
       className="group/row block animate-in fade-in duration-200"
     >
-      <div className="relative flex items-center justify-between p-4 rounded-2xl hover:bg-muted/10 transition-all duration-200 group border border-transparent hover:border-border/10 overflow-hidden">
+      <div className="relative flex items-center justify-between p-4 rounded-xl hover:bg-primary/5 transition-all duration-200 group border border-transparent hover:border-primary/10 active:scale-[0.995] overflow-hidden">
         <div className="flex items-center gap-4 min-w-0 flex-1 relative z-10 pl-2">
           <div className="flex items-center justify-center size-10 rounded-xl bg-muted/20 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all shrink-0">
             <FileText className="size-5" />

@@ -3,8 +3,10 @@ import {
   BookMarked,
   Brain,
   CheckCircle,
+  FileText,
   Notebook,
   ShieldCheck,
+  Sparkles,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
@@ -159,54 +161,96 @@ export default async function Home() {
             </div>
           </div>
 
-          <Card className="bg-card/75 backdrop-blur-md border-border/45 hover:border-primary/20 hover:shadow-lg transition-all duration-300 border-border/60">
-            <CardHeader className="space-y-2 border-b border-border/60 pb-5">
-              <div className="flex items-center gap-2 text-primary">
-                <ShieldCheck className="size-5" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  {t("panel.kicker")}
-                </span>
+          <div className="relative rounded-3xl border border-border/45 bg-card/45 p-5 md:p-6 backdrop-blur-md shadow-2xl group overflow-hidden transition-all duration-500 hover:border-primary/30">
+            {/* Glossy overlay sheen */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none" />
+            
+            {/* Live Dashboard Mockup Header */}
+            <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <span className="size-2.5 rounded-full bg-destructive/80" />
+                  <span className="size-2.5 rounded-full bg-axon/80" />
+                  <span className="size-2.5 rounded-full bg-success/80" />
+                </div>
+                <div className="h-4 w-[1px] bg-border/20 mx-1.5" />
+                <span className="text-[10px] font-mono text-muted-foreground/50">cortex.workspace.app</span>
               </div>
-              <CardTitle className="text-xl font-bold">
-                {t("panel.title")}
-              </CardTitle>
-              <CardDescription>{t("panel.subtitle")}</CardDescription>
-            </CardHeader>
-            <div className="grid gap-3 p-4">
-              {[
-                {
-                  label: t("panel.items.notes.label"),
-                  value: t("panel.items.notes.value"),
-                  detail: t("panel.items.notes.detail"),
-                },
-                {
-                  label: t("panel.items.data.label"),
-                  value: t("panel.items.data.value"),
-                  detail: t("panel.items.data.detail"),
-                },
-                {
-                  label: t("panel.items.profile.label"),
-                  value: t("panel.items.profile.value"),
-                  detail: t("panel.items.profile.detail"),
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-start justify-between gap-4 rounded-xl border border-border/45 bg-background/50 p-3 hover:bg-background/80 transition-all duration-200"
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold">{item.label}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.detail}
-                    </p>
+              <Badge variant="outline" className="rounded-full text-[9px] font-bold tracking-wider bg-primary/5 text-primary border-primary/25 animate-pulse">
+                LIVE INTERACTION
+              </Badge>
+            </div>
+
+            {/* Dashboard Simulated UI Grid */}
+            <div className="grid grid-cols-[80px_1fr] h-[280px] rounded-2xl border border-border/30 bg-background/50 overflow-hidden shadow-inner">
+              {/* Mock Sidebar */}
+              <div className="border-r border-border/30 bg-sidebar/60 p-2 space-y-4 flex flex-col">
+                <div className="flex justify-center mb-1">
+                  <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shadow-xs border border-primary/10">C</div>
+                </div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-1.5 w-full rounded-pill bg-primary/20" />
+                  <div className="h-1.5 w-4/5 rounded-pill bg-muted/50" />
+                  <div className="h-1.5 w-5/6 rounded-pill bg-muted/50" />
+                  <div className="h-1.5 w-3/4 rounded-pill bg-muted/50" />
+                </div>
+                <div className="pt-4 border-t border-border/20 space-y-2">
+                  <div className="h-1.5 w-full rounded bg-muted/40" />
+                  <div className="h-1.5 w-5/6 rounded bg-muted/40" />
+                </div>
+              </div>
+
+              {/* Mock Work Area */}
+              <div className="p-4 flex flex-col justify-between h-full bg-background/30">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="h-3.5 w-24 rounded bg-foreground/10" />
+                    <div className="h-2 w-8 rounded bg-muted/40" />
                   </div>
-                  <p className="text-right text-sm font-medium text-foreground">
-                    {item.value}
-                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Mock Note Card 1 */}
+                    <div className="p-3 rounded-xl border border-border/30 bg-card/65 space-y-2 hover:border-primary/45 transition-all hover:shadow-xs active:scale-[0.98] cursor-pointer">
+                      <div className="size-4.5 rounded bg-primary/10 text-primary flex items-center justify-center border border-primary/10"><FileText className="size-3" /></div>
+                      <div className="h-1.5 w-full rounded bg-foreground/10" />
+                      <div className="h-1 w-2/3 rounded bg-muted/30" />
+                    </div>
+                    {/* Mock Note Card 2 */}
+                    <div className="p-3 rounded-xl border border-border/30 bg-card/65 space-y-2 hover:border-primary/45 transition-all hover:shadow-xs active:scale-[0.98] cursor-pointer">
+                      <div className="size-4.5 rounded bg-brand/10 text-brand flex items-center justify-center border border-brand/10"><FileText className="size-3" /></div>
+                      <div className="h-1.5 w-full rounded bg-foreground/10" />
+                      <div className="h-1 w-3/4 rounded bg-muted/30" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating AI Notification widget inside mockup */}
+                <div className="p-3 rounded-xl border border-synapse/30 bg-synapse/5 flex items-center justify-between gap-3 shadow-xs hover:bg-synapse/10 transition-colors">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Sparkles className="size-3.5 text-synapse shrink-0" />
+                    <div className="text-[9px] space-y-0.5 text-left min-w-0">
+                      <div className="font-bold text-foreground truncate">Knowledge AI</div>
+                      <div className="text-muted-foreground truncate">Synthesized 4 active lecture notes</div>
+                    </div>
+                  </div>
+                  <ArrowRight className="size-3 text-synapse/70 shrink-0" />
+                </div>
+              </div>
+            </div>
+
+            {/* Verification Stats overlay at bottom */}
+            <div className="mt-4 grid grid-cols-3 gap-2.5 pt-4 border-t border-border/40">
+              {[
+                { label: t("panel.items.notes.label"), val: "14 Notes" },
+                { label: t("panel.items.data.label"), val: "5 Courses" },
+                { label: t("panel.items.profile.label"), val: "Verified" }
+              ].map((item) => (
+                <div key={item.label} className="p-2.5 rounded-xl border border-border/30 bg-background/40 hover:bg-background/80 transition-all text-center">
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50">{item.label}</span>
+                  <span className="block text-xs font-bold mt-0.5 text-foreground">{item.val}</span>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         </section>
 
         <section className="space-y-5">

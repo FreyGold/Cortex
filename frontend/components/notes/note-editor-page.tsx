@@ -387,8 +387,8 @@ export function NoteEditorPage({ noteId }: { noteId: string }) {
             </div>
           </div>
 
-          <div className="w-full px-14 flex-1 flex flex-col">
-            <div className="px-1 md:px-2 pt-12 pb-6 flex flex-col flex-1">
+          <div className="w-full max-w-4xl mx-auto px-6 md:px-14 flex-1 flex flex-col">
+            <div className="px-1 md:px-2 pt-12 pb-12 flex flex-col flex-1">
               <input
                 type="text"
                 value={title}

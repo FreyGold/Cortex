@@ -83,7 +83,7 @@ export default function DailyCalendarPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        <div className="flex-1 flex flex-col p-4 pt-3 overflow-hidden bg-background/50 gap-3">
+        <div className="flex-1 flex flex-col p-6 md:p-8 overflow-hidden bg-background/30 gap-6">
           
           {/* Top-Level Navigation */}
           <div className="flex items-center justify-between shrink-0">
