@@ -143,49 +143,40 @@ export class AIRepository {
   }
 
   async archiveGlobalConversation(id: string) {
-    try {
-      const { error } = await this.supabase
+      const { data, error } = await this.supabase
         .from("global_conversations")
         .update({ status: "archived", archived_at: new Date().toISOString() })
-        .eq("id", id);
+        .eq("id", id)
+        .select("id")
+        .maybeSingle();
       if (error) throw error;
-    } catch (e) {
-      console.error("Failed to archive conversation:", e);
-    }
+      if (!data) throw new Error("Conversation not found or access denied.");
   }
 
   async clearGlobalConversation(id: string) {
-    try {
-      const { error } = await this.supabase
+      const { data, error } = await this.supabase
         .from("global_conversations")
         .delete()
-        .eq("id", id);
+        .eq("id", id)
+        .select("id")
+        .maybeSingle();
       if (error) throw error;
-    } catch (e) {
-      console.error("Failed to delete conversation:", e);
-    }
+      if (!data) throw new Error("Conversation not found or access denied.");
   }
 
   async upsertGlobalConversation(payload: any) {
-    try {
-      const { error } = await this.supabase
-        .from("global_conversations")
-        .upsert(payload);
-      if (error && this.isMissingRelationError(error)) {
-        console.error("CRITICAL: global_conversations table missing.");
-        return;
-      }
-      if (error) throw error;
-    } catch (e) {
-      console.error("Failed to upsert global conversation:", e);
-    }
+    const { error } = await this.supabase
+      .from("global_conversations")
+      .upsert(payload);
+    if (error) throw error;
   }
 
   async updateNote(noteId: string, userId: string, updates: any) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("notes")
       .update(updates)
-      .eq("id", noteId);
+      .eq("id", noteId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 }

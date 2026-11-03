@@ -2,19 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { listAdminUsers, verifyAdminUser } from "@/lib/api/admin";
-import { createClient } from "@/lib/supabase/client";
+import { getAccessToken as getNeonAccessToken } from "@/lib/neon/client";
 
 async function getAccessToken() {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.access_token) {
-    throw new Error("You must be signed in to use admin features.");
-  }
-
-  return session.access_token;
+  const token = await getNeonAccessToken();
+  if (!token) throw new Error("You must be signed in to use admin features.");
+  return token;
 }
 
 export function useAdminUsers(query: string) {

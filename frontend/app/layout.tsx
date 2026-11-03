@@ -93,9 +93,6 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
-        {/* impeccable-live-start */}
-        <script src="http://localhost:8400/live.js"></script>
-        {/* impeccable-live-end */}
       </body>
     </html>
   );

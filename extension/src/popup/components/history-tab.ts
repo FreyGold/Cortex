@@ -1,7 +1,7 @@
 import { getPomodoroSessions } from "../../lib/api";
 import type { PomodoroSession } from "../../lib/types";
 
-async function renderHistoryTab(container: HTMLElement): Promise<void> {
+export async function renderHistoryTab(container: HTMLElement): Promise<void> {
   const today = new Date().toISOString().split("T")[0];
 
   try {

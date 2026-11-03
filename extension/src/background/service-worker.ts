@@ -1,5 +1,6 @@
 import { getTimer, setTimer, clearTimer, getAuth } from "../lib/storage";
 import { logPomodoroSession } from "../lib/api";
+import { acceptConnection } from "../lib/auth";
 import type { TimerMode, TimerStorage, PopupMessage, WorkerResponse, TimerState } from "../lib/types";
 
 const DONE_ALARM = "pomodoro-done";
@@ -117,6 +118,14 @@ async function handleSafetyCheck() {
 }
 
 // ── Message Handling ──────────────────────────────────────
+
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
+  acceptConnection(message, sender).then(async (accepted) => {
+    sendResponse({ accepted });
+    if (accepted && sender.tab?.id != null) await chrome.tabs.remove(sender.tab.id).catch(() => {});
+  }).catch(() => sendResponse({ accepted: false }));
+  return true;
+});
 
 chrome.runtime.onMessage.addListener((msg: PopupMessage, _sender, sendResponse) => {
   switch (msg.action) {

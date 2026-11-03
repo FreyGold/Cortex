@@ -1,31 +1,20 @@
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/lib/neon/server";
 import { getCurrentProfile } from "./api/profile";
+
+export async function getServerAccessToken() {
+  const getToken = auth.token as () => Promise<{ data: { token: string } | null; error: unknown }>;
+  const { data, error } = await getToken();
+  return error ? null : data?.token ?? null;
+}
 
 export async function getServerSession() {
   try {
-    const supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.access_token) {
-      return null;
-    }
-
-    // Call our backend to verify the token and get the profile.
-    // The backend will perform the secure getUser() check and return the verified profile.
-    const { profile } = await getCurrentProfile(session.access_token);
-
-    if (!profile) {
-      return null;
-    }
-
-    return {
-      user: session.user,
-      profile,
-      accessToken: session.access_token,
-    };
-  } catch (error) {
+    const [{ data }, accessToken] = await Promise.all([auth.getSession(), getServerAccessToken()]);
+    if (!data?.user || !accessToken) return null;
+    const { profile } = await getCurrentProfile(accessToken);
+    if (!profile) return null;
+    return { user: data.user, profile, accessToken };
+  } catch {
     return null;
   }
 }

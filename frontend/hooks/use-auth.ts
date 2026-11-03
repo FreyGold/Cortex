@@ -1,19 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/neon/client";
 
 export function useAuth() {
   return useQuery({
     queryKey: ["auth-user"],
     queryFn: async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-      if (error) return null;
-      return user;
+      const { data, error } = await authClient.getSession();
+      return error ? null : data?.user ?? null;
     },
   });
 }

@@ -43,7 +43,7 @@ const getModel = (model: string) => {
     }
     case 'groq': {
       const groq = createGroq({ apiKey });
-      return groq(modelName || 'llama-3.3-70b-versatile');
+      return groq(modelName || 'openai/gpt-oss-20b');
     }
     case 'openai':
     default: {

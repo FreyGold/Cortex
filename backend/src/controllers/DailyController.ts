@@ -1,3 +1,4 @@
+import { errorStatus } from "../lib/error-status";
 import type { Request, Response } from "express";
 import { DailyService } from "../services/DailyService";
 import { DailyRepository } from "../repositories/DailyRepository";
@@ -21,7 +22,7 @@ export class DailyController {
       const logs = await service.getDailyLogs(req.user!.id, start as string, end as string, workspaceId as string);
       return res.status(200).json({ logs });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -33,7 +34,7 @@ export class DailyController {
       const log = await service.getDailyLogDetail(req.user!.id, date as string, workspaceId as string);
       return res.status(200).json({ log });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -45,7 +46,7 @@ export class DailyController {
       const log = await service.createDailyLog(req.user!.id, date, workspaceId);
       return res.status(201).json({ log });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -56,7 +57,7 @@ export class DailyController {
       await service.updateDailyLog(req.user!.id, logId as string, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -68,7 +69,7 @@ export class DailyController {
       const task = await service.createDailyTask(req.user!.id, logId, text);
       return res.status(201).json({ task });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -79,7 +80,7 @@ export class DailyController {
       await service.updateDailyTask(req.user!.id, taskId as string, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -90,7 +91,7 @@ export class DailyController {
       await service.deleteDailyTask(req.user!.id, taskId as string);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -102,7 +103,7 @@ export class DailyController {
       const habits = await service.getHabits(req.user!.id);
       return res.status(200).json({ habits });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -116,7 +117,7 @@ export class DailyController {
       const habit = await service.createHabit(req.user!.id, text, frequency || "Daily", weekDays, monthDays);
       return res.status(201).json({ habit });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -127,7 +128,7 @@ export class DailyController {
       await service.updateHabit(req.user!.id, habitId as string, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -138,7 +139,7 @@ export class DailyController {
       await service.deleteHabit(req.user!.id, habitId as string);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -150,7 +151,7 @@ export class DailyController {
       const logs = await service.getHabitLogs(req.user!.id, start as string, end as string);
       return res.status(200).json({ logs });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -163,7 +164,7 @@ export class DailyController {
       await service.toggleHabitLog(req.user!.id, habitId as string, date, completed);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -173,7 +174,7 @@ export class DailyController {
       const stats = await service.getDailyStats(req.user!.id);
       return res.status(200).json({ stats });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -185,7 +186,7 @@ export class DailyController {
       const subjects = await service.getSubjects(req.user!.id);
       return res.status(200).json({ subjects });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -197,7 +198,7 @@ export class DailyController {
       const subject = await service.createSubject(req.user!.id, name, color);
       return res.status(201).json({ subject });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -208,7 +209,7 @@ export class DailyController {
       await service.deleteSubject(req.user!.id, subjectId as string);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -222,7 +223,7 @@ export class DailyController {
       const session = await service.logPomodoroSession(req.user!.id, duration, type, startTime, endTime, subjectId, actualDurationSeconds, logId, notes);
       return res.status(201).json({ session });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -234,7 +235,7 @@ export class DailyController {
       const sessions = await service.getPomodoroSessions(req.user!.id, date as string);
       return res.status(200).json({ sessions });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -246,7 +247,7 @@ export class DailyController {
       const groups = await service.getGroups(req.user!.id);
       return res.status(200).json({ groups });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -258,7 +259,7 @@ export class DailyController {
       const group = await service.createGroup(req.user!.id, name, description);
       return res.status(201).json({ group });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -269,7 +270,7 @@ export class DailyController {
       await service.updateGroup(req.user!.id, groupId as string, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -280,7 +281,7 @@ export class DailyController {
       await service.deleteGroup(req.user!.id, groupId as string);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -291,7 +292,7 @@ export class DailyController {
       const members = await service.getGroupMembers(groupId as string);
       return res.status(200).json({ members });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -304,7 +305,7 @@ export class DailyController {
       const member = await service.addGroupMemberByEmail(req.user!.id, groupId as string, email);
       return res.status(201).json({ member });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -315,7 +316,7 @@ export class DailyController {
       await service.removeGroupMember(groupId as string, memberUserId as string);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -328,7 +329,7 @@ export class DailyController {
       const invitation = await service.createGroupInvitation(req.user!.id, groupId as string, email);
       return res.status(201).json({ invitation });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -339,7 +340,7 @@ export class DailyController {
       const invitations = await service.getGroupInvitations(groupId as string);
       return res.status(200).json({ invitations });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -354,7 +355,7 @@ export class DailyController {
       await service.respondToGroupInvitation(invitationId as string, req.user!.id, status);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -366,7 +367,7 @@ export class DailyController {
       const member = await service.joinGroupByCode(req.user!.id, code);
       return res.status(200).json({ member });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -378,7 +379,7 @@ export class DailyController {
       if (!group) return res.status(404).json({ error: "Invalid invite code" });
       return res.status(200).json({ group });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -390,7 +391,7 @@ export class DailyController {
       const friends = await service.getFriends(req.user!.id);
       return res.status(200).json({ friends });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -400,7 +401,7 @@ export class DailyController {
       const requests = await service.getFriendRequests(req.user!.id);
       return res.status(200).json({ requests });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -412,7 +413,7 @@ export class DailyController {
       const request = await service.sendFriendRequest(req.user!.id, email);
       return res.status(201).json({ request });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -427,7 +428,7 @@ export class DailyController {
       await service.respondToFriendRequest(requestId as string, req.user!.id, status);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -438,7 +439,7 @@ export class DailyController {
       await service.cancelFriendRequest(requestId as string, req.user!.id);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -449,7 +450,7 @@ export class DailyController {
       await service.removeFriend(req.user!.id, friendId as string);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -461,7 +462,7 @@ export class DailyController {
       const leaderboard = await service.getLeaderboard();
       return res.status(200).json({ leaderboard });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -472,7 +473,7 @@ export class DailyController {
       const leaderboard = await service.getGroupLeaderboard(groupId as string);
       return res.status(200).json({ leaderboard });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -482,7 +483,7 @@ export class DailyController {
       const leaderboard = await service.getFriendsLeaderboard(req.user!.id);
       return res.status(200).json({ leaderboard });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -495,7 +496,7 @@ export class DailyController {
       const log = await service.getUserMonthlyLog(userId as string, parseInt(year as string), parseInt(month as string));
       return res.status(200).json({ log });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -508,7 +509,7 @@ export class DailyController {
       const log = await service.getUserYearlyLog(userId as string, parseInt(year as string));
       return res.status(200).json({ log });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -521,7 +522,7 @@ export class DailyController {
       const results = await service.searchDailyLogs(req.user!.id, query, threshold, limit);
       return res.status(200).json({ results });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -533,7 +534,7 @@ export class DailyController {
       const result = await service.askAssistant(req.user!.id, question, messages);
       return res.status(200).json(result);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -543,7 +544,7 @@ export class DailyController {
       const processed = await service.rebuildUserEmbeddings(req.user!.id);
       return res.status(200).json({ success: true, processed });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 }

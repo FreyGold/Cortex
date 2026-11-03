@@ -91,12 +91,14 @@ export class NoteRepository {
   }
 
   async updateFolder(userId: string, folderId: string, updatePayload: Record<string, unknown>) {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from("folders")
       .update(updatePayload)
       .eq("id", folderId)
-      .eq("user_id", userId);
+      .select("id")
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("Folder not found or access denied.");
   }
 
   async deleteFolder(userId: string, folderId: string) {
@@ -110,12 +112,14 @@ export class NoteRepository {
   }
 
   async deleteFolderForever(userId: string, folderId: string) {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from("folders")
       .delete()
       .eq("id", folderId)
-      .eq("user_id", userId);
+      .select("id")
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("Folder not found or access denied.");
   }
 
   async getArchivedFolders(userId: string) {
@@ -157,20 +161,21 @@ export class NoteRepository {
   }
 
   async updateNote(userId: string, noteId: string, updatePayload: Record<string, unknown>) {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from("notes")
       .update(updatePayload)
-      .eq("id", noteId);
+      .eq("id", noteId)
+      .select("id")
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("Note not found or cannot be edited.");
   }
 
-  async deleteNoteTags(noteId: string) {
-    const { error } = await this.supabase.from("note_tags").delete().eq("note_id", noteId);
-    if (error) throw error;
-  }
-
-  async insertNoteTags(rows: { note_id: string; tag_id: string }[]) {
-    const { error } = await this.supabase.from("note_tags").insert(rows);
+  async replaceNoteTags(noteId: string, tagIds: string[]) {
+    const { error } = await this.supabase.rpc("replace_note_tags", {
+      target_note_id: noteId,
+      target_tag_ids: [...new Set(tagIds)],
+    });
     if (error) throw error;
   }
 
@@ -234,12 +239,15 @@ export class NoteRepository {
   }
 
   async deleteNoteShare(noteId: string, shareId: string) {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from("note_shares")
       .delete()
       .eq("id", shareId)
-      .eq("note_id", noteId);
+      .eq("note_id", noteId)
+      .select("id")
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("Share not found or access denied.");
   }
 
   async getArchivedNotes(userId: string) {
@@ -264,35 +272,44 @@ export class NoteRepository {
   }
 
   async archiveNote(userId: string, noteId: string) {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from("notes")
       .update({
         status: "archived",
         is_archived: true,
         archived_at: new Date().toISOString(),
       })
-      .eq("id", noteId);
+      .eq("id", noteId)
+      .select("id")
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("Note not found or access denied.");
   }
 
   async restoreNote(userId: string, noteId: string) {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from("notes")
       .update({
         status: "active",
         is_archived: false,
         archived_at: null,
       })
-      .eq("id", noteId);
+      .eq("id", noteId)
+      .select("id")
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("Note not found or access denied.");
   }
 
   async deleteNoteForever(userId: string, noteId: string) {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from("notes")
       .delete()
-      .eq("id", noteId);
+      .eq("id", noteId)
+      .select("id")
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error("Note not found or access denied.");
   }
 
   async createResourceFromNote(courseId: string, userId: string, noteId: string, titleEn: string) {

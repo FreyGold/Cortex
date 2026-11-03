@@ -61,7 +61,7 @@ graph TD
 
     %% Data / Storage
     subgraph Data Tier
-        DB[(Supabase PostgreSQL / pgvector)]
+        DB[(Neon PostgreSQL / pgvector)]
         RED[(Redis Session & Cache)]
     end
 
@@ -100,12 +100,13 @@ graph TD
 │   │   ├── services/    # Business logic & external API integration
 │   │   ├── repositories/# Database data access layers
 │   │   └── server.ts
-├── frontend/           # Next.js 15 Web Application
+├── frontend/           # Next.js 16 Web Application
 │   ├── app/            # App router setup with next-intl bilingual routing
 │   ├── components/     # UI elements (Plate.js canvas, modals, search)
 │   └── messages/       # English (en.json) & Arabic (ar.json) dictionaries
-├── supabase/           # Supabase Database schema and migrations
-│   ├── migrations/     # 44 migrations covering tables, functions, & RLS
+├── supabase/           # Neon schema and historical Supabase migrations
+│   ├── neon/migrations/# 55 Neon migrations for schema, seed data, and RLS
+│   └── migrations/     # Historical Supabase migrations
 ├── extension/          # Chrome MV3 extension (Pomodoro & Site Blocker)
 ├── gnome-extension/    # GNOME Shell status applet (GJS)
 └── docs/               # Detailed Project Graduation Documentation

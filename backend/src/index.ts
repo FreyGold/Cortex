@@ -14,8 +14,14 @@ import { profileRouter } from "./routes/profile";
 import { dataRouter } from "./routes/data";
 import { notesRouter } from "./routes/notes";
 import { dailyRouter } from "./routes/daily";
+import { workspacesRouter } from "./routes/workspaces";
 
 dotenv.config();
+
+const neonSettings = ["NEON_AUTH_BASE_URL", "NEON_AUTH_JWKS_URL", "NEON_AUTH_ISSUER", "NEON_DATA_API_URL"] as const;
+if (neonSettings.some((name) => process.env[name]) && neonSettings.some((name) => !process.env[name])) {
+  throw new Error(`Neon requires all of: ${neonSettings.join(", ")}.`);
+}
 
 const app = express();
 
@@ -69,6 +75,7 @@ app.use("/api/profile", profileRouter);
 app.use("/api/data", dataRouter);
 app.use("/api/notes", notesRouter);
 app.use("/api/daily", dailyRouter);
+app.use("/api/workspaces", workspacesRouter);
 
 const port = Number(process.env.PORT ?? 4000);
 

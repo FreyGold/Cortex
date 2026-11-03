@@ -107,12 +107,13 @@ export class DailyRepository {
   }
 
   async updateDailyLog(userId: string, logId: string, payload: Record<string, any>) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("daily_logs")
       .update({ ...payload, updated_at: new Date().toISOString() })
       .eq("id", logId)
-      .eq("user_id", userId);
+      .eq("user_id", userId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 
   async createDailyTask(logId: string, text: string) {
@@ -126,19 +127,21 @@ export class DailyRepository {
   }
 
   async updateDailyTask(taskId: string, payload: Record<string, any>) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("daily_tasks")
       .update({ ...payload, updated_at: new Date().toISOString() })
-      .eq("id", taskId);
+      .eq("id", taskId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 
   async deleteDailyTask(taskId: string) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("daily_tasks")
       .delete()
-      .eq("id", taskId);
+      .eq("id", taskId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 
   async getDailyTaskById(taskId: string) {
@@ -185,21 +188,23 @@ export class DailyRepository {
   }
   
   async updateHabit(userId: string, habitId: string, payload: Record<string, any>) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("habits")
       .update({ ...payload, updated_at: new Date().toISOString() })
       .eq("id", habitId)
-      .eq("user_id", userId);
+      .eq("user_id", userId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 
   async deleteHabit(userId: string, habitId: string) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("habits")
       .delete()
       .eq("id", habitId)
-      .eq("user_id", userId);
+      .eq("user_id", userId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
   
   // --- Habit Logs Methods ---
@@ -388,12 +393,13 @@ export class DailyRepository {
   }
 
   async deleteSubject(userId: string, subjectId: string) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("user_subjects")
       .delete()
       .eq("id", subjectId)
-      .eq("user_id", userId);
+      .eq("user_id", userId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 
   // --- Pomodoro Methods ---
@@ -490,21 +496,23 @@ export class DailyRepository {
    }
 
    async updateGroup(userId: string, groupId: string, payload: Record<string, any>) {
-      const { error } = await this.supabase
+      const { data: affected, error } = await this.supabase
         .from("groups")
         .update({ ...payload, updated_at: new Date().toISOString() })
         .eq("id", groupId)
-        .eq("created_by", userId);
+        .eq("created_by", userId).select("*").maybeSingle();
       if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
    }
 
    async deleteGroup(userId: string, groupId: string) {
-      const { error } = await this.supabase
+      const { data: affected, error } = await this.supabase
         .from("groups")
         .delete()
         .eq("id", groupId)
-        .eq("created_by", userId);
+        .eq("created_by", userId).select("*").maybeSingle();
       if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
    }
 
    async getGroupMembers(groupId: string) {
@@ -527,12 +535,13 @@ export class DailyRepository {
    }
 
    async removeGroupMember(groupId: string, memberUserId: string) {
-      const { error } = await this.supabase
+      const { data: affected, error } = await this.supabase
         .from("group_members")
         .delete()
         .eq("group_id", groupId)
-        .eq("user_id", memberUserId);
+        .eq("user_id", memberUserId).select("*").maybeSingle();
       if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
    }
 
    async getProfilesByEmail(email: string) {
@@ -607,48 +616,34 @@ export class DailyRepository {
    }
 
    async respondToFriendRequest(requestId: string, userId: string, status: "accepted" | "rejected") {
-      const { data: request } = await this.supabase
-        .from("friend_requests")
-        .select("*")
-        .eq("id", requestId)
-        .single();
-      if (!request) throw new Error("Friend request not found");
-      if (request.recipient_id !== userId) throw new Error("Unauthorized");
-
-      if (status === "accepted") {
-        const userA = request.sender_id < userId ? request.sender_id : userId;
-        const userB = request.sender_id < userId ? userId : request.sender_id;
-        const { error: friendError } = await this.supabase
-          .from("friends")
-          .insert({ user_id_1: userA, user_id_2: userB });
-        if (friendError) throw friendError;
-      }
-
-      const { error } = await this.supabase
-        .from("friend_requests")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("id", requestId);
+      const { data, error } = await this.supabase.rpc("respond_to_friend_request", {
+        request_id: requestId,
+        response_status: status,
+      });
       if (error) throw error;
+      return data;
    }
 
    async cancelFriendRequest(requestId: string, userId: string) {
-      const { error } = await this.supabase
+      const { data: affected, error } = await this.supabase
         .from("friend_requests")
         .delete()
         .eq("id", requestId)
-        .eq("sender_id", userId);
+        .eq("sender_id", userId).select("*").maybeSingle();
       if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
    }
 
    async removeFriend(userId: string, friendId: string) {
       const userA = userId < friendId ? userId : friendId;
       const userB = userId < friendId ? friendId : userId;
-      const { error } = await this.supabase
+      const { data: affected, error } = await this.supabase
         .from("friends")
         .delete()
         .eq("user_id_1", userA)
-        .eq("user_id_2", userB);
+        .eq("user_id_2", userB).select("*").maybeSingle();
       if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
    }
 
    // ── Leaderboard Methods ────────────────────────────────
@@ -688,44 +683,19 @@ export class DailyRepository {
    }
 
    async respondToGroupInvitation(invitationId: string, userId: string, status: "accepted" | "rejected") {
-      const { data: invitation } = await this.supabase
-        .from("group_invitations")
-        .select("*")
-        .eq("id", invitationId)
-        .single();
-      if (!invitation) throw new Error("Invitation not found");
-      if (invitation.invited_user_id !== userId) throw new Error("Unauthorized");
-
-      if (status === "accepted") {
-        await this.addGroupMember(userId, invitation.group_id, userId);
-      }
-
-      const { error } = await this.supabase
-        .from("group_invitations")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("id", invitationId);
+      const { error } = await this.supabase.rpc("respond_to_group_invitation", {
+        invitation_id: invitationId,
+        response_status: status,
+      });
       if (error) throw error;
    }
 
    async joinGroupByCode(userId: string, code: string) {
-      const { data: group, error } = await this.supabase
-        .from("groups")
-        .select("id")
-        .eq("invite_code", code.toUpperCase())
-        .maybeSingle();
+      const { data, error } = await this.supabase.rpc("join_group_by_code", {
+        invite_code: code.trim().toUpperCase(),
+      });
       if (error) throw error;
-      if (!group) throw new Error("Invalid invite code");
-
-      // Check if already a member
-      const { data: existing } = await this.supabase
-        .from("group_members")
-        .select("id")
-        .eq("group_id", group.id)
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (existing) throw new Error("Already a member of this group");
-
-      return this.addGroupMember(userId, group.id, userId);
+      return data;
    }
 
    async getGroupByInviteCode(code: string) {

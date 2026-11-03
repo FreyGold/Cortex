@@ -100,12 +100,13 @@ export class DataRepository {
   }
 
   async unassignDoctorFromCourse(courseId: string, doctorId: string) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("course_doctors")
       .delete()
       .eq("course_id", courseId)
-      .eq("doctor_id", doctorId);
+      .eq("doctor_id", doctorId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 
   async createDoctor(name_en: string) {
@@ -164,10 +165,11 @@ export class DataRepository {
   }
 
   async deleteResource(resourceId: string) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("resources")
       .delete()
-      .eq("id", resourceId);
+      .eq("id", resourceId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 }

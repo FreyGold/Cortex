@@ -12,6 +12,7 @@ const root = __dirname;
 const isWatch = process.argv.includes("--watch");
 
 const common = {
+  define: { __CORTEX_APP_ORIGIN__: JSON.stringify(process.env.CORTEX_EXTENSION_APP_ORIGIN || "https://cortex-eta-black.vercel.app") },
   bundle: true,
   sourcemap: false,
   minify: !isWatch,

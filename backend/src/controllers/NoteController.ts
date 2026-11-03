@@ -1,3 +1,4 @@
+import { errorStatus } from "../lib/error-status";
 import type { Request, Response } from "express";
 import { NoteService } from "../services/NoteService";
 import { NoteRepository } from "../repositories/NoteRepository";
@@ -28,7 +29,7 @@ export class NoteController {
       res.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate");
       return res.status(200).json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -38,7 +39,7 @@ export class NoteController {
       const data = await service.getArchived(req.user!.id);
       return res.status(200).json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -48,7 +49,7 @@ export class NoteController {
       const data = await service.getNoteDetail(req.user!.id, req.params.id as string);
       return res.status(200).json(data);
     } catch (error: any) {
-      return res.status(error.message === "Note not found." ? 404 : 500).json({ error: error.message });
+      return res.status(error.message === "Note not found." ? 404 : errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -59,7 +60,7 @@ export class NoteController {
       const data = await service.createNote(req.user!.id, title || "Untitled note", folderId ?? null, workspaceId);
       return res.status(201).json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -105,7 +106,7 @@ export class NoteController {
       await service.updateNote(req.user!.id, req.params.id as string, updatePayload);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -115,7 +116,7 @@ export class NoteController {
       await service.archiveNote(req.user!.id, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -125,7 +126,7 @@ export class NoteController {
       await service.restoreNote(req.user!.id, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -135,7 +136,7 @@ export class NoteController {
       await service.deleteNoteForever(req.user!.id, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -147,7 +148,7 @@ export class NoteController {
       await service.createFolder(req.user!.id, name.trim(), parentId || null, workspaceId);
       return res.status(201).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -162,7 +163,7 @@ export class NoteController {
       await service.updateFolder(req.user!.id, req.params.id as string, updatePayload);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -172,7 +173,7 @@ export class NoteController {
       await service.deleteFolder(req.user!.id, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -182,7 +183,7 @@ export class NoteController {
       await service.restoreFolder(req.user!.id, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -192,7 +193,7 @@ export class NoteController {
       await service.deleteFolderForever(req.user!.id, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -204,7 +205,7 @@ export class NoteController {
       await service.createTag(req.user!.id, name.trim());
       return res.status(201).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -216,7 +217,7 @@ export class NoteController {
       await service.updateNoteTags(req.params.id as string, tagIds);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -226,7 +227,7 @@ export class NoteController {
       const data = await service.getNoteShares(req.params.id as string);
       return res.status(200).json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -237,6 +238,9 @@ export class NoteController {
       const noteId = req.params.id;
 
       const finalRole = role || (canEdit ? "editor" : "viewer");
+      if (!["viewer", "editor"].includes(finalRole)) {
+        return res.status(400).json({ error: "Invalid share role." });
+      }
 
       const payload: Record<string, unknown> = {
         note_id: noteId,
@@ -262,7 +266,7 @@ export class NoteController {
       const data = await service.createNoteShare(payload);
       return res.status(201).json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -272,7 +276,7 @@ export class NoteController {
       await service.deleteNoteShare(req.params.id as string, req.params.shareId as string);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -284,7 +288,7 @@ export class NoteController {
       if (!data) return res.status(404).json({ error: "Note not found" });
       return res.status(200).json({ note: data, canEdit: false });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
   static async replicateNote(req: Request, res: Response) {
@@ -294,7 +298,7 @@ export class NoteController {
       const note = await service.replicateNote(req.user!.id, title, content, contentText);
       return res.status(201).json(note);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -306,7 +310,7 @@ export class NoteController {
       const resource = await service.createResourceFromNote(courseId as string, req.user!.id, noteId, titleEn as string);
       return res.status(201).json(resource);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 }

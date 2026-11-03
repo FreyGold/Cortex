@@ -15,7 +15,7 @@ import {
   searchNotes,
   suggestTags,
 } from "@/lib/api/ai";
-import { createClient, getAccessToken } from "@/lib/supabase/client";
+import { getAccessToken } from "@/lib/neon/client";
 
 async function getAuthToken() {
   const token = await getAccessToken();

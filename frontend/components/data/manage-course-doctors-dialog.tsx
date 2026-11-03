@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { getBackendUrl } from "@/lib/api/backend-url";
 import type { Doctor } from "@/lib/data/catalog";
-import { getAccessToken } from "@/lib/supabase/client";
+import { getAccessToken } from "@/lib/neon/client";
 import { AddDoctorDialog } from "./add-doctor-dialog";
 
 type Props = {

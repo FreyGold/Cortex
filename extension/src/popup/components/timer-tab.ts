@@ -5,7 +5,7 @@ import { formatTime } from "../../lib/format";
 
 let cachedSubjects: PomodoroSubject[] = [];
 
-async function loadSubjects(): Promise<PomodoroSubject[]> {
+export async function loadSubjects(): Promise<PomodoroSubject[]> {
   const cache = await getSubjectsCache();
   if (cache && Date.now() - cache.timestamp < 300_000) {
     cachedSubjects = cache.subjects;
@@ -23,7 +23,7 @@ async function loadSubjects(): Promise<PomodoroSubject[]> {
   return cachedSubjects;
 }
 
-function renderTimerTab(state: TimerState): string {
+export function renderTimerTab(state: TimerState): string {
   const isRunning = state.phase === "running";
 
   // Get durations from localStorage

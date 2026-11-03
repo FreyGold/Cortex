@@ -33,7 +33,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getBackendUrl } from "@/lib/api/backend-url";
 import { getMessage } from "@/lib/messages";
-import { createClient, getAccessToken } from "@/lib/supabase/client";
+import { getAccessToken } from "@/lib/neon/client";
 
 type ChatItem = {
   id: string;

@@ -21,8 +21,8 @@ export class AuthController {
       const error = validateEmailPassword(req.body);
       if (error) return res.status(400).json({ error });
 
-      const service = getService();
-      const result = await service.signUp(req.body.email, req.body.password, req.body.fullName);
+      if (process.env.NEON_AUTH_BASE_URL) return res.status(410).json({ error: "Use the app sign-in service." });
+      const result = await getService().signUp(req.body.email, req.body.password, req.body.fullName);
       return res.status(200).json(result);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
@@ -34,8 +34,8 @@ export class AuthController {
       const error = validateEmailPassword(req.body);
       if (error) return res.status(400).json({ error });
 
-      const service = getService();
-      const result = await service.login(req.body.email, req.body.password);
+      if (process.env.NEON_AUTH_BASE_URL) return res.status(410).json({ error: "Use the app sign-in service." });
+      const result = await getService().login(req.body.email, req.body.password);
       return res.status(200).json(result);
     } catch (error: any) {
       return res.status(401).json({ error: error.message });
@@ -49,8 +49,8 @@ export class AuthController {
         return res.status(400).json({ error: "Refresh token is required." });
       }
 
-      const service = getService();
-      const result = await service.refresh(refreshToken);
+      if (process.env.NEON_AUTH_BASE_URL) return res.status(410).json({ error: "Use the app sign-in service." });
+      const result = await getService().refresh(refreshToken);
       return res.status(200).json(result);
     } catch (error: any) {
       return res.status(401).json({ error: error.message });

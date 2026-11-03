@@ -52,7 +52,6 @@ export type TimerStorage = {
 
 export type AuthState = {
   accessToken: string;
-  refreshToken: string;
   user: { id: string; email: string };
 };
 

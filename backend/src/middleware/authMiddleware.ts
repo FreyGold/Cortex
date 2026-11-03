@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { getSupabaseAuth } from "../lib/supabase-auth";
+import { getNeonTokenVerifier } from "../lib/neon-auth";
 
 // Simple in-memory cache for auth results
 const userCache = new Map<string, { user: any; expiry: number }>();
@@ -19,6 +20,24 @@ export async function authMiddleware(
   const token = authHeader.slice("Bearer ".length).trim();
   if (!token) {
     return res.status(401).json({ error: "Missing bearer token" });
+  }
+
+  if (process.env.NEON_AUTH_JWKS_URL || process.env.NEON_AUTH_ISSUER) {
+    let verifyToken;
+    try {
+      verifyToken = getNeonTokenVerifier();
+    } catch {
+      return res.status(500).json({ error: "Authentication is not configured." });
+    }
+    const authStart = Date.now();
+    try {
+      const user = await verifyToken(token);
+      req.authDuration = Date.now() - authStart;
+      req.user = { ...user, accessToken: token };
+      return next();
+    } catch {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
   }
 
   // Check cache first

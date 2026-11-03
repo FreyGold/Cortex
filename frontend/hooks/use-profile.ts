@@ -7,19 +7,12 @@ import {
   getCurrentProfile,
   requestVerification,
 } from "@/lib/api/profile";
-import { createClient } from "@/lib/supabase/client";
+import { getAccessToken as getNeonAccessToken } from "@/lib/neon/client";
 
 async function getAccessToken() {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.access_token) {
-    throw new Error("You must be signed in to access your profile.");
-  }
-
-  return session.access_token;
+  const token = await getNeonAccessToken();
+  if (!token) throw new Error("You must be signed in to access your profile.");
+  return token;
 }
 
 export function useCurrentProfile() {

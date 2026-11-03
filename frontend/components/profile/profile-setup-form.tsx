@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { setupProfile } from "@/lib/api/profile";
-import { getAccessToken } from "@/lib/supabase/client";
+import { getAccessToken } from "@/lib/neon/client";
 
 type University = { id: string; name_en: string };
 type College = { id: string; university_id: string; name_en: string };

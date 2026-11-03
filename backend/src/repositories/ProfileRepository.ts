@@ -16,11 +16,12 @@ export class ProfileRepository {
   }
 
   async updateProfile(userId: string, updates: Record<string, any>) {
-    const { error } = await this.supabase
+    const { data: affected, error } = await this.supabase
       .from("profiles")
       .update(updates)
-      .eq("id", userId);
+      .eq("id", userId).select("*").maybeSingle();
     if (error) throw error;
+    if (!affected) throw new Error("Record not found or access denied.");
   }
 
   async getVerificationStatus(userId: string) {

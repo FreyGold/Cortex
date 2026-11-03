@@ -1,109 +1,65 @@
-# Cortex — Local Development & Running Guide
+# Cortex local development
 
-This guide explains how to spin up the Cortex workspace locally. The system is designed to connect directly to the remote Supabase database, allowing you to run the frontend, backend, and extensions locally without setting up a local database or pgvector instances.
+Cortex uses Neon PostgreSQL, Neon Auth, and the Neon Data API. The Express backend checks access tokens and sends database requests with the user's token. PostgreSQL row-level security controls access to the data.
 
----
+## Requirements
 
-## 📋 Prerequisites
+- Node.js 20 or later.
+- pnpm or npm.
+- A Neon project with Auth and the Data API enabled.
+- A Google Gemini API key for AI features.
 
-Ensure you have the following installed on your machine:
-* **Node.js** (v20 or higher recommended)
-* **pnpm** (recommended for monorepo development, though `npm` or `yarn` work too)
-* **Google Chrome** (for testing the Manifest V3 Extension)
-* **GNOME Shell** (for testing the GNOME status widget, optional Linux only)
+## Database setup
 
----
+Apply the SQL files in `supabase/neon/migrations/` in numerical order to a new Neon database. Enable Neon Auth and the Data API first. The files in `supabase/migrations/` are the historical Supabase migrations; do not apply them to the Neon database. Test migrations on a separate branch before production use.
 
-## ⚙️ Environment Setup
+The original Cortex Supabase database is not available from the configured address. A fresh Neon database has no old accounts, notes, or resources. Restore those records only from a verified backup. Existing password accounts need a new sign-in method or account.
 
-Before running the services, you must configure local environment variables pointing to the remote Supabase project.
+To set up the first administrator, first create the account in Cortex. Connect to the database as its owner and run the following command with that account's email address:
 
-### 1. Backend Configuration
-1. Go to the `backend/` directory:
-   ```bash
-   cd backend
-   ```
-2. Copy the example environment file:
-   ```bash
-   cp .env.example .env
-   ```
-3. Open `backend/.env` and fill in the values pointing to your remote project:
-   ```env
-   PORT=4000
-   SUPABASE_URL=https://your-remote-project.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=your-remote-service-role-key-jwt
-   SUPABASE_ANON_KEY=your-remote-anon-key-jwt
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-remote-anon-key-jwt
-   FRONTEND_ORIGIN=http://localhost:3000
-   GEMINI_API_KEY=your-google-gemini-api-key
-   GEMINI_MODEL=gemini-flash-latest
-   ```
+```sql
+SELECT public.bootstrap_first_admin(id)
+FROM public.profiles
+WHERE email = 'admin@example.com';
+```
 
-### 2. Frontend Configuration
-1. Go to the `frontend/` directory:
-   ```bash
-   cd frontend
-   ```
-2. Copy the example environment file:
-   ```bash
-   cp .env.local.example .env.local
-   ```
-3. Open `frontend/.env.local` and configure the remote database endpoints and API URLs:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=https://your-remote-project.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-remote-anon-key-jwt
-   SUPABASE_SERVICE_ROLE_KEY=your-remote-service-role-key-jwt
-   GOOGLE_DRIVE_API_KEY=your-google-drive-api-key-optional
-   EXPRESS_API_URL=http://localhost:4000
-   NEXT_PUBLIC_EXPRESS_API_URL=http://localhost:4000
-   ```
+This function works only through a direct database owner connection. It fails if an administrator already exists.
 
----
+## Backend configuration
 
-## 🚀 Running Frontend & Backend
+Copy `backend/.env.example` to `backend/.env`. Set these Neon values:
 
-There are two ways to spin up the servers:
+- `NEON_AUTH_BASE_URL`: the Neon Auth URL for the database.
+- `NEON_AUTH_JWKS_URL`: the Auth URL with `/.well-known/jwks.json` appended.
+- `NEON_AUTH_ISSUER`: the origin of the Auth URL, with no database or `/auth` path.
+- `NEON_AUTH_AUDIENCE`: the same Auth URL origin.
+- `NEON_DATA_API_URL`: the Neon Data API URL, including `/rest/v1`.
 
-### Option A: Running Both Simultaneously (Recommended)
-We provide a helper script at the repository root that starts both the backend and frontend in a single shell session.
+Set `FRONTEND_ORIGIN` to the frontend URL. Set `GEMINI_API_KEY` for AI features. Do not commit `.env` files or credentials.
 
-1. Ensure the script is executable:
-   ```bash
-   chmod +x ./bin/dev
-   ```
-2. Run the script:
-   ```bash
-   ./bin/dev
-   ```
-*This starts the backend on port `4000` and the frontend on port `3000` concurrently.*
+## Frontend configuration
 
----
+Copy `frontend/.env.example` to `frontend/.env.local`. Set `NEON_AUTH_BASE_URL` to the same Auth URL as the backend. Set `NEON_AUTH_COOKIE_SECRET` to a random secret of at least 32 characters. Set `NEXT_PUBLIC_EXPRESS_API_URL` to the Express backend URL. Configure the optional Google Drive and AI settings when those features are required.
 
-### Option B: Running Separately
+## Run the applications
 
-#### 1. Backend Server
-1. Navigate to `/backend` and install dependencies:
-   ```bash
-   cd backend
-   npm install # or pnpm install
-   ```
-2. Run the development server (runs `tsx watch` to auto-reload on changes):
-   ```bash
-   npm run dev # or pnpm dev
-   ```
-   *The backend will be available at `http://localhost:4000`.*
+Start the backend in one terminal:
 
-#### 2. Frontend App
-1. Navigate to `/frontend` and install dependencies:
-   ```bash
-   cd frontend
-   npm install # or pnpm install
-   ```
-2. Run the Next.js development server:
-   ```bash
-   npm run dev # or pnpm dev
-   ```
-   *The frontend client will be available at `http://localhost:3000`.*
+```bash
+cd backend
+pnpm install
+pnpm dev
+```
+
+Start the frontend in another terminal:
+
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+
+The default backend URL is `http://localhost:4000`. The default frontend URL is `http://localhost:3000`.
 
 ---
 

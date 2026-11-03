@@ -1,4 +1,24 @@
 import { createClient } from "@supabase/supabase-js";
+import { PostgrestClient } from "@supabase/postgrest-js";
+import { getNeonAnonymousToken } from "./neon-auth-session";
+
+function getNeonDataClient(accessToken?: string) {
+  const url = process.env.NEON_DATA_API_URL;
+  if (!url) return null;
+  const endpoint = new URL(url);
+  if (endpoint.protocol !== "https:" && endpoint.hostname !== "localhost" && endpoint.hostname !== "127.0.0.1") {
+    throw new Error("NEON_DATA_API_URL must use HTTPS.");
+  }
+  const client = new PostgrestClient(url.replace(/\/$/, ""), {
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+    fetch: accessToken ? undefined : async (input, init) => {
+      const headers = new Headers(init?.headers);
+      headers.set("Authorization", `Bearer ${await getNeonAnonymousToken()}`);
+      return fetch(input, { ...init, headers });
+    },
+  });
+  return client as unknown as ReturnType<typeof createClient<any>>;
+}
 
 let cachedClient: ReturnType<typeof createClient<any>> | null = null;
 let cachedAnonClient: ReturnType<typeof createClient<any>> | null = null;
@@ -7,6 +27,9 @@ const userClientCache = new Map<string, { client: ReturnType<typeof createClient
 const CLIENT_CACHE_TTL = 60 * 1000; // 1 minute
 
 export function getSupabaseAdmin() {
+  if (process.env.NEON_DATA_API_URL) {
+    throw new Error("Use the signed-in administrator's data client for Neon.");
+  }
   if (cachedClient) {
     return cachedClient;
   }
@@ -42,6 +65,8 @@ export function getSupabaseAdmin() {
 }
 
 export function getSupabaseAnonClient() {
+  const neon = getNeonDataClient();
+  if (neon) return neon;
   if (cachedAnonClient) {
     return cachedAnonClient;
   }
@@ -66,6 +91,8 @@ export function getSupabaseAnonClient() {
 }
 
 export function getSupabaseUserClient(accessToken: string) {
+  const neon = getNeonDataClient(accessToken);
+  if (neon) return neon;
   // Check cache
   const cached = userClientCache.get(accessToken);
   if (cached && cached.expiry > Date.now()) {

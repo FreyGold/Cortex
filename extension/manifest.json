@@ -3,8 +3,16 @@
   "name": "College Knowledge Hub",
   "version": "1.0.0",
   "description": "Pomodoro timer that syncs with your College Knowledge Hub account.",
-  "permissions": ["alarms", "storage", "notifications", "identity", "declarativeNetRequest"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "alarms",
+    "storage",
+    "notifications",
+    "identity",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -21,5 +29,11 @@
     "16": "assets/icon-16.png",
     "48": "assets/icon-48.png",
     "128": "assets/icon-128.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnBENj1AYwRozdvMneorptWiWj4fd/AYfZtg43H0MJKSzDUMMYSCT7/Phrm0xPGgYqSw71Hn+36awG5XWoM8JBw65/kFAcvbPse7YTleKRZQj3Ax8x/u74DJO5Y2pYd1ny23YseLizwfcr4lX4t+zZrUHb3K+xu8KM56z8VE7pGmKHi6Mvpi7H6k63K6QGNia7ArtRIj0mOOKF1OthgfrMjCrGIF2ghVb3Svt9O8pFTbl8SQD08Pv5FI0tnfZfZVFJdW6Vyj6rSQRviKyFdOXn5fjKhlrubObwV4CFm7hF8DDAtdty6FxMa6KWNdbabJ8NOLDk0nqVZ0bGgATzIo3oQIDAQAB",
+  "externally_connectable": {
+    "matches": [
+      "https://cortex-eta-black.vercel.app/*"
+    ]
   }
 }

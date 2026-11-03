@@ -1,3 +1,4 @@
+import { errorStatus } from "../lib/error-status";
 import type { Request, Response } from "express";
 import { DataService } from "../services/DataService";
 import { DataRepository } from "../repositories/DataRepository";
@@ -17,7 +18,7 @@ export class DataController {
       res.setHeader("Cache-Control", "public, max-age=60");
       return res.status(200).json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -27,7 +28,7 @@ export class DataController {
       const data = await service.getCourseDetail(req.params.courseId as string);
       return res.status(200).json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -37,7 +38,7 @@ export class DataController {
       const data = await service.createDoctor(req.body.name_en);
       return res.status(201).json({ doctor: data });
     } catch (error: any) {
-      return res.status(error.message.includes("required") ? 400 : 500).json({ error: error.message });
+      return res.status(error.message.includes("required") ? 400 : errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -47,7 +48,7 @@ export class DataController {
       const data = await service.createCourse(req.body);
       return res.status(201).json({ course: data });
     } catch (error: any) {
-      return res.status(error.message.includes("required") ? 400 : 500).json({ error: error.message });
+      return res.status(error.message.includes("required") ? 400 : errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -57,7 +58,7 @@ export class DataController {
       const data = await service.updateCourse(req.params.id as string, req.body);
       return res.status(200).json({ course: data });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -67,7 +68,7 @@ export class DataController {
       const data = await service.createResource(req.params.courseId as string, req.user!.id, req.body);
       return res.status(201).json({ resource: data });
     } catch (error: any) {
-      return res.status(error.message.includes("required") ? 400 : 500).json({ error: error.message });
+      return res.status(error.message.includes("required") ? 400 : errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -77,7 +78,7 @@ export class DataController {
       const data = await service.updateResource(req.params.id as string, req.body);
       return res.status(200).json({ resource: data });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -87,7 +88,7 @@ export class DataController {
       await service.deleteResource(req.params.id as string);
       return res.status(204).send();
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -98,7 +99,7 @@ export class DataController {
       await service.assignDoctorToCourse(req.params.courseId as string, doctorId);
       return res.status(201).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -108,7 +109,7 @@ export class DataController {
       await service.unassignDoctorFromCourse(req.params.courseId as string, req.params.doctorId as string);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 }

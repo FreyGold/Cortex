@@ -5,12 +5,12 @@ type SettingsData = {
   durations: Record<string, number>;
 };
 
-function renderSettingsTab(auth: AuthState, settings: SettingsData, onLogout: () => void): string {
+export function renderSettingsTab(auth: AuthState, settings: SettingsData, onLogout: () => void): string {
   return `
     <div class="settings-tab">
       <div class="settings-section">
         <label>Backend URL</label>
-        <input type="text" id="settings-backend-url" value="${settings.backendUrl}" placeholder="http://localhost:4000" />
+        <input type="text" id="settings-backend-url" value="${settings.backendUrl}" placeholder="https://cortex-eta-black.vercel.app" />
       </div>
 
       <div class="settings-section">

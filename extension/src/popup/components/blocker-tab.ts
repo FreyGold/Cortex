@@ -1,6 +1,6 @@
 import type { BlockerState } from "../../lib/blocker";
 
-function renderBlockerTab(state: BlockerState): string {
+export function renderBlockerTab(state: BlockerState): string {
   const toggleLabel = state.enabled ? "Blocking active" : "Blocking off";
   const toggleClass = state.enabled ? "active" : "";
 

@@ -39,7 +39,7 @@ import {
 import { useNotesDashboard } from "@/hooks/use-notes";
 import { getBackendUrl } from "@/lib/api/backend-url";
 import type { Doctor, Resource } from "@/lib/data/catalog";
-import { getAccessToken } from "@/lib/supabase/client";
+import { getAccessToken } from "@/lib/neon/client";
 import { cn } from "@/lib/utils";
 import { AddDoctorDialog } from "./add-doctor-dialog";
 

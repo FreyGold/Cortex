@@ -1,3 +1,4 @@
+import { errorStatus } from "../lib/error-status";
 import type { Request, Response } from "express";
 import { AIService } from "../services/AIService";
 import { AIRepository } from "../repositories/AIRepository";
@@ -19,7 +20,7 @@ export class AIController {
       const result = await service.embedNote(noteId, req.user!.id);
       return res.status(200).json(result);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -31,7 +32,7 @@ export class AIController {
       const matches = await service.searchNotes(req.user!.id, query, threshold, limit);
       return res.status(200).json({ query, threshold, limit, matches });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -43,7 +44,7 @@ export class AIController {
       const messages = await service.getConversation(noteId, req.user!.id);
       return res.status(200).json({ messages });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -54,7 +55,7 @@ export class AIController {
       const result = await service.listGlobalConversations(req.user!.id, noteId);
       return res.status(200).json(result);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -65,7 +66,7 @@ export class AIController {
       await service.clearGlobalConversation(id);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -76,7 +77,7 @@ export class AIController {
       await service.archiveGlobalConversation(id);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -87,7 +88,7 @@ export class AIController {
       const data = await service.getSpecificGlobalConversation(id);
       return res.status(200).json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -102,7 +103,7 @@ export class AIController {
       const result = await service.askNote(noteId, req.user!.id, currentQuestion, messages || [], topK, conversationId);
       return res.status(200).json(result);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -116,7 +117,7 @@ export class AIController {
       const result = await service.askAllNotes(req.user!.id, currentQuestion, messages || [], topK, conversationId, req.body.noteId);
       return res.status(200).json(result);
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -128,7 +129,7 @@ export class AIController {
       const result = await service.askGeneral(question);
       return res.status(200).json({ question, ...result });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -214,7 +215,7 @@ export class AIController {
       const summary = await service.summarizeNote(noteId, req.user!.id);
       return res.status(200).json({ noteId, summary });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -226,7 +227,7 @@ export class AIController {
       const tags = await service.suggestTags(noteId, req.user!.id);
       return res.status(200).json({ noteId, tags });
     } catch (error: any) {
-      return res.status(500).json({ error: error.message });
+      return res.status(errorStatus(error)).json({ error: error.message });
     }
   }
 }

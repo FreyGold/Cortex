@@ -74,11 +74,7 @@ export class NoteService {
   }
 
   async updateNoteTags(noteId: string, tagIds: string[]) {
-    await this.repo.deleteNoteTags(noteId);
-    if (tagIds.length > 0) {
-      const rows = tagIds.map(tagId => ({ note_id: noteId, tag_id: tagId }));
-      await this.repo.insertNoteTags(rows);
-    }
+    await this.repo.replaceNoteTags(noteId, tagIds);
   }
 
   async getNoteShares(noteId: string) {

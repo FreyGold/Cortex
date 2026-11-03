@@ -1,4 +1,4 @@
-import { getAuth, clearAuth, setSubjectsCache } from "../lib/storage";
+import { setSubjectsCache } from "../lib/storage";
 import * as authLib from "../lib/auth";
 import { createSubject } from "../lib/api";
 import type { AuthState, TimerState, WorkerResponse, TimerMode } from "../lib/types";
@@ -25,7 +25,7 @@ let onStop: () => void;
 // ── Init ──────────────────────────────────────────────────
 
 async function init() {
-  currentAuth = await getAuth();
+  currentAuth = await authLib.ensureValidAuth();
 
   if (currentAuth) {
     await loadSubjects();
@@ -128,59 +128,24 @@ function renderLogin() {
   root.innerHTML = `
     <div class="login-screen">
       <h1>College Knowledge Hub</h1>
-      <p>Sign in to track your focus sessions</p>
-      <form class="login-form" id="login-form">
-        <input type="email" id="login-email" placeholder="Email" required autocomplete="email" />
-        <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password" />
-        <div id="login-error" class="login-error"></div>
-        <button type="submit" class="btn btn-primary btn-full btn-lg" id="login-submit">Sign In</button>
-      </form>
-      <div class="login-divider">or</div>
-      <button class="btn btn-google btn-full btn-lg" id="google-login">Sign in with Google</button>
-      <p style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">
-        No account yet? Sign in to the <a href="#" id="open-webapp" style="color:var(--accent);text-decoration:none;">web app</a> first.
+      <p>Sign in to track your focus sessions.</p>
+      <button class="btn btn-primary btn-full btn-lg" id="open-sign-in">Sign in to Cortex</button>
+      <p id="login-status" style="font-size:11px;color:var(--text-tertiary);margin-top:4px;">
+        Use your email and password on the Cortex sign-in page.
       </p>
     </div>
   `;
-
-  document.getElementById("login-form")!.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = (document.getElementById("login-email") as HTMLInputElement).value;
-    const password = (document.getElementById("login-password") as HTMLInputElement).value;
-    const errorEl = document.getElementById("login-error")!;
-    const submitBtn = document.getElementById("login-submit") as HTMLButtonElement;
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Signing in...";
-    errorEl.textContent = "";
-
+  document.getElementById("open-sign-in")!.addEventListener("click", async () => {
+    const status = document.getElementById("login-status")!;
+    const button = document.getElementById("open-sign-in") as HTMLButtonElement;
+    button.disabled = true;
     try {
-      currentAuth = await authLib.loginWithEmail(email, password);
-      chrome.runtime.sendMessage({ action: "AUTH_UPDATED", auth: currentAuth }).catch(() => {});
-      await loadSubjects();
-      renderApp();
-    } catch (err: any) {
-      errorEl.textContent = err.message ?? "Failed to sign in";
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Sign In";
+      await authLib.openSignIn();
+      status.textContent = "Finish sign-in in the new tab. Then open the extension again.";
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : "Could not open sign-in.";
+      button.disabled = false;
     }
-  });
-
-  document.getElementById("google-login")!.addEventListener("click", async () => {
-    const errorEl = document.getElementById("login-error")!;
-    try {
-      currentAuth = await authLib.loginWithGoogle();
-      chrome.runtime.sendMessage({ action: "AUTH_UPDATED", auth: currentAuth }).catch(() => {});
-      await loadSubjects();
-      renderApp();
-    } catch (err: any) {
-      errorEl.textContent = err.message ?? "Google sign-in failed";
-    }
-  });
-
-  document.getElementById("open-webapp")!.addEventListener("click", (e) => {
-    e.preventDefault();
-    chrome.tabs.create({ url: "http://localhost:3000/auth/login" });
   });
 }
 
@@ -394,11 +359,11 @@ async function renderSettingsTabContent() {
     "Long Break": 15,
   };
   const s = await chrome.storage.local.get("ckh_settings") as { ckh_settings?: { backendUrl?: string } };
-  const backendUrl = s.ckh_settings?.backendUrl ?? "http://localhost:4000";
+  const backendUrl = s.ckh_settings?.backendUrl ?? "https://cortex-eta-black.vercel.app";
 
   const onLogout = async () => {
     stopLocalTick();
-    await clearAuth();
+    await authLib.logout();
     chrome.runtime.sendMessage({ action: "LOGOUT" }).catch(() => {});
     currentAuth = null;
     timerState = { phase: "idle" };

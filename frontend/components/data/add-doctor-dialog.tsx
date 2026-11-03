@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createDoctor, type Doctor } from "@/lib/data/catalog";
-import { getAccessToken } from "@/lib/supabase/client";
+import { getAccessToken } from "@/lib/neon/client";
 
 type Props = {
   onSuccess: (doctor: Doctor) => void;

@@ -1,3 +1,4 @@
+import { errorStatus } from "../lib/error-status";
 import type { Request, Response } from "express";
 import { ProfileService } from "../services/ProfileService";
 import { ProfileRepository } from "../repositories/ProfileRepository";
@@ -17,7 +18,7 @@ export class ProfileController {
       const profile = await service.getMe(req.user!.id);
       return res.status(200).json({ profile });
     } catch (error: any) {
-      return res.status(error.message.includes("not found") ? 404 : 500).json({ error: error.message });
+      return res.status(error.message.includes("not found") ? 404 : errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -27,7 +28,7 @@ export class ProfileController {
       await service.setupProfile(req.user!.id, req.body);
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      return res.status(error.message.includes("required") ? 400 : 500).json({ error: error.message });
+      return res.status(error.message.includes("required") ? 400 : errorStatus(error)).json({ error: error.message });
     }
   }
 
@@ -37,7 +38,7 @@ export class ProfileController {
       const profile = await service.requestVerification(req.user!.id);
       return res.status(200).json({ profile });
     } catch (error: any) {
-      const status = error.message.includes("already") ? 409 : (error.message.includes("not found") ? 404 : 500);
+      const status = error.message.includes("already") ? 409 : (error.message.includes("not found") ? 404 : errorStatus(error));
       return res.status(status).json({ error: error.message });
     }
   }

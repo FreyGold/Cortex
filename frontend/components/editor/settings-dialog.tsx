@@ -213,11 +213,16 @@ export const models: Model[] = [
   { label: "GLM 4.5 Air", value: "zai/glm-4.5-air" },
   { label: "GLM 4.5V", value: "zai/glm-4.5v" },
 
-  // Groq Models
-  { label: "Llama 3.3 70B (Groq)", value: "groq/llama-3.3-70b-versatile" },
-  { label: "Llama 3.1 8B (Groq)", value: "groq/llama-3.1-8b-instant" },
-  { label: "Mixtral 8x7B (Groq)", value: "groq/mixtral-8x7b-32768" },
-  { label: "Gemma 2 9B (Groq)", value: "groq/gemma2-9b-it" },
+  // Groq Models — current as of Aug 26, 2026 (https://console.groq.com/docs/models)
+  // Production: GPT-OSS 120B/20B are the recommended replacements for
+  // Llama 3.3 70B / 3.1 8B which shut down Aug 16, 2026 (see /docs/deprecations).
+  // Mixtral 8x7B (Mar 20 2025) and Gemma 2 9B (Oct 8 2025) were removed.
+  // Qwen 3 32B was deprecated Jul 17 2026 — use Qwen 3.6 27B instead.
+  { label: "GPT-OSS 20B (Groq) — Ultra Fast", value: "groq/openai/gpt-oss-20b" },
+  { label: "GPT-OSS 120B (Groq)", value: "groq/openai/gpt-oss-120b" },
+  { label: "Qwen 3.6 27B (Groq)", value: "groq/qwen/qwen3.6-27b" },
+  { label: "Llama 3.3 70B (Groq) — Deprecated Aug 2026", value: "groq/llama-3.3-70b-versatile" },
+  { label: "Llama 3.1 8B (Groq) — Deprecated Aug 2026", value: "groq/llama-3.1-8b-instant" },
 ];
 
 export function SettingsDialog() {

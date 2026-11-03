@@ -15,12 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  useLoginMutation,
-  useSignupMutation,
-} from "@/hooks/use-auth-mutations";
-import type { ApiError } from "@/lib/api/client";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/neon/client";
 
 type Mode = "login" | "signup";
 
@@ -31,9 +26,7 @@ type Props = {
 export function AuthForm({ mode }: Props) {
   const t = useTranslations("auth");
   const router = useRouter();
-  const supabase = createClient();
-  const loginMutation = useLoginMutation();
-  const signupMutation = useSignupMutation();
+  const [submitting, setSubmitting] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -55,56 +48,56 @@ export function AuthForm({ mode }: Props) {
       return;
     }
 
-    const payload = await (isSignup
-      ? signupMutation.mutateAsync({ fullName, email, password })
-      : loginMutation.mutateAsync({ email, password })
-    ).catch((mutationError) => {
-      const apiError = mutationError as ApiError;
-      setError(apiError.message ?? t("errors.unknown"));
-      return null;
-    });
-
-    if (!payload) return;
-
-    if (payload.session) {
-      const { error: setSessionError } = await supabase.auth.setSession({
-        access_token: payload.session.access_token,
-        refresh_token: payload.session.refresh_token,
-      });
-
-      if (setSessionError) {
-        setError(setSessionError.message);
+    setSubmitting(true);
+    try {
+      const result = isSignup
+        ? await authClient.signUp.email({ name: fullName, email, password })
+        : await authClient.signIn.email({ email, password });
+      if (result.error) {
+        setError(result.error.message ?? t("errors.unknown"));
         return;
       }
-
-      router.push("/data");
+      const { data } = await authClient.getSession();
+      if (!data?.user) {
+        setMessage(t("messages.checkEmail"));
+        return;
+      }
+      const target = new URLSearchParams(window.location.search).get("redirectTo");
+      let destination = "/data";
+      if (target?.startsWith("/") && !target.startsWith("//")) {
+        const url = new URL(target, window.location.origin);
+        if (url.origin === window.location.origin) destination = url.pathname + url.search + url.hash;
+      }
+      router.push(destination);
       router.refresh();
-      return;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t("errors.unknown"));
+    } finally {
+      setSubmitting(false);
     }
-
-    setMessage(payload.message ?? t("messages.checkEmail"));
   };
 
   const loginWithGoogle = async () => {
     setOauthLoading(true);
     setMessage(null);
     setError(null);
-
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (oauthError) {
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/data`,
+      });
+      if (error) {
+        setOauthLoading(false);
+        setError(error.message ?? t("errors.unknown"));
+      }
+    } catch (error) {
       setOauthLoading(false);
-      setError(oauthError.message);
+      setError(error instanceof Error ? error.message : t("errors.unknown"));
     }
   };
 
   const loading =
-    loginMutation.isPending || signupMutation.isPending || oauthLoading;
+    submitting || oauthLoading;
 
   return (
     <Card className="w-full max-w-sm shadow-none">
@@ -181,7 +174,7 @@ export function AuthForm({ mode }: Props) {
             {isSignup ? t("signUp") : t("signIn")}
           </Button>
 
-          {!isSignup ? (
+          {!isSignup && process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === "true" ? (
             <Button
               className="w-full"
               type="button"

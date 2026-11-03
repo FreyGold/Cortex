@@ -15,7 +15,7 @@ const DEFAULT_STATE: BlockerState = {
 
 // ── Persistent state ──────────────────────────────────────
 
-async function getBlockerState(): Promise<BlockerState> {
+export async function getBlockerState(): Promise<BlockerState> {
   const result = await chrome.storage.local.get(STORAGE_KEY) as { ckh_blocker?: BlockerState };
   return result.ckh_blocker ?? DEFAULT_STATE;
 }
@@ -38,7 +38,7 @@ async function disableBlocker(): Promise<void> {
   await updateRules(state);
 }
 
-async function updateGreenlist(domains: string[]): Promise<void> {
+export async function updateGreenlist(domains: string[]): Promise<void> {
   const state = await getBlockerState();
   state.greenlist = domains;
   await setBlockerState(state);
@@ -47,7 +47,7 @@ async function updateGreenlist(domains: string[]): Promise<void> {
   }
 }
 
-async function toggleBlocker(): Promise<BlockerState> {
+export async function toggleBlocker(): Promise<BlockerState> {
   const state = await getBlockerState();
   if (state.enabled) {
     await disableBlocker();

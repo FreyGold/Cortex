@@ -4,7 +4,7 @@ import { getAuth } from "../../lib/storage";
 
 // ── Render Tab ──────────────────────────────────────────
 
-function renderSocialTab(container: HTMLElement): void {
+export function renderSocialTab(container: HTMLElement): void {
   container.innerHTML = `
     <div class="social-tab">
       <div class="social-nav">

@@ -41,7 +41,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { getUserId } from "@/lib/supabase/client";
+import { getUserId } from "@/lib/neon/client";
 import { StudyCalendar } from "./study-calendar";
 
 type TimerMode = "Focus" | "Short Break" | "Long Break";
