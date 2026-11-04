@@ -7,8 +7,7 @@
     "backend": {
       "root": "backend",
       "entrypoint": "dist/vercel.js",
-      "framework": "express",
-      "includeFiles": ["node_modules/**"]
+      "framework": "express"
     }
   },
   "rewrites": [
