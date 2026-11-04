@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Express backend API for College Knowledge Hub",
   "main": "dist/vercel.js",
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json && esbuild src/index.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/vercel.js",
